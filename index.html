@@ -43,10 +43,16 @@
 
         const Icons = {
             Plus: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>,
-            Trash: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>,
-            Edit: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
+            Trash: ({size=18, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>,
+            Edit: ({size=18, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
             Calendar: ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
             Check: ({size=20, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>,
+            Clock: ({size=20, color="#EF4444"}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="9" />
+                    <polyline points="12 7 12 12 15 14" />
+                </svg>
+            ),
             ChevronLeft: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>,
             Cloche: ({size=14}) => (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -57,7 +63,7 @@
             Droplet: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" /></svg>,
             Pot: ({size=14}) => (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 8h16" /><path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><path d="M10 8V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3" /><path d="M2 11h2" /><path d="M20 11h2" />
+                    <path d="M4 8h16" /><path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><path d="M10 8V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1-1v3" /><path d="M2 11h2" /><path d="M20 11h2" />
                 </svg>
             ),
             Archive: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>,
@@ -132,10 +138,19 @@
                 return hasRequirements;
             };
 
+            const isTimeMissing = (event) => {
+                if (!event) return false;
+                if (!event.start) return true;
+                if (event.staff && event.staff.length > 0) {
+                    return event.staff.some(s => !s.time);
+                }
+                return false;
+            };
+
             useEffect(() => {
                 const loadData = async () => {
                     try {
-                        const localData = localStorage.getItem('events_data_v10');
+                        const localData = localStorage.getItem('events_data_v11');
                         if (localData) setEvents(JSON.parse(localData));
                         if (WEB_APP_URL) {
                             const response = await fetch(WEB_APP_URL);
@@ -149,14 +164,14 @@
 
             useEffect(() => {
                 if (isFirstRender.current || isLoadingData) { isFirstRender.current = false; return; }
-                localStorage.setItem('events_data_v10', JSON.stringify(events));
+                localStorage.setItem('events_data_v11', JSON.stringify(events));
                 if (WEB_APP_URL) {
-                    setSyncStatus('Синхронизация...');
+                    setSyncStatus('Сохранение...');
                     const timer = setTimeout(async () => {
                         try {
                             await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ events }) });
                             setSyncStatus('Готово');
-                            setTimeout(() => setSyncStatus(''), 3000);
+                            setTimeout(() => setSyncStatus(''), 2500);
                         } catch (e) { setSyncStatus('Ошибка'); }
                     }, 1500);
                     return () => clearTimeout(timer);
@@ -194,7 +209,6 @@
 
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
-                    {/* Кнопка архива в верхнем правом углу */}
                     <div className="fixed top-4 right-4 z-50">
                         <button 
                             onClick={() => {setShowArchive(!showArchive); setView('list');}} 
@@ -206,12 +220,11 @@
 
                     <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-[#C7886B40] pb-6 gap-4">
                         <div className="flex items-center gap-4">
-                            {/* Динамический статус синхронизации вместо статической иконки */}
                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl shadow-[#60453930] transition-all duration-500 ${
-                                syncStatus === 'Синхронизация...' ? 'bg-orange-500 text-white animate-sync' : 
+                                syncStatus === 'Сохранение...' ? 'bg-orange-500 text-white animate-sync' : 
                                 syncStatus === 'Готово' ? 'bg-green-500 text-white' : 'bg-[#604539] text-white'
                             }`}>
-                                {syncStatus === 'Синхронизация...' ? <Icons.Save size={24} /> : <Icons.Check size={28} />}
+                                {syncStatus === 'Сохранение...' ? <Icons.Save size={24} /> : <Icons.Check size={28} />}
                             </div>
                             
                             <div>
@@ -221,7 +234,7 @@
                                     {syncStatus && (
                                         <div className="flex items-center gap-1.5 bg-[#60453908] px-2 py-0.5 rounded-full">
                                             <span className={`text-[9px] font-black uppercase tracking-tighter ${
-                                                syncStatus === 'Синхронизация...' ? 'text-orange-600' : 
+                                                syncStatus === 'Сохранение...' ? 'text-orange-600' : 
                                                 syncStatus === 'Ошибка' ? 'text-red-500' : 'text-green-600'
                                             }`}>
                                                 {syncStatus}
@@ -238,7 +251,7 @@
                             {!showArchive && (
                                 <div className="bg-white p-6 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                        <input type="text" placeholder="Событие" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none font-medium" />
+                                        <input type="text" placeholder="Название события" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none font-medium" />
                                         <div className="flex gap-2">
                                             <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="flex-1 p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240]" />
                                             <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select flex-1 p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240]">
@@ -257,7 +270,7 @@
                                             <input type="number" placeholder="Гости" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-20 p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center font-bold" />
                                         </div>
                                         <div className="md:col-span-2 flex flex-col gap-4">
-                                            <textarea placeholder="Дополнительная информация (адрес, меню, нюансы...)" value={newEvent.extraInfo} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none min-h-[80px] resize-none"></textarea>
+                                            <textarea placeholder="Детали..." value={newEvent.extraInfo} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none min-h-[80px] resize-none"></textarea>
                                             <div className="grid grid-cols-4 gap-1">
                                                 {Object.entries(headerRoleMap).map(([k, d]) => (
                                                     <div key={k} className="flex flex-col items-center bg-[#FFECD240] rounded-xl border-2 border-[#60453910] py-1">
@@ -275,6 +288,7 @@
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {sortedEvents.map(ev => {
                                     const isComplete = isEventFullyStaffed(ev);
+                                    const timeError = isTimeMissing(ev);
                                     return (
                                         <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); }} className="p-5 rounded-2xl bg-white shadow-sm hover:shadow-md cursor-pointer transition-all border border-transparent hover:border-[#C7886B] relative group">
                                             <div className="flex gap-4">
@@ -282,11 +296,18 @@
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-2">
                                                         <h3 className="font-bold text-lg leading-tight">{ev.name}</h3>
-                                                        {isComplete && (
-                                                            <div className="bg-green-500 rounded-full p-0.5 shadow-sm">
-                                                                <Icons.Check size={14} color="white" />
-                                                            </div>
-                                                        )}
+                                                        <div className="flex gap-1 items-center">
+                                                            {isComplete && (
+                                                                <div className="bg-green-500 rounded-full p-0.5 shadow-sm">
+                                                                    <Icons.Check size={14} color="white" />
+                                                                </div>
+                                                            )}
+                                                            {timeError && (
+                                                                <div className="bg-white rounded-full">
+                                                                    <Icons.Clock size={20} />
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <p className="text-xs text-[#C7886B] font-bold uppercase mt-1">{ev.displayDate} {ev.start && `| ${ev.start}`}</p>
                                                     <div className="flex gap-4 opacity-50 text-[10px] font-bold uppercase mt-3">
@@ -295,9 +316,9 @@
                                                         {ev.admin && <span>👤 {ev.admin}</span>}
                                                     </div>
                                                 </div>
-                                                <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={(e) => { e.stopPropagation(); setEditingEventId(ev.id); setNewEvent({...ev}); window.scrollTo({top:0, behavior:'smooth'}); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16} /></button>
-                                                    <button onClick={(e) => { e.stopPropagation(); setEvents(events.filter(x => x.id !== ev.id)); }} className="text-gray-200 hover:text-red-500"><Icons.Trash size={16} /></button>
+                                                <div className="flex flex-col gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={(e) => { e.stopPropagation(); setEditingEventId(ev.id); setNewEvent({...ev}); window.scrollTo({top:0, behavior:'smooth'}); }} className="text-[#000000] hover:text-[#604539] transition-colors"><Icons.Edit size={18} color="#000000" /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); setEvents(events.filter(x => x.id !== ev.id)); }} className="text-[#000000] hover:text-red-600 transition-colors"><Icons.Trash size={18} color="#000000" /></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -314,11 +335,18 @@
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 mb-2">
                                                 <h2 className="text-3xl font-bold">{currentEvent?.name}</h2>
-                                                {isEventFullyStaffed(currentEvent) && (
-                                                    <div className="bg-green-500 rounded-full p-1 shadow-lg shadow-green-500/20">
-                                                        <Icons.Check size={18} color="white" />
-                                                    </div>
-                                                )}
+                                                <div className="flex gap-2">
+                                                    {isEventFullyStaffed(currentEvent) && (
+                                                        <div className="bg-green-500 rounded-full p-1 shadow-lg shadow-green-500/20">
+                                                            <Icons.Check size={18} color="white" />
+                                                        </div>
+                                                    )}
+                                                    {isTimeMissing(currentEvent) && (
+                                                        <div className="bg-white rounded-full p-0.5">
+                                                            <Icons.Clock size={24} />
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="flex flex-wrap gap-4 text-xs font-bold uppercase opacity-60">
                                                 <span className="flex items-center gap-1"><Icons.Calendar size={12}/> {currentEvent?.displayDate}</span>
@@ -331,13 +359,6 @@
                                             <p className="text-xl font-bold">{currentEvent?.guests || 0}</p>
                                         </div>
                                     </div>
-                                    
-                                    {currentEvent?.extraInfo && (
-                                        <div className="mb-6 p-3 rounded-xl bg-white/5 border border-white/10 text-xs italic opacity-80 flex gap-2">
-                                            <div className="mt-0.5"><Icons.Info size={14} /></div>
-                                            <p>{currentEvent.extraInfo}</p>
-                                        </div>
-                                    )}
                                     
                                     <div className="flex gap-2 mt-4 overflow-x-auto pb-4 scrollbar-hide no-wrap">
                                         {Object.entries(headerRoleMap).map(([k, d]) => {
@@ -370,7 +391,7 @@
                                             <input type="text" placeholder="Имя" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border-2 border-transparent bg-white shadow-sm outline-none focus:border-[#60453920] transition-all" />
                                             <div className="flex gap-3">
                                                 <SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} colors={colors} />
-                                                <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, time: v, end: v})} colors={colors} />
+                                                <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 mb-4">
@@ -384,24 +405,28 @@
                                     <div className="overflow-x-auto">
                                         <table className="w-full">
                                             <thead className="text-[10px] uppercase opacity-30 border-b">
-                                                <tr><th className="pb-2 text-left px-2">Сотрудник</th><th className="pb-2 text-center px-2">Время</th><th className="pb-2 text-right px-2">Действия</th></tr>
+                                                <tr><th className="pb-2 text-left px-2">Сотрудник</th><th className="pb-2 text-center px-2">Смена</th><th className="pb-2 text-right px-2">Действия</th></tr>
                                             </thead>
                                             <tbody>
                                                 {(currentEvent?.staff || []).map(s => (
                                                     <tr key={s.id} className="border-b border-gray-50 group hover:bg-gray-50/50 transition-colors">
                                                         <td className="py-4 px-2">
-                                                            <span className="font-bold text-sm block">{s.name}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-bold text-sm block text-black">{s.name}</span>
+                                                                {!s.time && <Icons.Clock size={16} />}
+                                                            </div>
                                                             <span className="text-[9px] text-[#C7886B] font-bold uppercase tracking-wider">{s.roles.join(', ')}</span>
                                                         </td>
-                                                        <td className="py-4 px-2 text-center">
-                                                            <div className="inline-flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full text-[11px] font-medium border border-gray-100 group-hover:bg-white transition-all">
-                                                                {s.time} — {s.end || '...'}
+                                                        <td className="py-4 px-2">
+                                                            <div className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl text-[11px] font-bold leading-tight transition-all border ${!s.time ? 'bg-red-50 text-red-600 border-red-100' : 'bg-gray-50 text-[#1F1713] border-gray-100 group-hover:bg-white'}`}>
+                                                                <span className={!s.time ? 'animate-pulse' : ''}>{s.time || '??:??'}</span>
+                                                                <span className="opacity-40">{s.end || '--:--'}</span>
                                                             </div>
                                                         </td>
                                                         <td className="py-4 px-2 text-right">
-                                                            <div className="flex justify-end gap-2">
-                                                                <button onClick={() => { setNewStaff({...s}); setEditingStaffId(s.id); }} className="text-gray-300 hover:text-[#604539] transition-colors"><Icons.Edit size={16} /></button>
-                                                                <button onClick={() => setEvents(events.map(e => e.id === selectedEventId ? {...e, staff: e.staff.filter(x=>x.id !== s.id)} : e))} className="text-gray-200 hover:text-red-500 transition-colors"><Icons.Trash size={16}/></button>
+                                                            <div className="flex justify-end gap-3">
+                                                                <button onClick={() => { setNewStaff({...s}); setEditingStaffId(s.id); }} className="text-[#000000] hover:text-[#604539] transition-colors p-1"><Icons.Edit size={18} color="#000000" /></button>
+                                                                <button onClick={() => setEvents(events.map(e => e.id === selectedEventId ? {...e, staff: e.staff.filter(x=>x.id !== s.id)} : e))} className="text-[#000000] hover:text-red-600 transition-colors p-1"><Icons.Trash size={18} color="#000000" /></button>
                                                             </div>
                                                         </td>
                                                     </tr>
