@@ -3,73 +3,756 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Приложение с сохранением в Sheets</title>
+    <title>Управление персоналом</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        #status { font-weight: bold; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FFECD2; }
+        .animate-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        
+        select { 
+            appearance: none; 
+            -webkit-appearance: none; 
+            -moz-appearance: none;
+        }
+        
+        select.format-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23604539'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .ruble-icon {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: #10b981;
+            line-height: 1;
+        }
+        .role-icon-container {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
+    <div id="root"></div>
 
-    <h1>Мое приложение</h1>
-    <p>Текущий статус: <span id="status">Ожидание изменений...</span></p>
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
 
-    <script>
-        async function saveHashToGoogleSheets() {
-            // ВАЖНО: Вставьте сюда ваш URL от Sheet.best
-            const sheetBestUrl = 'https://sheet.best/api/sheets/ВАШ_ID'; 
-            const statusEl = document.getElementById('status');
-            
-            // Получаем данные из хэша
-            const currentHash = window.location.hash.substring(1);
-            
-            if (!currentHash) {
-                console.log("Хэш пуст, отправка отменена.");
-                statusEl.innerText = "Хэш пуст";
-                return;
-            }
+        // Константа для подключения к Sheet.best
+        const SHEET_BEST_URL = 'https://api.sheetbest.com/sheets/a33570d2-07f4-49c2-baca-4107d550c409';
 
-            statusEl.innerText = "Сохранение в таблицу...";
-            statusEl.style.color = "blue";
+        const Icons = {
+            Plus: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>,
+            Trash: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>,
+            Edit: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
+            Calendar: ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
+            Check: ({size=20, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>,
+            Clock: ({size=18, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            ChevronLeft: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>,
+            Cloche: ({size=14}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M2 20h20" /><path d="M20 20a8 8 0 0 0-16 0" /><circle cx="12" cy="12" r="1" /><path d="M12 12V10" /><path d="M11 10h2" />
+                </svg>
+            ),
+            Martini: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 22h8M12 11v11M19 2 12 11 5 2z"/></svg>,
+            Droplet: ({size=14}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                </svg>
+            ),
+            Pot: ({size=14}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 8h16" />
+                    <path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
+                    <path d="M10 8V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3" />
+                    <path d="M2 11h2" />
+                    <path d="M20 11h2" />
+                </svg>
+            ),
+            Archive: ({size=20}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                    <rect x="1" y="3" width="22" height="5"></rect>
+                    <line x1="10" y1="12" x2="14" y2="12"></line>
+                </svg>
+            ),
+            ArrowIn: () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 7 10 10M17 7v10H7"/></svg>,
+            ArrowOut: () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>,
+            Info: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
+            User: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        };
 
-            // Объект данных (убедитесь, что в таблице есть столбцы 'date' и 'hash')
-            const payload = {
-                date: new Date().toLocaleString('ru-RU'),
-                hash: decodeURIComponent(currentHash)
+        const SimpleTimePicker = ({ value, onChange, colors, label }) => {
+            const [h, m] = value ? value.split(':') : ['', ''];
+            const setHour = (newH) => {
+                if (newH === "") {
+                    onChange("");
+                } else {
+                    onChange(`${newH.padStart(2, '0')}:${m || "00"}`);
+                }
+            };
+            const setMinute = (newM) => {
+                const hourToUse = h || "12";
+                onChange(`${hourToUse.padStart(2, '0')}:${newM}`);
             };
 
-            try {
-                const response = await fetch(sheetBestUrl, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
+            return (
+                <div className="flex-1">
+                    {label && <p className="text-[9px] uppercase font-bold mb-1 opacity-40 ml-1">{label}</p>}
+                    <div className="flex items-center gap-1.5">
+                        <select 
+                            value={h} 
+                            onChange={(e) => setHour(e.target.value)} 
+                            className="flex-1 p-2.5 rounded-xl border-2 bg-white text-center text-sm cursor-pointer hover:bg-gray-50 transition-colors" 
+                            style={{ borderColor: colors.accent + '20' }}
+                        >
+                            <option value="">—</option>
+                            {Array.from({ length: 24 }, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i} ч</option>)}
+                        </select>
+                        <span className="font-bold opacity-20 text-xs">:</span>
+                        <select 
+                            value={m} 
+                            onChange={(e) => setMinute(e.target.value)} 
+                            disabled={!h} 
+                            className="flex-1 p-2.5 rounded-xl border-2 bg-white text-center text-sm cursor-pointer hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-default" 
+                            style={{ borderColor: colors.accent + '20' }}
+                        >
+                            <option value="00">00</option>
+                            <option value="30">30</option>
+                        </select>
+                    </div>
+                </div>
+            );
+        };
 
-                if (response.ok) {
-                    statusEl.innerText = "Данные успешно сохранены!";
-                    statusEl.style.color = "green";
-                } else {
-                    throw new Error(`Ошибка сервера: ${response.status}`);
+        const App = () => {
+            const [view, setView] = useState('list');
+            const [showArchive, setShowArchive] = useState(false);
+            const [events, setEvents] = useState(() => JSON.parse(localStorage.getItem('events_data_v7') || '[]'));
+            const [selectedEventId, setSelectedEventId] = useState(null);
+            
+            const [newEvent, setNewEvent] = useState({ 
+                name: '', 
+                date: new Date().toISOString().split('T')[0], 
+                start: '', 
+                end: '', 
+                format: 'Фуршет', 
+                admin: '',
+                guests: '',
+                extraInfo: '', 
+                neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
+            });
+            const [editingEventId, setEditingEventId] = useState(null);
+            
+            const [newStaff, setNewStaff] = useState({ name: '', time: '', end: '', roles: [] });
+            const [editingStaffId, setEditingStaffId] = useState(null);
+
+            const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
+            const formats = ["Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Другое"];
+            const admins = ["Александр", "Илья", "Михаил"];
+
+            useEffect(() => {
+                localStorage.setItem('events_data_v7', JSON.stringify(events));
+            }, [events]);
+
+            // Функция синхронизации с Google Таблицей
+            const syncWithSheet = async (eventData) => {
+                if (!eventData) return;
+                try {
+                    // Мы используем метод POST для добавления или обновления всей строки. 
+                    // Если Sheet.best настроен на уникальные ID, можно использовать PATCH/PUT.
+                    // Здесь мы отправляем текущее состояние мероприятия.
+                    await fetch(SHEET_BEST_URL, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            ID: eventData.id,
+                            Название: eventData.name,
+                            Дата: eventData.date,
+                            Начало: eventData.start,
+                            Конец: eventData.end,
+                            Формат: eventData.format,
+                            Админ: eventData.admin,
+                            Гости: eventData.guests,
+                            Персонал: JSON.stringify(eventData.staff || []),
+                            Инфо: eventData.extraInfo
+                        }),
+                    });
+                } catch (error) {
+                    console.error('Ошибка синхронизации с таблицей:', error);
                 }
-            } catch (error) {
-                statusEl.innerText = "Ошибка при сохранении";
-                statusEl.style.color = "red";
-                console.error('Ошибка:', error);
-            }
-        }
+            };
 
-        // 1. Слушаем изменения хэша в реальном времени
-        window.addEventListener('hashchange', saveHashToGoogleSheets);
+            const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
-        // 2. Проверяем хэш сразу при загрузке страницы
-        window.addEventListener('load', () => {
-            if (window.location.hash) {
-                saveHashToGoogleSheets();
-            }
-        });
+            const sortedEvents = useMemo(() => {
+                return [...events]
+                    .filter(ev => showArchive ? ev.date < todayStr : ev.date >= todayStr)
+                    .sort((a, b) => a.date.localeCompare(b.date));
+            }, [events, showArchive, todayStr]);
+
+            const currentEvent = events.find(e => e.id === selectedEventId);
+            const rolePriority = { 'Официант': 1, 'Бармен': 2, 'Мойщица': 3, 'Повар': 4 };
+
+            const sortedStaff = useMemo(() => {
+                if (!currentEvent || !currentEvent.staff) return [];
+                return [...currentEvent.staff].sort((a, b) => {
+                    const getTopPriority = (roles) => {
+                        const priorities = roles.map(r => rolePriority[r] || 99);
+                        return Math.min(...priorities);
+                    };
+                    const priorityA = getTopPriority(a.roles);
+                    const priorityB = getTopPriority(b.roles);
+                    if (priorityA !== priorityB) return priorityA - priorityB;
+                    return a.name.localeCompare(b.name);
+                });
+            }, [currentEvent]);
+
+            const keyToLabel = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
+
+            const staffCounts = useMemo(() => {
+                if (!currentEvent) return { 'Официант': 0, 'Бармен': 0, 'Мойщица': 0, 'Повар': 0 };
+                const counts = { 'Официант': 0, 'Бармен': 0, 'Мойщица': 0, 'Повар': 0 };
+                currentEvent.staff.forEach(s => {
+                    s.roles.forEach(role => {
+                        if (counts.hasOwnProperty(role)) counts[role]++;
+                    });
+                });
+                return counts;
+            }, [currentEvent]);
+
+            useEffect(() => {
+                if (!currentEvent) return;
+                let updated = false;
+                const newStatus = { ...(currentEvent.status || {}) };
+                Object.entries(keyToLabel).forEach(([shortKey, longKey]) => {
+                    const actual = staffCounts[longKey];
+                    const target = parseInt(currentEvent.neededStaff?.[shortKey] || 0);
+                    if (target === 0) {
+                        if (!newStatus[shortKey]) { newStatus[shortKey] = true; updated = true; }
+                    } else if (actual >= target) {
+                        if (!newStatus[shortKey]) { newStatus[shortKey] = true; updated = true; }
+                    } else {
+                        if (newStatus[shortKey]) { newStatus[shortKey] = false; updated = true; }
+                    }
+                });
+                if (updated) {
+                    setEvents(prev => prev.map(ev => ev.id === currentEvent.id ? { ...ev, status: newStatus } : ev));
+                }
+            }, [staffCounts, currentEvent?.neededStaff]);
+
+            const isAllRolesActive = (event) => {
+                if (!event || !event.status) return false;
+                const requiredRoles = ['оф', 'бар', 'мой', 'пов'];
+                return requiredRoles.every(role => {
+                    const target = parseInt(event.neededStaff?.[role] || 0);
+                    return target === 0 || event.status[role] === true;
+                });
+            };
+
+            const isTimeMissing = (event) => {
+                if (!event) return false;
+                if (!event.start) return true;
+                if (event.staff && event.staff.length > 0) {
+                    const hasStaffWithoutTime = event.staff.some(s => !s.time);
+                    if (hasStaffWithoutTime) return true;
+                }
+                return false;
+            };
+
+            const handleAddEvent = () => {
+                if (!newEvent.name || !newEvent.guests) return;
+                const d = new Date(newEvent.date);
+                const fmtDate = `${d.getDate()} ${d.toLocaleString('ru', { month: 'long' })}`;
+                
+                let updatedList;
+                let finalEvent;
+
+                if (editingEventId) {
+                    finalEvent = { ...events.find(ev => ev.id === editingEventId), ...newEvent, displayDate: fmtDate };
+                    updatedList = events.map(ev => ev.id === editingEventId ? finalEvent : ev);
+                    setEditingEventId(null);
+                } else {
+                    finalEvent = { id: Date.now().toString(), ...newEvent, displayDate: fmtDate, staff: [], status: {} };
+                    updatedList = [...events, finalEvent];
+                }
+                
+                setEvents(updatedList);
+                syncWithSheet(finalEvent);
+
+                setNewEvent({ 
+                    name: '', 
+                    date: new Date().toISOString().split('T')[0], 
+                    start: '', 
+                    end: '', 
+                    format: 'Фуршет', 
+                    admin: '',
+                    guests: '',
+                    extraInfo: '',
+                    neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
+                });
+            };
+
+            const startEditEvent = (e, ev) => {
+                e.stopPropagation();
+                setEditingEventId(ev.id);
+                setNewEvent({ 
+                    name: ev.name, 
+                    date: ev.date, 
+                    start: ev.start, 
+                    end: ev.end || '', 
+                    format: ev.format || 'Фуршет', 
+                    admin: ev.admin || '',
+                    guests: ev.guests,
+                    extraInfo: ev.extraInfo || '',
+                    neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const fastDeleteEvent = (e, eventId) => {
+                e.stopPropagation();
+                setEvents(prev => prev.filter(x => x.id !== eventId));
+                if (selectedEventId === eventId) setView('list');
+            };
+
+            const handleAddStaff = () => {
+                if (!newStaff.name || newStaff.roles.length === 0) return;
+                
+                let updatedEvent;
+                setEvents(prev => prev.map(ev => {
+                    if (ev.id === selectedEventId) {
+                        if (editingStaffId) {
+                            updatedEvent = { ...ev, staff: ev.staff.map(s => s.id === editingStaffId ? { ...s, ...newStaff, rolesDisplay: newStaff.roles.join(', ') } : s) };
+                        } else {
+                            updatedEvent = { ...ev, staff: [...ev.staff, { id: Date.now().toString(), ...newStaff, rolesDisplay: newStaff.roles.join(', '), rolePaid: {} }] };
+                        }
+                        syncWithSheet(updatedEvent);
+                        return updatedEvent;
+                    }
+                    return ev;
+                }));
+                
+                setEditingStaffId(null);
+                setNewStaff({ name: '', time: '', end: '', roles: [] });
+            };
+
+            const toggleStaffRolePaid = (staffId, role) => {
+                setEvents(prevEvents => prevEvents.map(ev => {
+                    if (ev.id !== selectedEventId) return ev;
+                    const updatedEvent = {
+                        ...ev,
+                        staff: ev.staff.map(s => {
+                            if (s.id !== staffId) return s;
+                            const currentPaid = s.rolePaid || {};
+                            return { ...s, rolePaid: { ...currentPaid, [role]: !currentPaid[role] } };
+                        })
+                    };
+                    syncWithSheet(updatedEvent);
+                    return updatedEvent;
+                }));
+            };
+
+            const startEditStaff = (s) => {
+                setEditingStaffId(s.id);
+                setNewStaff({ name: s.name, time: s.time || '', end: s.end || '', roles: s.roles });
+            };
+
+            const roleIconMap = {
+                'Официант': { icon: <Icons.Cloche size={14} />, label: 'Официант', short: 'оф' },
+                'Бармен': { icon: <Icons.Martini size={14} />, label: 'Бармен', short: 'бар' },
+                'Мойщица': { icon: <Icons.Droplet size={14} />, label: 'Мойщица', short: 'мой' },
+                'Повар': { icon: <Icons.Pot size={14} />, label: 'Повар', short: 'пов' }
+            };
+
+            const headerRoleMap = {
+                'оф': { icon: <Icons.Cloche size={20} />, label: 'Официант', key: 'Официант' },
+                'бар': { icon: <Icons.Martini size={20} />, label: 'Бармен', key: 'Бармен' },
+                'мой': { icon: <Icons.Droplet size={20} />, label: 'Мойщица', key: 'Мойщица' },
+                'пов': { icon: <Icons.Pot size={20} />, label: 'Повар', key: 'Повар' }
+            };
+
+            return (
+                <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
+                    <header className="flex items-center justify-between mb-8 border-b border-[#C7886B40] pb-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center text-white"><Icons.Check size={28} /></div>
+                            <div>
+                                <h1 className="text-2xl font-bold uppercase tracking-tight">Catering Admin</h1>
+                                <p className="text-[10px] uppercase tracking-widest text-[#604539]">Встроенная синхронизация со Sheets</p>
+                            </div>
+                        </div>
+                        {view === 'list' && (
+                            <button 
+                                onClick={() => setShowArchive(!showArchive)}
+                                title={showArchive ? "К текущим" : "Архив"}
+                                className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all ${showArchive ? 'bg-[#604539] text-white shadow-lg' : 'bg-white border-2 border-[#60453910] text-[#604539] hover:border-[#60453930]'}`}
+                            >
+                                <Icons.Archive size={22} />
+                            </button>
+                        )}
+                    </header>
+
+                    {view === 'list' ? (
+                        <div className="space-y-6 animate-in">
+                            {!showArchive && (
+                                <div className="bg-white p-6 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl">
+                                    <h2 className="font-bold mb-4 flex items-center gap-2">
+                                        {editingEventId ? <Icons.Edit /> : <Icons.Plus />} 
+                                        {editingEventId ? 'Редактировать мероприятие' : 'Создать мероприятие'}
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all" />
+                                        <div className="flex flex-col gap-4">
+                                            <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all" />
+                                            <select 
+                                                value={newEvent.format} 
+                                                onChange={e=>setNewEvent({...newEvent, format: e.target.value})} 
+                                                className="format-select p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all cursor-pointer"
+                                            >
+                                                {formats.map(f => <option key={f} value={f}>{f}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <SimpleTimePicker label="Начало" value={newEvent.start} onChange={v=>setNewEvent({...newEvent, start: v})} colors={colors} />
+                                            <SimpleTimePicker label="Окончание" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
+                                        </div>
+                                        <div className="flex flex-col gap-3">
+                                            <input type="number" placeholder="Количество гостей" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all" />
+                                            
+                                            <div className="flex flex-col gap-1.5">
+                                                <p className="text-[10px] uppercase font-bold opacity-30 ml-1">Нужное кол-во персонала:</p>
+                                                <div className="flex gap-2">
+                                                    {Object.entries({
+                                                        'оф': <Icons.Cloche size={16}/>,
+                                                        'бар': <Icons.Martini size={16}/>,
+                                                        'мой': <Icons.Droplet size={16}/>,
+                                                        'пов': <Icons.Pot size={16}/>
+                                                    }).map(([role, icon]) => (
+                                                        <div key={role} className="flex-1 relative group">
+                                                            <div className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30 text-[#604539] group-focus-within:opacity-100 transition-opacity">
+                                                                {icon}
+                                                            </div>
+                                                            <input 
+                                                                type="number" 
+                                                                value={newEvent.neededStaff[role]} 
+                                                                onChange={e => setNewEvent({
+                                                                    ...newEvent, 
+                                                                    neededStaff: { ...newEvent.neededStaff, [role]: e.target.value }
+                                                                })}
+                                                                placeholder="0"
+                                                                className="w-full p-3 pl-8 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all text-center text-sm font-bold"
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="mb-4 relative">
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30 text-[#604539]">
+                                            <Icons.User size={16} />
+                                        </div>
+                                        <select 
+                                            value={newEvent.admin} 
+                                            onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} 
+                                            className="format-select w-full p-3 pl-9 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all cursor-pointer text-sm"
+                                        >
+                                            <option value="">Выберите администратора</option>
+                                            {admins.map(a => <option key={a} value={a}>{a}</option>)}
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <textarea 
+                                            placeholder="Доп. информация (адрес, контакты, примечания)" 
+                                            value={newEvent.extraInfo} 
+                                            onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} 
+                                            className="w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all resize-none h-20 text-sm"
+                                        />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={handleAddEvent} className="flex-1 bg-[#604539] text-white p-4 rounded-xl uppercase font-bold text-sm tracking-widest hover:bg-[#4a352c] transition-colors">
+                                            {editingEventId ? 'Сохранить изменения' : 'Добавить мероприятие'}
+                                        </button>
+                                        {editingEventId && (
+                                            <button onClick={() => { setEditingEventId(null); setNewEvent({ name: '', date: new Date().toISOString().split('T')[0], start: '', end: '', format: 'Фуршет', admin: '', guests: '', extraInfo: '', neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' } }); }} className="bg-gray-200 px-6 rounded-xl uppercase font-bold text-xs">Отмена</button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-2 mb-2">
+                                <h3 className="text-xs font-bold uppercase opacity-40">{showArchive ? 'Архив (прошедшие)' : 'Актуальные мероприятия'}</h3>
+                                <div className="h-px bg-[#60453910] flex-1"></div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {sortedEvents.map(ev => {
+                                    const isToday = ev.date === todayStr;
+                                    return (
+                                        <div 
+                                            key={ev.id} 
+                                            onClick={() => { setSelectedEventId(ev.id); setView('details'); }} 
+                                            className={`p-5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
+                                        >
+                                            <div className="flex gap-4">
+                                                <div className={`p-3 rounded-xl h-fit ${showArchive ? 'bg-gray-100 opacity-50' : (isToday ? 'bg-green-100' : 'bg-[#FFECD2]')}`}><Icons.Calendar size={20} /></div>
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex items-center gap-2">
+                                                            <h3 className={`font-bold text-lg leading-tight ${showArchive ? 'text-gray-500' : ''}`}>{ev.name}</h3>
+                                                            <div className="flex gap-1.5 items-center">
+                                                                {isAllRolesActive(ev) && (
+                                                                    <span className="text-green-500 bg-green-50 rounded-full p-0.5"><Icons.Check size={14} color="#10b981" /></span>
+                                                                )}
+                                                                {isTimeMissing(ev) && (
+                                                                    <span className="text-red-500 bg-red-50 rounded-full p-0.5 animate-pulse" title="Не заполнено время"><Icons.Clock size={14} color="#ef4444" /></span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-[10px] font-bold uppercase bg-[#60453910] px-2 py-1 rounded-lg text-[#604539]">{ev.format}</span>
+                                                    </div>
+                                                    <p className="text-xs text-[#C7886B] font-bold uppercase mb-2 mt-1">
+                                                        {ev.displayDate} {ev.start && `| ${ev.start}${ev.end ? ` — ${ev.end}` : ''}`}
+                                                    </p>
+                                                    
+                                                    {ev.admin && (
+                                                        <div className="flex items-center gap-1.5 mb-2 opacity-60">
+                                                            <Icons.User size={10} />
+                                                            <span className="text-[10px] font-bold uppercase tracking-tight">Админ: {ev.admin}</span>
+                                                        </div>
+                                                    )}
+
+                                                    {ev.extraInfo && (
+                                                        <div className="mb-3 p-2 bg-[#60453908] rounded-lg border-l-2 border-[#C7886B] flex items-start gap-2">
+                                                            <div className="mt-0.5 opacity-40"><Icons.Info size={10} /></div>
+                                                            <p className="text-[11px] text-[#604539] opacity-80 line-clamp-2 leading-snug">{ev.extraInfo}</p>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex gap-4 opacity-50 text-[10px] font-bold uppercase">
+                                                        <span>👥 {ev.guests}</span>
+                                                        <span>🧑‍🍳 {ev.staff.length} чел.</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>
+                                                    <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500 p-1 transition-colors"><Icons.Trash size={16} /></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {sortedEvents.length === 0 && (
+                                    <div className="col-span-full py-12 text-center opacity-30 text-sm font-bold uppercase tracking-widest border-2 border-dashed border-[#60453910] rounded-3xl">
+                                        Нет мероприятий
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="animate-in">
+                            <div className="flex items-center justify-between mb-6">
+                                <button onClick={()=>setView('list')} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад к списку</button>
+                                <button 
+                                    onClick={(e) => fastDeleteEvent(e, selectedEventId)} 
+                                    className="text-red-300 hover:text-red-600 flex items-center gap-2 text-[10px] uppercase font-bold transition-colors"
+                                >
+                                    Удалить <Icons.Trash size={14} />
+                                </button>
+                            </div>
+                            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539]">
+                                <div className="p-8 bg-[#1F1713] text-white">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-3">
+                                            <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
+                                            <div className="flex gap-2">
+                                                {isAllRolesActive(currentEvent) && (
+                                                    <div className="bg-green-500 rounded-full p-1.5"><Icons.Check size={20} color="white" /></div>
+                                                )}
+                                                {isTimeMissing(currentEvent) && (
+                                                    <div className="bg-red-500 rounded-full p-1.5 shadow-lg shadow-red-500/20"><Icons.Clock size={20} color="white" /></div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <span className="text-xs font-bold uppercase bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">{currentEvent?.format}</span>
+                                    </div>
+                                    <p className="opacity-60 text-sm mt-1">
+                                        {currentEvent?.displayDate} • {currentEvent?.start}{currentEvent?.end ? ` — ${currentEvent?.end}` : ''} • {currentEvent?.guests} гостей
+                                    </p>
+                                    
+                                    {currentEvent?.admin && (
+                                        <div className="mt-2 flex items-center gap-2 text-xs font-bold uppercase opacity-80">
+                                            <Icons.User size={12} />
+                                            <span>Администратор: {currentEvent.admin}</span>
+                                        </div>
+                                    )}
+
+                                    {currentEvent?.extraInfo && (
+                                        <div className="mt-4 p-3 bg-white/5 rounded-xl border border-white/10">
+                                            <p className="text-[10px] uppercase font-bold opacity-30 mb-1">Информация:</p>
+                                            <p className="text-sm opacity-80 whitespace-pre-wrap">{currentEvent.extraInfo}</p>
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-3 mt-6 overflow-x-auto pb-2">
+                                        {Object.entries(headerRoleMap).map(([key, data]) => {
+                                            const actualCount = staffCounts[data.key];
+                                            const targetCount = parseInt(currentEvent?.neededStaff?.[key] || 0);
+                                            const isComplete = targetCount === 0 || actualCount >= targetCount;
+                                            return (
+                                                <div key={key} className="flex flex-col items-center gap-2">
+                                                    <div 
+                                                        onClick={()=>{
+                                                            const updatedEvent = {...currentEvent, status: {...currentEvent.status, [key]: !currentEvent.status[key]}};
+                                                            setEvents(events.map(e => e.id === selectedEventId ? updatedEvent : e));
+                                                            syncWithSheet(updatedEvent);
+                                                        }} 
+                                                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${currentEvent?.status?.[key] ? 'bg-[#FFECD2] border-[#FFECD2] text-[#604539]' : 'border-white/10 opacity-40'}`}
+                                                    >
+                                                        {data.icon}
+                                                    </div>
+                                                    <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[24px] text-center transition-colors ${isComplete ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white'}`}>
+                                                        {actualCount} {targetCount > 0 ? `/ ${targetCount}` : ''}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="p-6">
+                                    <div className="bg-[#FFECD240] p-6 rounded-2xl mb-8 border border-[#C7886B20]">
+                                        <h3 className="text-[10px] font-bold uppercase mb-4 opacity-50">
+                                            {editingStaffId ? 'Редактировать сотрудника' : 'Добавить персонал'}
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                            <input type="text" placeholder="Имя" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border bg-white outline-none focus:border-[#604539] transition-all" />
+                                            <div className="flex gap-3">
+                                                <SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} colors={colors} />
+                                                <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 mb-4">
+                                            {['Официант', 'Бармен', 'Мойщица', 'Повар'].map(r => (
+                                                <button 
+                                                    key={r} 
+                                                    onClick={()=>setNewStaff(prev => ({...prev, roles: prev.roles.includes(r) ? prev.roles.filter(x=>x!==r) : [...prev.roles, r]}))} 
+                                                    className={`py-3 rounded-xl text-[10px] font-bold uppercase border-2 transition-all text-center ${newStaff.roles.includes(r) ? 'bg-[#604539] border-[#604539] text-white' : 'border-[#C7886B20] text-[#604539]'}`}
+                                                >
+                                                    {r}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={handleAddStaff} className="flex-1 bg-[#604539] text-white p-3 rounded-xl uppercase text-xs font-bold hover:bg-[#4a352c] transition-colors">
+                                                {editingStaffId ? 'Сохранить изменения' : 'Подтвердить'}
+                                            </button>
+                                            {editingStaffId && (
+                                                <button onClick={() => { setEditingStaffId(null); setNewStaff({ name: '', time: '', end: '', roles: [] }); }} className="bg-gray-100 px-4 rounded-xl uppercase font-bold text-[10px]">Отмена</button>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <table className="w-full text-left">
+                                        <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="pb-2 pl-2">Сотрудник</th><th className="pb-2 text-center">Смена</th><th className="pb-2 text-right">Управление</th></tr></thead>
+                                        <tbody>
+                                            {sortedStaff.map(s => (
+                                                <tr key={s.id} className={`border-b border-gray-50 text-sm transition-colors ${editingStaffId === s.id ? 'bg-[#FFECD230]' : ''}`}>
+                                                    <td className="py-4 pl-2">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="flex -space-x-1.5">
+                                                                {s.roles.map((role, idx) => (
+                                                                    <div 
+                                                                        key={idx} 
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            toggleStaffRolePaid(s.id, role);
+                                                                        }}
+                                                                        className="role-icon-container rounded-lg bg-[#C7886B20] text-[#604539] border border-white shadow-sm cursor-pointer hover:scale-110 active:scale-95 transition-all" 
+                                                                        title={s.rolePaid?.[role] ? "Оплачено" : role}
+                                                                    >
+                                                                        {s.rolePaid?.[role] ? (
+                                                                            <span className="ruble-icon">₽</span>
+                                                                        ) : (
+                                                                            roleIconMap[role]?.icon
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold">{s.name}</span>
+                                                                {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tight">Нет времени прихода</span>}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-4 text-[#604539] font-medium align-middle text-center">
+                                                        <div className="flex flex-col items-center justify-center leading-tight">
+                                                            {s.time ? (
+                                                                <div className="flex items-center gap-1 text-[11px] mb-0.5">
+                                                                    <span className="opacity-40"><Icons.ArrowIn /></span>
+                                                                    <span>{s.time}</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="text-[11px] text-red-400 font-bold">—</div>
+                                                            )}
+                                                            {s.end && (
+                                                                <div className="flex items-center gap-1 text-[11px]">
+                                                                    <span className="opacity-40"><Icons.ArrowOut /></span>
+                                                                    <span>{s.end}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-4 text-right pr-2">
+                                                        <div className="flex justify-end gap-2">
+                                                            <button onClick={() => startEditStaff(s)} className="text-gray-400 hover:text-[#604539] transition-colors"><Icons.Edit size={16} /></button>
+                                                            <button onClick={() => {
+                                                                const updatedEvent = {...currentEvent, staff: currentEvent.staff.filter(x=>x.id !== s.id)};
+                                                                setEvents(events.map(e => e.id === selectedEventId ? updatedEvent : e));
+                                                                syncWithSheet(updatedEvent);
+                                                            }} className="text-gray-300 hover:text-red-500 transition-colors"><Icons.Trash size={18}/></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {sortedStaff.length === 0 && (
+                                                <tr>
+                                                    <td colSpan="3" className="py-8 text-center opacity-30 text-xs uppercase font-bold italic tracking-wider">Персонал не добавлен</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
