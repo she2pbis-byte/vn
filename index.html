@@ -49,13 +49,22 @@
             align-items: center;
             justify-content: center;
         }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #604539;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
         const Icons = {
             Plus: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>,
@@ -95,7 +104,8 @@
             ArrowIn: () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 7 10 10M17 7v10H7"/></svg>,
             ArrowOut: () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>,
             Info: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
-            User: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            User: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+            Cloud: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
         };
 
         const SimpleTimePicker = ({ value, onChange, colors, label }) => {
@@ -141,10 +151,16 @@
             );
         };
 
+        // Интегрированный URL веб-приложения Google Sheets
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbytwW4tjVkB9RY8vRkE6T7ytRfUgvrS2KlAjle2fad7iPfdKnSrLty3Fp89yQEtiGgr/exec"; 
+
         const App = () => {
             const [view, setView] = useState('list');
             const [showArchive, setShowArchive] = useState(false);
-            const [events, setEvents] = useState(() => JSON.parse(localStorage.getItem('events_data_v7') || '[]'));
+            const [events, setEvents] = useState([]);
+            const [isLoadingData, setIsLoadingData] = useState(true);
+            const [syncStatus, setSyncStatus] = useState('');
+            
             const [selectedEventId, setSelectedEventId] = useState(null);
             
             const [newEvent, setNewEvent] = useState({ 
@@ -163,13 +179,71 @@
             const [newStaff, setNewStaff] = useState({ name: '', time: '', end: '', roles: [] });
             const [editingStaffId, setEditingStaffId] = useState(null);
 
+            const isFirstRender = useRef(true);
+
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             const formats = ["Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Другое"];
             const admins = ["Александр", "Илья", "Михаил"];
 
+            // Загрузка данных при инициализации
             useEffect(() => {
+                const loadData = async () => {
+                    try {
+                        if (WEB_APP_URL) {
+                            const response = await fetch(WEB_APP_URL);
+                            const data = await response.json();
+                            setEvents(Array.isArray(data) ? data : []);
+                        } else {
+                            const localData = localStorage.getItem('events_data_v7');
+                            if (localData) setEvents(JSON.parse(localData));
+                        }
+                    } catch (error) {
+                        console.error('Ошибка загрузки данных:', error);
+                        const localData = localStorage.getItem('events_data_v7');
+                        if (localData) setEvents(JSON.parse(localData));
+                    } finally {
+                        setIsLoadingData(false);
+                    }
+                };
+                
+                loadData();
+            }, []);
+
+            // Синхронизация данных при изменении
+            useEffect(() => {
+                if (isFirstRender.current) {
+                    isFirstRender.current = false;
+                    return;
+                }
+                
+                if (isLoadingData) return;
+
                 localStorage.setItem('events_data_v7', JSON.stringify(events));
-            }, [events]);
+
+                if (!WEB_APP_URL) return;
+
+                setSyncStatus('Сохранение...');
+
+                const timeoutId = setTimeout(async () => {
+                    try {
+                        const response = await fetch(WEB_APP_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({ events })
+                        });
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            setSyncStatus('Сохранено в облако');
+                            setTimeout(() => setSyncStatus(''), 3000);
+                        }
+                    } catch (error) {
+                        setSyncStatus('Ошибка синхронизации');
+                    }
+                }, 1500);
+
+                return () => clearTimeout(timeoutId);
+            }, [events, isLoadingData]);
 
             const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -242,8 +316,7 @@
                 if (!event) return false;
                 if (!event.start) return true;
                 if (event.staff && event.staff.length > 0) {
-                    const hasStaffWithoutTime = event.staff.some(s => !s.time);
-                    if (hasStaffWithoutTime) return true;
+                    return event.staff.some(s => !s.time);
                 }
                 return false;
             };
@@ -299,12 +372,12 @@
                 if (!newStaff.name || newStaff.roles.length === 0) return;
                 if (editingStaffId) {
                     setEvents(events.map(ev => ev.id === selectedEventId ? {
-                        ...ev, staff: ev.staff.map(s => s.id === editingStaffId ? { ...s, ...newStaff, rolesDisplay: newStaff.roles.join(', ') } : s)
+                        ...ev, staff: ev.staff.map(s => s.id === editingStaffId ? { ...s, ...newStaff } : s)
                     } : ev));
                     setEditingStaffId(null);
                 } else {
                     setEvents(events.map(ev => ev.id === selectedEventId ? {
-                        ...ev, staff: [...ev.staff, { id: Date.now().toString(), ...newStaff, rolesDisplay: newStaff.roles.join(', '), rolePaid: {} }]
+                        ...ev, staff: [...ev.staff, { id: Date.now().toString(), ...newStaff, rolePaid: {} }]
                     } : ev));
                 }
                 setNewStaff({ name: '', time: '', end: '', roles: [] });
@@ -346,25 +419,49 @@
                 'пов': { icon: <Icons.Pot size={20} />, label: 'Повар', key: 'Повар' }
             };
 
+            if (isLoadingData) {
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-[#604539]">
+                        <div className="loader"></div>
+                        <p className="text-sm font-bold uppercase tracking-widest animate-pulse">Загрузка данных...</p>
+                    </div>
+                );
+            }
+
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
-                    <header className="flex items-center justify-between mb-8 border-b border-[#C7886B40] pb-6">
+                    <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-[#C7886B40] pb-6 gap-4">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center text-white"><Icons.Check size={28} /></div>
                             <div>
-                                <h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1>
-                                <p className="text-[10px] uppercase tracking-widest text-[#604539]">Кейтеринг Ванильного Неба</p>
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1>
+                                </div>
+                                <p className="text-[10px] uppercase tracking-widest text-[#604539] flex items-center gap-2">
+                                    Кейтеринг Ванильного Неба
+                                </p>
                             </div>
                         </div>
-                        {view === 'list' && (
-                            <button 
-                                onClick={() => setShowArchive(!showArchive)}
-                                title={showArchive ? "К текущим" : "Архив"}
-                                className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all ${showArchive ? 'bg-[#604539] text-white shadow-lg' : 'bg-white border-2 border-[#60453910] text-[#604539] hover:border-[#60453930]'}`}
-                            >
-                                <Icons.Archive size={22} />
-                            </button>
-                        )}
+                        <div className="flex items-center gap-3 self-end md:self-auto">
+                            {syncStatus && (
+                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all
+                                    ${syncStatus.includes('Ошибка') ? 'bg-red-100 text-red-600' : 
+                                      syncStatus.includes('Сохранение') ? 'bg-blue-100 text-blue-600 animate-pulse' : 
+                                      'bg-[#60453910] text-[#604539]'}`}>
+                                    <Icons.Cloud size={12} />
+                                    {syncStatus}
+                                </div>
+                            )}
+                            {view === 'list' && (
+                                <button 
+                                    onClick={() => setShowArchive(!showArchive)}
+                                    title={showArchive ? "К текущим" : "Архив"}
+                                    className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all ${showArchive ? 'bg-[#604539] text-white shadow-lg' : 'bg-white border-2 border-[#60453910] text-[#604539] hover:border-[#60453930]'}`}
+                                >
+                                    <Icons.Archive size={22} />
+                                </button>
+                            )}
+                        </div>
                     </header>
 
                     {view === 'list' ? (
@@ -704,5 +801,3 @@
     </script>
 </body>
 </html>
-
-```
