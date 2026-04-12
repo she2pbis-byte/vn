@@ -187,14 +187,31 @@
 
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
+                    {/* Кнопка архива в верхнем правом углу */}
+                    <div className="fixed top-4 right-4 z-50">
+                        <button 
+                            onClick={() => {setShowArchive(!showArchive); setView('list');}} 
+                            className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all shadow-xl ${showArchive ? 'bg-[#604539] text-white' : 'bg-white border-2 border-[#60453910] text-[#604539]'}`}
+                        >
+                            <Icons.Archive size={22} />
+                        </button>
+                    </div>
+
                     <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-[#C7886B40] pb-6 gap-4">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center text-white shadow-xl shadow-[#60453930]"><Icons.Check size={28} /></div>
-                            <div><h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1><p className="text-[10px] uppercase tracking-widest text-[#604539]">Кейтеринг</p></div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            {syncStatus && <div className="text-[10px] font-bold uppercase text-[#604539] opacity-50">{syncStatus}</div>}
-                            <button onClick={() => {setShowArchive(!showArchive); setView('list');}} className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${showArchive ? 'bg-[#604539] text-white shadow-lg' : 'bg-white border-2 border-[#60453910] text-[#604539]'}`}><Icons.Archive size={22} /></button>
+                            <div>
+                                <h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1>
+                                <div className="flex items-center gap-3">
+                                    <p className="text-[10px] uppercase tracking-widest text-[#604539]">Кейтеринг</p>
+                                    {syncStatus && (
+                                        <div className="flex items-center gap-1.5 bg-[#60453910] px-2 py-0.5 rounded-full">
+                                            <div className={`w-1.5 h-1.5 rounded-full ${syncStatus === 'Синхронизация...' ? 'bg-orange-400 animate-pulse' : syncStatus === 'Ошибка' ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                                            <span className="text-[9px] font-bold uppercase text-[#604539] opacity-70">{syncStatus}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </header>
 
@@ -304,7 +321,6 @@
                                         </div>
                                     )}
                                     
-                                    {/* Улучшенные счетчики в одну строку */}
                                     <div className="flex gap-2 mt-4 overflow-x-auto pb-4 scrollbar-hide no-wrap">
                                         {Object.entries(headerRoleMap).map(([k, d]) => {
                                             const actual = (currentEvent?.staff || []).filter(s => s.roles.includes(d.key)).length;
@@ -336,7 +352,7 @@
                                             <input type="text" placeholder="Имя" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border-2 border-transparent bg-white shadow-sm outline-none focus:border-[#60453920] transition-all" />
                                             <div className="flex gap-3">
                                                 <SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} colors={colors} />
-                                                <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
+                                                <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, time: v, end: v})} colors={colors} />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 mb-4">
