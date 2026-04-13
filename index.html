@@ -386,7 +386,6 @@
 
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
-                    {/* Панель Импорта/Экспорта */}
                     <div className="flex gap-2 mb-6 justify-end">
                         <button 
                             onClick={exportData}
@@ -523,10 +522,10 @@
                                             onClick={() => { setSelectedEventId(ev.id); setView('details'); }} 
                                             className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
                                         >
-                                            {/* Формат теперь ВНУТРИ карточки сверху */}
+                                            {/* Дата теперь в ярлыке сверху */}
                                             <div className="bg-[#604539] py-1.5 px-4 text-center">
-                                                <span className="text-[10px] font-extrabold uppercase text-white tracking-widest border-b border-white/20">
-                                                    {ev.format}
+                                                <span className="text-[10px] font-extrabold uppercase text-white tracking-widest">
+                                                    {ev.displayDate}
                                                 </span>
                                             </div>
 
@@ -546,8 +545,10 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    
+                                                    {/* Формат теперь в теле карточки вместе со временем */}
                                                     <p className="text-xs text-[#C7886B] font-bold uppercase mb-2 mt-1">
-                                                        {ev.displayDate} {ev.start && `| ${ev.start}${ev.end ? ` — ${ev.end}` : ''}`}
+                                                        {ev.format} {ev.start && `| ${ev.start}${ev.end ? ` — ${ev.end}` : ''}`}
                                                     </p>
                                                     
                                                     {ev.admin && (
@@ -577,11 +578,6 @@
                                         </div>
                                     );
                                 })}
-                                {sortedEvents.length === 0 && (
-                                    <div className="col-span-full py-12 text-center opacity-30 text-sm font-bold uppercase tracking-widest border-2 border-dashed border-[#60453910] rounded-3xl">
-                                        Нет мероприятий для отображения
-                                    </div>
-                                )}
                             </div>
                         </div>
                     ) : (
@@ -606,6 +602,13 @@
                                 </div>
                             </div>
                             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539]">
+                                {/* Дата в ярлыке на странице деталей */}
+                                <div className="bg-[#604539] py-2 text-center">
+                                    <span className="text-[11px] font-extrabold uppercase text-white tracking-widest">
+                                        {currentEvent?.displayDate}
+                                    </span>
+                                </div>
+                                
                                 <div className="p-8 bg-[#1F1713] text-white">
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-3">
@@ -619,10 +622,9 @@
                                                 )}
                                             </div>
                                         </div>
-                                        <span className="text-xs font-bold uppercase bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">{currentEvent?.format}</span>
                                     </div>
-                                    <p className="opacity-60 text-sm mt-1">
-                                        {currentEvent?.displayDate} • {currentEvent?.start}{currentEvent?.end ? ` — ${currentEvent?.end}` : ''} • {currentEvent?.guests} гостей
+                                    <p className="opacity-60 text-sm mt-1 uppercase font-bold tracking-wide">
+                                        {currentEvent?.format} • {currentEvent?.start}{currentEvent?.end ? ` — ${currentEvent?.end}` : ''} • {currentEvent?.guests} гостей
                                     </p>
                                     
                                     {currentEvent?.admin && (
