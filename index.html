@@ -273,24 +273,14 @@
                 });
             };
 
-            // Новая функция для проверки полной готовности (зеленый ярлык)
             const isFullyReady = (event) => {
                 if (!event) return false;
-                
-                // 1. Время начала мероприятия заполнено
                 if (!event.start) return false;
-
-                // 2. Весь требуемый персонал набран (используем существующую функцию)
                 if (!isAllRolesActive(event)) return false;
-
-                // 3. У каждого сотрудника заполнено время прихода
                 if (event.staff && event.staff.length > 0) {
                     const hasMissingStaffTime = event.staff.some(s => !s.time);
                     if (hasMissingStaffTime) return false;
-                } else {
-                    // Если персонала вообще не требуется, а мероприятие есть - считаем готовым (если нужны люди - проверка выше отсечет)
                 }
-
                 return true;
             };
 
@@ -544,7 +534,6 @@
                                             onClick={() => { setSelectedEventId(ev.id); setView('details'); }} 
                                             className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
                                         >
-                                            {/* Динамическая окраска ярлыка даты */}
                                             <div className={`py-1.5 px-4 text-center transition-colors ${ready ? 'bg-green-600' : 'bg-[#604539]'}`}>
                                                 <span className="text-[10px] font-extrabold uppercase text-white tracking-widest">
                                                     {ev.displayDate}
@@ -558,9 +547,6 @@
                                                         <div className="flex items-center gap-2 overflow-hidden">
                                                             <h3 className={`font-bold text-lg leading-tight truncate ${showArchive ? 'text-gray-500' : ''}`}>{ev.name}</h3>
                                                             <div className="flex gap-1.5 items-center flex-shrink-0">
-                                                                {isAllRolesActive(ev) && (
-                                                                    <span className="text-green-500 bg-green-50 rounded-full p-0.5"><Icons.Check size={14} color="#10b981" /></span>
-                                                                )}
                                                                 {isTimeMissing(ev) && (
                                                                     <span className="text-red-500 bg-red-50 rounded-full p-0.5 animate-pulse" title="Не заполнено время"><Icons.Clock size={14} color="#ef4444" /></span>
                                                                 )}
@@ -623,7 +609,6 @@
                                 </div>
                             </div>
                             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539]">
-                                {/* Динамическая окраска ярлыка даты в деталях */}
                                 <div className={`py-2 text-center transition-colors ${isFullyReady(currentEvent) ? 'bg-green-600' : 'bg-[#604539]'}`}>
                                     <span className="text-[11px] font-extrabold uppercase text-white tracking-widest">
                                         {currentEvent?.displayDate}
@@ -635,9 +620,6 @@
                                         <div className="flex items-center gap-3">
                                             <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
                                             <div className="flex gap-2">
-                                                {isAllRolesActive(currentEvent) && (
-                                                    <div className="bg-green-500 rounded-full p-1.5"><Icons.Check size={20} color="white" /></div>
-                                                )}
                                                 {isTimeMissing(currentEvent) && (
                                                     <div className="bg-red-500 rounded-full p-1.5 shadow-lg shadow-red-500/20"><Icons.Clock size={20} color="white" /></div>
                                                 )}
