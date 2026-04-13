@@ -528,6 +528,12 @@
                                 {sortedEvents.map(ev => {
                                     const isToday = ev.date === todayStr;
                                     const ready = isFullyReady(ev);
+                                    const timeAlert = isTimeMissing(ev);
+                                    
+                                    // Динамический цвет иконки времени
+                                    const timeIconColor = timeAlert ? "#ef4444" : "#10b981";
+                                    const timeIconBg = timeAlert ? "bg-red-100 animate-pulse" : "bg-green-100";
+
                                     return (
                                         <div 
                                             key={ev.id} 
@@ -541,16 +547,19 @@
                                             </div>
 
                                             <div className="flex gap-4 p-5">
-                                                <div className={`p-3 rounded-xl h-fit ${showArchive ? 'bg-gray-100 opacity-50' : (isToday ? 'bg-green-100' : 'bg-[#FFECD2]')}`}><Icons.Calendar size={20} /></div>
+                                                {/* Индикатор времени/календаря */}
+                                                <div className={`p-3 rounded-xl h-fit transition-all ${showArchive ? 'bg-gray-100 opacity-50' : timeIconBg}`}>
+                                                    {showArchive ? (
+                                                        <Icons.Calendar size={20} />
+                                                    ) : (
+                                                        <Icons.Clock size={20} color={timeIconColor} />
+                                                    )}
+                                                </div>
+                                                
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start">
                                                         <div className="flex items-center gap-2 overflow-hidden">
                                                             <h3 className={`font-bold text-lg leading-tight truncate ${showArchive ? 'text-gray-500' : ''}`}>{ev.name}</h3>
-                                                            <div className="flex gap-1.5 items-center flex-shrink-0">
-                                                                {isTimeMissing(ev) && (
-                                                                    <span className="text-red-500 bg-red-50 rounded-full p-0.5 animate-pulse" title="Не заполнено время"><Icons.Clock size={14} color="#ef4444" /></span>
-                                                                )}
-                                                            </div>
                                                         </div>
                                                     </div>
                                                     
@@ -620,9 +629,9 @@
                                         <div className="flex items-center gap-3">
                                             <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
                                             <div className="flex gap-2">
-                                                {isTimeMissing(currentEvent) && (
-                                                    <div className="bg-red-500 rounded-full p-1.5 shadow-lg shadow-red-500/20"><Icons.Clock size={20} color="white" /></div>
-                                                )}
+                                                <div className={`rounded-full p-1.5 shadow-lg ${isTimeMissing(currentEvent) ? 'bg-red-500 shadow-red-500/20 animate-pulse' : 'bg-green-500 shadow-green-500/20'}`}>
+                                                    <Icons.Clock size={20} color="white" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
