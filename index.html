@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление персоналом (Cloud Verified)</title>
+    <title>Управление персоналом</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,18 +14,41 @@
         .animate-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         
-        select { appearance: none; -webkit-appearance: none; -moz-appearance: none; }
+        select { 
+            appearance: none; 
+            -webkit-appearance: none; 
+            -moz-appearance: none;
+        }
+        
         select.format-select {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23604539'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 0.75rem center;
             background-size: 1rem;
         }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-        .ruble-icon { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px; color: #10b981; }
-        .role-icon-container { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-        .loading-overlay { position: fixed; inset: 0; background: rgba(255,236,210,0.8); z-index: 50; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .ruble-icon {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: #10b981;
+            line-height: 1;
+        }
+        .role-icon-container {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -33,8 +56,6 @@
 
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
-
-        const API_URL = "https://api.sheetbest.com/sheets/a33570d2-07f4-49c2-baca-4107d550c409";
 
         const Icons = {
             Plus: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>,
@@ -57,32 +78,63 @@
             ),
             Pot: ({size=14}) => (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 8h16" /><path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><path d="M10 8V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1-1v3" /><path d="M2 11h2" /><path d="M20 11h2" />
+                    <path d="M4 8h16" />
+                    <path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
+                    <path d="M10 8V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3" />
+                    <path d="M2 11h2" />
+                    <path d="M20 11h2" />
                 </svg>
             ),
             Archive: ({size=20}) => (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line>
+                    <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                    <rect x="1" y="3" width="22" height="5"></rect>
+                    <line x1="10" y1="12" x2="14" y2="12"></line>
                 </svg>
-            )
+            ),
+            ArrowIn: () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 7 10 10M17 7v10H7"/></svg>,
+            ArrowOut: () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>,
+            Info: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
+            User: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         };
 
         const SimpleTimePicker = ({ value, onChange, colors, label }) => {
             const [h, m] = value ? value.split(':') : ['', ''];
-            const setHour = (newH) => onChange(newH === "" ? "" : `${newH.padStart(2, '0')}:${m || "00"}`);
-            const setMinute = (newM) => onChange(`${(h || "12").padStart(2, '0')}:${newM}`);
+            const setHour = (newH) => {
+                if (newH === "") {
+                    onChange("");
+                } else {
+                    onChange(`${newH.padStart(2, '0')}:${m || "00"}`);
+                }
+            };
+            const setMinute = (newM) => {
+                const hourToUse = h || "12";
+                onChange(`${hourToUse.padStart(2, '0')}:${newM}`);
+            };
 
             return (
                 <div className="flex-1">
                     {label && <p className="text-[9px] uppercase font-bold mb-1 opacity-40 ml-1">{label}</p>}
                     <div className="flex items-center gap-1.5">
-                        <select value={h} onChange={(e) => setHour(e.target.value)} className="flex-1 p-2.5 rounded-xl border-2 bg-white text-center text-sm" style={{ borderColor: colors.accent + '20' }}>
+                        <select 
+                            value={h} 
+                            onChange={(e) => setHour(e.target.value)} 
+                            className="flex-1 p-2.5 rounded-xl border-2 bg-white text-center text-sm cursor-pointer hover:bg-gray-50 transition-colors" 
+                            style={{ borderColor: colors.accent + '20' }}
+                        >
                             <option value="">—</option>
                             {Array.from({ length: 24 }, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i} ч</option>)}
                         </select>
                         <span className="font-bold opacity-20 text-xs">:</span>
-                        <select value={m} onChange={(e) => setMinute(e.target.value)} disabled={!h} className="flex-1 p-2.5 rounded-xl border-2 bg-white text-center text-sm" style={{ borderColor: colors.accent + '20' }}>
-                            <option value="00">00</option><option value="30">30</option>
+                        <select 
+                            value={m} 
+                            onChange={(e) => setMinute(e.target.value)} 
+                            disabled={!h} 
+                            className="flex-1 p-2.5 rounded-xl border-2 bg-white text-center text-sm cursor-pointer hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-default" 
+                            style={{ borderColor: colors.accent + '20' }}
+                        >
+                            <option value="00">00</option>
+                            <option value="30">30</option>
                         </select>
                     </div>
                 </div>
@@ -92,127 +144,35 @@
         const App = () => {
             const [view, setView] = useState('list');
             const [showArchive, setShowArchive] = useState(false);
-            const [events, setEvents] = useState([]);
+            const [events, setEvents] = useState(() => JSON.parse(localStorage.getItem('events_data_v7') || '[]'));
             const [selectedEventId, setSelectedEventId] = useState(null);
-            const [isSyncing, setIsSyncing] = useState(true);
             
             const [newEvent, setNewEvent] = useState({ 
-                name: '', date: new Date().toISOString().split('T')[0], 
-                start: '', end: '', format: 'Фуршет', admin: '', guests: '', extraInfo: '', 
+                name: '', 
+                date: new Date().toISOString().split('T')[0], 
+                start: '', 
+                end: '', 
+                format: 'Фуршет', 
+                admin: '',
+                guests: '',
+                extraInfo: '', 
                 neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
             });
             const [editingEventId, setEditingEventId] = useState(null);
+            
             const [newStaff, setNewStaff] = useState({ name: '', time: '', end: '', roles: [] });
+            const [editingStaffId, setEditingStaffId] = useState(null);
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             const formats = ["Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Другое"];
             const admins = ["Александр", "Илья", "Михаил"];
 
-            const fetchEvents = async () => {
-                setIsSyncing(true);
-                try {
-                    const response = await fetch(API_URL);
-                    const data = await response.json();
-                    const parsed = (Array.isArray(data) ? data : []).map(ev => ({
-                        ...ev,
-                        neededStaff: ev.neededStaff ? (typeof ev.neededStaff === 'string' ? JSON.parse(ev.neededStaff) : ev.neededStaff) : { 'оф': '', 'бар': '', 'мой': '', 'пов': '' },
-                        staff: ev.staff ? (typeof ev.staff === 'string' ? JSON.parse(ev.staff) : ev.staff) : [],
-                        status: ev.status ? (typeof ev.status === 'string' ? JSON.parse(ev.status) : ev.status) : {}
-                    }));
-                    setEvents(parsed);
-                } catch (e) { console.error("Fetch failed", e); }
-                setIsSyncing(false);
-            };
-
-            useEffect(() => { fetchEvents(); }, []);
-
-            const saveToCloud = async (eventObj, isNew = false) => {
-                setIsSyncing(true);
-                const payload = {
-                    ...eventObj,
-                    neededStaff: JSON.stringify(eventObj.neededStaff),
-                    staff: JSON.stringify(eventObj.staff),
-                    status: JSON.stringify(eventObj.status)
-                };
-
-                try {
-                    if (isNew) {
-                        await fetch(API_URL, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify([payload])
-                        });
-                    } else {
-                        await fetch(`${API_URL}/id/${eventObj.id}`, {
-                            method: "PATCH",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(payload)
-                        });
-                    }
-                } catch (e) { console.error("Save failed", e); }
-                setIsSyncing(false);
-            };
-
-            const handleAddEvent = async () => {
-                if (!newEvent.name || !newEvent.guests) return;
-                const d = new Date(newEvent.date);
-                const fmtDate = `${d.getDate()} ${d.toLocaleString('ru', { month: 'long' })}`;
-                
-                if (editingEventId) {
-                    const existing = events.find(e => e.id === editingEventId);
-                    const updated = { ...existing, ...newEvent, displayDate: fmtDate };
-                    setEvents(events.map(ev => ev.id === editingEventId ? updated : ev));
-                    await saveToCloud(updated);
-                    setEditingEventId(null);
-                } else {
-                    const item = { id: Date.now().toString(), ...newEvent, displayDate: fmtDate, staff: [], status: {} };
-                    setEvents([...events, item]);
-                    await saveToCloud(item, true);
-                }
-                setNewEvent({ name: '', date: new Date().toISOString().split('T')[0], start: '', end: '', format: 'Фуршет', admin: '', guests: '', extraInfo: '', neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' } });
-            };
-
-            const fastDeleteEvent = async (e, eventId) => {
-                e.stopPropagation();
-                setEvents(prev => prev.filter(x => x.id !== eventId));
-                if (selectedEventId === eventId) setView('list');
-                try {
-                    await fetch(`${API_URL}/id/${eventId}`, { method: "DELETE" });
-                } catch (e) { console.error("Delete failed", e); }
-            };
-
-            const handleAddStaff = async () => {
-                if (!newStaff.name || newStaff.roles.length === 0) return;
-                const current = events.find(e => e.id === selectedEventId);
-                const updatedStaff = [...(current.staff || []), { id: Date.now().toString(), ...newStaff, rolePaid: {} }];
-                
-                const updatedEvent = { ...current, staff: updatedStaff };
-                setEvents(events.map(ev => ev.id === selectedEventId ? updatedEvent : ev));
-                await saveToCloud(updatedEvent);
-                setNewStaff({ name: '', time: '', end: '', roles: [] });
-            };
-
-            const toggleStaffRolePaid = async (staffId, role) => {
-                const current = events.find(e => e.id === selectedEventId);
-                const updatedStaff = current.staff.map(s => {
-                    if (s.id !== staffId) return s;
-                    const currentPaid = s.rolePaid || {};
-                    return { ...s, rolePaid: { ...currentPaid, [role]: !currentPaid[role] } };
-                });
-                const updatedEvent = { ...current, staff: updatedStaff };
-                setEvents(events.map(ev => ev.id === selectedEventId ? updatedEvent : ev));
-                await saveToCloud(updatedEvent);
-            };
-
-            const toggleStatus = async (key) => {
-                const current = events.find(e => e.id === selectedEventId);
-                const updatedEvent = { ...current, status: { ...current.status, [key]: !current.status?.[key] } };
-                setEvents(events.map(ev => ev.id === selectedEventId ? updatedEvent : ev));
-                await saveToCloud(updatedEvent);
-            };
+            useEffect(() => {
+                localStorage.setItem('events_data_v7', JSON.stringify(events));
+            }, [events]);
 
             const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
-            
+
             const sortedEvents = useMemo(() => {
                 return [...events]
                     .filter(ev => showArchive ? ev.date < todayStr : ev.date >= todayStr)
@@ -220,182 +180,414 @@
             }, [events, showArchive, todayStr]);
 
             const currentEvent = events.find(e => e.id === selectedEventId);
-            
+            const rolePriority = { 'Официант': 1, 'Бармен': 2, 'Мойщица': 3, 'Повар': 4 };
+
+            const sortedStaff = useMemo(() => {
+                if (!currentEvent || !currentEvent.staff) return [];
+                return [...currentEvent.staff].sort((a, b) => {
+                    const getTopPriority = (roles) => {
+                        const priorities = roles.map(r => rolePriority[r] || 99);
+                        return Math.min(...priorities);
+                    };
+                    const priorityA = getTopPriority(a.roles);
+                    const priorityB = getTopPriority(b.roles);
+                    if (priorityA !== priorityB) return priorityA - priorityB;
+                    return a.name.localeCompare(b.name);
+                });
+            }, [currentEvent]);
+
+            const keyToLabel = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
+
             const staffCounts = useMemo(() => {
+                if (!currentEvent) return { 'Официант': 0, 'Бармен': 0, 'Мойщица': 0, 'Повар': 0 };
                 const counts = { 'Официант': 0, 'Бармен': 0, 'Мойщица': 0, 'Повар': 0 };
-                if (currentEvent && currentEvent.staff) {
-                    currentEvent.staff.forEach(s => {
-                        s.roles.forEach(r => { if(counts.hasOwnProperty(r)) counts[r]++; });
+                currentEvent.staff.forEach(s => {
+                    s.roles.forEach(role => {
+                        if (counts.hasOwnProperty(role)) counts[role]++;
                     });
-                }
+                });
                 return counts;
             }, [currentEvent]);
 
+            useEffect(() => {
+                if (!currentEvent) return;
+                let updated = false;
+                const newStatus = { ...(currentEvent.status || {}) };
+                Object.entries(keyToLabel).forEach(([shortKey, longKey]) => {
+                    const actual = staffCounts[longKey];
+                    const target = parseInt(currentEvent.neededStaff?.[shortKey] || 0);
+                    if (target === 0) {
+                        if (!newStatus[shortKey]) { newStatus[shortKey] = true; updated = true; }
+                    } else if (actual >= target) {
+                        if (!newStatus[shortKey]) { newStatus[shortKey] = true; updated = true; }
+                    } else {
+                        if (newStatus[shortKey]) { newStatus[shortKey] = false; updated = true; }
+                    }
+                });
+                if (updated) {
+                    setEvents(prev => prev.map(ev => ev.id === currentEvent.id ? { ...ev, status: newStatus } : ev));
+                }
+            }, [staffCounts, currentEvent?.neededStaff]);
+
             const isAllRolesActive = (event) => {
-                if (!event) return false;
-                return ['оф', 'бар', 'мой', 'пов'].every(role => {
+                if (!event || !event.status) return false;
+                const requiredRoles = ['оф', 'бар', 'мой', 'пов'];
+                return requiredRoles.every(role => {
                     const target = parseInt(event.neededStaff?.[role] || 0);
-                    return target === 0 || event.status?.[role] === true;
+                    return target === 0 || event.status[role] === true;
                 });
             };
 
             const isTimeMissing = (event) => {
                 if (!event) return false;
-                return !event.start || (event.staff && event.staff.some(s => !s.time));
+                if (!event.start) return true;
+                if (event.staff && event.staff.length > 0) {
+                    const hasStaffWithoutTime = event.staff.some(s => !s.time);
+                    if (hasStaffWithoutTime) return true;
+                }
+                return false;
+            };
+
+            const handleAddEvent = () => {
+                if (!newEvent.name || !newEvent.guests) return;
+                const d = new Date(newEvent.date);
+                const fmtDate = `${d.getDate()} ${d.toLocaleString('ru', { month: 'long' })}`;
+                if (editingEventId) {
+                    setEvents(events.map(ev => ev.id === editingEventId ? { ...ev, ...newEvent, displayDate: fmtDate } : ev));
+                    setEditingEventId(null);
+                } else {
+                    const item = { id: Date.now().toString(), ...newEvent, displayDate: fmtDate, staff: [], status: {} };
+                    setEvents([...events, item]);
+                }
+                setNewEvent({ 
+                    name: '', 
+                    date: new Date().toISOString().split('T')[0], 
+                    start: '', 
+                    end: '', 
+                    format: 'Фуршет', 
+                    admin: '',
+                    guests: '',
+                    extraInfo: '',
+                    neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
+                });
+            };
+
+            const startEditEvent = (e, ev) => {
+                e.stopPropagation();
+                setEditingEventId(ev.id);
+                setNewEvent({ 
+                    name: ev.name, 
+                    date: ev.date, 
+                    start: ev.start, 
+                    end: ev.end || '', 
+                    format: ev.format || 'Фуршет', 
+                    admin: ev.admin || '',
+                    guests: ev.guests,
+                    extraInfo: ev.extraInfo || '',
+                    neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const fastDeleteEvent = (e, eventId) => {
+                e.stopPropagation();
+                setEvents(prev => prev.filter(x => x.id !== eventId));
+                if (selectedEventId === eventId) setView('list');
+            };
+
+            const handleAddStaff = () => {
+                if (!newStaff.name || newStaff.roles.length === 0) return;
+                if (editingStaffId) {
+                    setEvents(events.map(ev => ev.id === selectedEventId ? {
+                        ...ev, staff: ev.staff.map(s => s.id === editingStaffId ? { ...s, ...newStaff, rolesDisplay: newStaff.roles.join(', ') } : s)
+                    } : ev));
+                    setEditingStaffId(null);
+                } else {
+                    setEvents(events.map(ev => ev.id === selectedEventId ? {
+                        ...ev, staff: [...ev.staff, { id: Date.now().toString(), ...newStaff, rolesDisplay: newStaff.roles.join(', '), rolePaid: {} }]
+                    } : ev));
+                }
+                setNewStaff({ name: '', time: '', end: '', roles: [] });
+            };
+
+            const toggleStaffRolePaid = (staffId, role) => {
+                setEvents(prevEvents => prevEvents.map(ev => {
+                    if (ev.id !== selectedEventId) return ev;
+                    return {
+                        ...ev,
+                        staff: ev.staff.map(s => {
+                            if (s.id !== staffId) return s;
+                            const currentPaid = s.rolePaid || {};
+                            return {
+                                ...s,
+                                rolePaid: { ...currentPaid, [role]: !currentPaid[role] }
+                            };
+                        })
+                    };
+                }));
+            };
+
+            const startEditStaff = (s) => {
+                setEditingStaffId(s.id);
+                setNewStaff({ name: s.name, time: s.time || '', end: s.end || '', roles: s.roles });
             };
 
             const roleIconMap = {
-                'Официант': { icon: <Icons.Cloche size={14} /> },
-                'Бармен': { icon: <Icons.Martini size={14} /> },
-                'Мойщица': { icon: <Icons.Droplet size={14} /> },
-                'Повар': { icon: <Icons.Pot size={14} /> }
+                'Официант': { icon: <Icons.Cloche size={14} />, label: 'Официант', short: 'оф' },
+                'Бармен': { icon: <Icons.Martini size={14} />, label: 'Бармен', short: 'бар' },
+                'Мойщица': { icon: <Icons.Droplet size={14} />, label: 'Мойщица', short: 'мой' },
+                'Повар': { icon: <Icons.Pot size={14} />, label: 'Повар', short: 'пов' }
             };
 
             const headerRoleMap = {
-                'оф': { icon: <Icons.Cloche size={20} />, key: 'Официант' },
-                'бар': { icon: <Icons.Martini size={20} />, key: 'Бармен' },
-                'мой': { icon: <Icons.Droplet size={20} />, key: 'Мойщица' },
-                'пов': { icon: <Icons.Pot size={20} />, key: 'Повар' }
+                'оф': { icon: <Icons.Cloche size={20} />, label: 'Официант', key: 'Официант' },
+                'бар': { icon: <Icons.Martini size={20} />, label: 'Бармен', key: 'Бармен' },
+                'мой': { icon: <Icons.Droplet size={20} />, label: 'Мойщица', key: 'Мойщица' },
+                'пов': { icon: <Icons.Pot size={20} />, label: 'Повар', key: 'Повар' }
             };
 
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
-                    {isSyncing && (
-                        <div className="loading-overlay">
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="w-10 h-10 border-4 border-[#604539] border-t-transparent rounded-full animate-spin"></div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest opacity-50">Синхронизация...</p>
-                            </div>
-                        </div>
-                    )}
-
                     <header className="flex items-center justify-between mb-8 border-b border-[#C7886B40] pb-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center text-white shadow-lg"><Icons.Check size={28} /></div>
+                            <div className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center text-white"><Icons.Check size={28} /></div>
                             <div>
                                 <h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1>
-                                <p className="text-[10px] uppercase tracking-widest text-[#604539] font-bold">Cloud Sync Active</p>
+                                <p className="text-[10px] uppercase tracking-widest text-[#604539]">Кейтеринг Ванильного Неба</p>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                             <button onClick={fetchEvents} className="p-3 bg-white rounded-xl border-2 border-[#60453910] text-[#604539] hover:bg-white/50 transition-all shadow-sm">
-                                <Icons.Clock size={18} />
-                             </button>
-                            {view === 'list' && (
-                                <button onClick={() => setShowArchive(!showArchive)} className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${showArchive ? 'bg-[#604539] text-white shadow-lg' : 'bg-white border-2 border-[#60453910] text-[#604539]'}`}>
-                                    <Icons.Archive size={22} />
-                                </button>
-                            )}
-                        </div>
+                        {view === 'list' && (
+                            <button 
+                                onClick={() => setShowArchive(!showArchive)}
+                                title={showArchive ? "К текущим" : "Архив"}
+                                className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all ${showArchive ? 'bg-[#604539] text-white shadow-lg' : 'bg-white border-2 border-[#60453910] text-[#604539] hover:border-[#60453930]'}`}
+                            >
+                                <Icons.Archive size={22} />
+                            </button>
+                        )}
                     </header>
 
                     {view === 'list' ? (
                         <div className="space-y-6 animate-in">
                             {!showArchive && (
-                                <div className="bg-white p-6 rounded-3xl border-2 border-[#604539] border-l-[12px] shadow-xl">
-                                    <h2 className="font-bold mb-4 flex items-center gap-2 uppercase text-xs tracking-widest text-[#604539]">{editingEventId ? <Icons.Edit /> : <Icons.Plus />} {editingEventId ? 'Редактировать' : 'Новое'}</h2>
+                                <div className="bg-white p-6 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl">
+                                    <h2 className="font-bold mb-4 flex items-center gap-2">
+                                        {editingEventId ? <Icons.Edit /> : <Icons.Plus />} 
+                                        {editingEventId ? 'Редактировать мероприятие' : 'Создать мероприятие'}
+                                    </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                        <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none" />
+                                        <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all" />
                                         <div className="flex flex-col gap-4">
-                                            <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none" />
-                                            <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none cursor-pointer">
+                                            <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all" />
+                                            <select 
+                                                value={newEvent.format} 
+                                                onChange={e=>setNewEvent({...newEvent, format: e.target.value})} 
+                                                className="format-select p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all cursor-pointer"
+                                            >
                                                 {formats.map(f => <option key={f} value={f}>{f}</option>)}
                                             </select>
                                         </div>
                                         <div className="flex gap-3">
                                             <SimpleTimePicker label="Начало" value={newEvent.start} onChange={v=>setNewEvent({...newEvent, start: v})} colors={colors} />
-                                            <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
+                                            <SimpleTimePicker label="Окончание" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
                                         </div>
                                         <div className="flex flex-col gap-3">
-                                            <input type="number" placeholder="Гости" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none" />
-                                            <div className="grid grid-cols-4 gap-2">
-                                                {Object.entries(headerRoleMap).map(([role, data]) => (
-                                                    <div key={role} className="flex flex-col items-center gap-1">
-                                                        <div className="opacity-40">{React.cloneElement(data.icon, { size: 14 })}</div>
-                                                        <input 
-                                                            type="number" 
-                                                            placeholder="0" 
-                                                            value={newEvent.neededStaff[role]} 
-                                                            onChange={e => setNewEvent({...newEvent, neededStaff: { ...newEvent.neededStaff, [role]: e.target.value }})} 
-                                                            className="w-full p-2 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold focus:border-[#604539] outline-none" 
-                                                        />
-                                                    </div>
-                                                ))}
+                                            <input type="number" placeholder="Количество гостей" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all" />
+                                            
+                                            <div className="flex flex-col gap-1.5">
+                                                <p className="text-[10px] uppercase font-bold opacity-30 ml-1">Информация по организации:</p>
+                                                <div className="flex gap-2">
+                                                    {Object.entries({
+                                                        'оф': <Icons.Cloche size={16}/>,
+                                                        'бар': <Icons.Martini size={16}/>,
+                                                        'мой': <Icons.Droplet size={16}/>,
+                                                        'пов': <Icons.Pot size={16}/>
+                                                    }).map(([role, icon]) => (
+                                                        <div key={role} className="flex-1 relative group">
+                                                            <div className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30 text-[#604539] group-focus-within:opacity-100 transition-opacity">
+                                                                {icon}
+                                                            </div>
+                                                            <input 
+                                                                type="number" 
+                                                                value={newEvent.neededStaff[role]} 
+                                                                onChange={e => setNewEvent({
+                                                                    ...newEvent, 
+                                                                    neededStaff: { ...newEvent.neededStaff, [role]: e.target.value }
+                                                                })}
+                                                                placeholder="0"
+                                                                className="w-full p-3 pl-8 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all text-center text-sm font-bold"
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-3 mb-4 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-sm">
-                                        <option value="">Администратор</option>
-                                        {admins.map(a => <option key={a} value={a}>{a}</option>)}
-                                    </select>
-                                    <textarea placeholder="Доп. инфо" value={newEvent.extraInfo} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="w-full p-3 mb-4 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] h-16 text-sm" />
+                                    
+                                    <div className="mb-4 relative">
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30 text-[#604539]">
+                                            <Icons.User size={16} />
+                                        </div>
+                                        <select 
+                                            value={newEvent.admin} 
+                                            onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} 
+                                            className="format-select w-full p-3 pl-9 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all cursor-pointer text-sm"
+                                        >
+                                            <option value="">Выберите администратора</option>
+                                            {admins.map(a => <option key={a} value={a}>{a}</option>)}
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <textarea 
+                                            placeholder="Доп. информация (адрес, контакты, примечания)" 
+                                            value={newEvent.extraInfo} 
+                                            onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} 
+                                            className="w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all resize-none h-20 text-sm"
+                                        />
+                                    </div>
                                     <div className="flex gap-2">
-                                        <button onClick={handleAddEvent} className="flex-1 bg-[#604539] text-white p-4 rounded-xl uppercase font-bold text-sm tracking-widest hover:opacity-90 transition-opacity shadow-md">Сохранить</button>
-                                        {editingEventId && <button onClick={() => setEditingEventId(null)} className="bg-gray-200 px-6 rounded-xl text-xs uppercase font-bold">Отмена</button>}
+                                        <button onClick={handleAddEvent} className="flex-1 bg-[#604539] text-white p-4 rounded-xl uppercase font-bold text-sm tracking-widest hover:bg-[#4a352c] transition-colors">
+                                            {editingEventId ? 'Сохранить изменения' : 'Добавить в список'}
+                                        </button>
+                                        {editingEventId && (
+                                            <button onClick={() => { setEditingEventId(null); setNewEvent({ name: '', date: new Date().toISOString().split('T')[0], start: '', end: '', format: 'Фуршет', admin: '', guests: '', extraInfo: '', neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' } }); }} className="bg-gray-200 px-6 rounded-xl uppercase font-bold text-xs">Отмена</button>
+                                        )}
                                     </div>
                                 </div>
                             )}
 
+                            <div className="flex items-center gap-2 mb-2">
+                                <h3 className="text-xs font-bold uppercase opacity-40">{showArchive ? 'Архив (прошедшие)' : 'Актуальные мероприятия'}</h3>
+                                <div className="h-px bg-[#60453910] flex-1"></div>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {sortedEvents.length > 0 ? sortedEvents.map(ev => (
-                                    <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); }} className={`p-5 rounded-2xl bg-white border border-transparent hover:border-[#C7886B] cursor-pointer shadow-sm transition-all relative ${ev.date === todayStr ? 'ring-2 ring-emerald-400' : ''}`}>
-                                        <div className="flex gap-4">
-                                            <div className="p-3 rounded-xl bg-[#FFECD2] h-fit"><Icons.Calendar size={20} /></div>
-                                            <div className="flex-1">
-                                                <div className="flex justify-between items-start">
-                                                    <h3 className="font-bold text-lg leading-tight">{ev.name}</h3>
-                                                    <div className="flex gap-1">
-                                                        {isAllRolesActive(ev) && <span className="text-green-500"><Icons.Check size={14} /></span>}
-                                                        {isTimeMissing(ev) && <span className="text-red-500 animate-pulse"><Icons.Clock size={14} /></span>}
+                                {sortedEvents.map(ev => {
+                                    const isToday = ev.date === todayStr;
+                                    return (
+                                        <div 
+                                            key={ev.id} 
+                                            onClick={() => { setSelectedEventId(ev.id); setView('details'); }} 
+                                            className={`p-5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
+                                        >
+                                            <div className="flex gap-4">
+                                                <div className={`p-3 rounded-xl h-fit ${showArchive ? 'bg-gray-100 opacity-50' : (isToday ? 'bg-green-100' : 'bg-[#FFECD2]')}`}><Icons.Calendar size={20} /></div>
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex items-center gap-2">
+                                                            <h3 className={`font-bold text-lg leading-tight ${showArchive ? 'text-gray-500' : ''}`}>{ev.name}</h3>
+                                                            <div className="flex gap-1.5 items-center">
+                                                                {isAllRolesActive(ev) && (
+                                                                    <span className="text-green-500 bg-green-50 rounded-full p-0.5"><Icons.Check size={14} color="#10b981" /></span>
+                                                                )}
+                                                                {isTimeMissing(ev) && (
+                                                                    <span className="text-red-500 bg-red-50 rounded-full p-0.5 animate-pulse" title="Не заполнено время"><Icons.Clock size={14} color="#ef4444" /></span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-[10px] font-bold uppercase bg-[#60453910] px-2 py-1 rounded-lg text-[#604539]">{ev.format}</span>
+                                                    </div>
+                                                    <p className="text-xs text-[#C7886B] font-bold uppercase mb-2 mt-1">
+                                                        {ev.displayDate} {ev.start && `| ${ev.start}${ev.end ? ` — ${ev.end}` : ''}`}
+                                                    </p>
+                                                    
+                                                    {ev.admin && (
+                                                        <div className="flex items-center gap-1.5 mb-2 opacity-60">
+                                                            <Icons.User size={10} />
+                                                            <span className="text-[10px] font-bold uppercase tracking-tight">Админ: {ev.admin}</span>
+                                                        </div>
+                                                    )}
+
+                                                    {ev.extraInfo && (
+                                                        <div className="mb-3 p-2 bg-[#60453908] rounded-lg border-l-2 border-[#C7886B] flex items-start gap-2">
+                                                            <div className="mt-0.5 opacity-40"><Icons.Info size={10} /></div>
+                                                            <p className="text-[11px] text-[#604539] opacity-80 line-clamp-2 leading-snug">{ev.extraInfo}</p>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex gap-4 opacity-50 text-[10px] font-bold uppercase">
+                                                        <span>👥 {ev.guests}</span>
+                                                        <span>🧑‍🍳 {ev.staff.length} чел.</span>
                                                     </div>
                                                 </div>
-                                                <p className="text-xs text-[#C7886B] font-bold uppercase mt-1">{ev.displayDate} {ev.start && `| ${ev.start}`}</p>
-                                                <div className="flex gap-3 mt-3 opacity-50 text-[10px] font-bold uppercase">
-                                                    <span>👥 {ev.guests}</span>
-                                                    <span>🧑‍🍳 {ev.staff?.length || 0} чел.</span>
+                                                <div className="flex flex-col gap-2">
+                                                    <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>
+                                                    <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500 p-1 transition-colors"><Icons.Trash size={16} /></button>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col gap-2">
-                                                <button onClick={(e) => { e.stopPropagation(); setEditingEventId(ev.id); setNewEvent({...ev}); window.scrollTo(0,0); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16} /></button>
-                                                <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500"><Icons.Trash size={16} /></button>
-                                            </div>
                                         </div>
+                                    );
+                                })}
+                                {sortedEvents.length === 0 && (
+                                    <div className="col-span-full py-12 text-center opacity-30 text-sm font-bold uppercase tracking-widest border-2 border-dashed border-[#60453910] rounded-3xl">
+                                        Нет мероприятий для отображения
                                     </div>
-                                )) : (
-                                    <div className="col-span-full py-12 text-center opacity-30 text-xs font-bold uppercase tracking-widest">Нет мероприятий</div>
                                 )}
                             </div>
                         </div>
                     ) : (
                         <div className="animate-in">
-                            <button onClick={()=>setView('list')} className="mb-6 flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> К списку</button>
+                            <div className="flex items-center justify-between mb-6">
+                                <button onClick={()=>setView('list')} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад к списку</button>
+                                <button 
+                                    onClick={(e) => fastDeleteEvent(e, selectedEventId)} 
+                                    className="text-red-300 hover:text-red-600 flex items-center gap-2 text-[10px] uppercase font-bold transition-colors"
+                                >
+                                    Удалить <Icons.Trash size={14} />
+                                </button>
+                            </div>
                             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539]">
                                 <div className="p-8 bg-[#1F1713] text-white">
                                     <div className="flex justify-between items-start">
-                                        <h2 className="text-3xl font-bold">{currentEvent?.name}</h2>
-                                        <div className="flex gap-2">
-                                            {isAllRolesActive(currentEvent) && <div className="bg-green-500 rounded-full p-1.5"><Icons.Check size={20} color="white" /></div>}
-                                            {isTimeMissing(currentEvent) && <div className="bg-red-500 rounded-full p-1.5"><Icons.Clock size={20} color="white" /></div>}
+                                        <div className="flex items-center gap-3">
+                                            <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
+                                            <div className="flex gap-2">
+                                                {isAllRolesActive(currentEvent) && (
+                                                    <div className="bg-green-500 rounded-full p-1.5"><Icons.Check size={20} color="white" /></div>
+                                                )}
+                                                {isTimeMissing(currentEvent) && (
+                                                    <div className="bg-red-500 rounded-full p-1.5 shadow-lg shadow-red-500/20"><Icons.Clock size={20} color="white" /></div>
+                                                )}
+                                            </div>
                                         </div>
+                                        <span className="text-xs font-bold uppercase bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">{currentEvent?.format}</span>
                                     </div>
-                                    <p className="opacity-60 text-sm mt-1">{currentEvent?.displayDate} • {currentEvent?.start || 'Время не указано'} • {currentEvent?.guests} чел.</p>
+                                    <p className="opacity-60 text-sm mt-1">
+                                        {currentEvent?.displayDate} • {currentEvent?.start}{currentEvent?.end ? ` — ${currentEvent?.end}` : ''} • {currentEvent?.guests} гостей
+                                    </p>
                                     
-                                    <div className="flex gap-3 mt-6">
+                                    {currentEvent?.admin && (
+                                        <div className="mt-2 flex items-center gap-2 text-xs font-bold uppercase opacity-80">
+                                            <Icons.User size={12} />
+                                            <span>Администратор: {currentEvent.admin}</span>
+                                        </div>
+                                    )}
+
+                                    {currentEvent?.extraInfo && (
+                                        <div className="mt-4 p-3 bg-white/5 rounded-xl border border-white/10">
+                                            <p className="text-[10px] uppercase font-bold opacity-30 mb-1">Дополнительная информация:</p>
+                                            <p className="text-sm opacity-80 whitespace-pre-wrap">{currentEvent.extraInfo}</p>
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-3 mt-6 overflow-x-auto pb-2">
                                         {Object.entries(headerRoleMap).map(([key, data]) => {
-                                            const current = staffCounts[data.key] || 0;
-                                            const target = parseInt(currentEvent?.neededStaff?.[key] || 0);
-                                            const isComplete = target === 0 || current >= target;
-                                            
+                                            const actualCount = staffCounts[data.key];
+                                            const targetCount = parseInt(currentEvent?.neededStaff?.[key] || 0);
+                                            const isComplete = targetCount === 0 || actualCount >= targetCount;
                                             return (
                                                 <div key={key} className="flex flex-col items-center gap-2">
                                                     <div 
-                                                        onClick={() => toggleStatus(key)} 
-                                                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${isComplete ? 'bg-[#FFECD2] text-[#604539] border-[#FFECD2]' : (currentEvent?.status?.[key] ? 'bg-white/20 text-white border-white/20' : 'border-white/10 opacity-40 text-white')}`}
+                                                        onClick={()=>{
+                                                            setEvents(events.map(e => e.id === selectedEventId ? {...e, status: {...e.status, [key]: !e.status[key]}} : e))
+                                                        }} 
+                                                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${currentEvent?.status?.[key] ? 'bg-[#FFECD2] border-[#FFECD2] text-[#604539]' : 'border-white/10 opacity-40'}`}
                                                     >
                                                         {data.icon}
                                                     </div>
-                                                    <div className={`text-[10px] font-black tracking-tighter transition-colors ${isComplete ? 'text-green-500' : 'text-red-400 opacity-50'}`}>
-                                                        {current} / {target}
+                                                    <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[24px] text-center transition-colors ${isComplete ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white'}`}>
+                                                        {actualCount} {targetCount > 0 ? `/ ${targetCount}` : ''}
                                                     </div>
                                                 </div>
                                             );
@@ -403,55 +595,99 @@
                                     </div>
                                 </div>
                                 <div className="p-6">
-                                    <div className="bg-[#FFECD240] p-6 rounded-2xl mb-8">
+                                    <div className="bg-[#FFECD240] p-6 rounded-2xl mb-8 border border-[#C7886B20]">
+                                        <h3 className="text-[10px] font-bold uppercase mb-4 opacity-50">
+                                            {editingStaffId ? 'Редактировать сотрудника' : 'Добавить персонал'}
+                                        </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                            <input type="text" placeholder="Имя сотрудника" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border bg-white focus:border-[#604539] outline-none" />
+                                            <input type="text" placeholder="Имя сотрудника" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border bg-white outline-none focus:border-[#604539] transition-all" />
                                             <div className="flex gap-3">
                                                 <SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} colors={colors} />
-                                                <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
+                                                <SimpleTimePicker label="Уход (опц.)" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
                                             </div>
                                         </div>
-                                        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                                        <div className="grid grid-cols-2 gap-2 mb-4">
                                             {['Официант', 'Бармен', 'Мойщица', 'Повар'].map(r => (
-                                                <button key={r} onClick={()=>setNewStaff(p=>({...p, roles: p.roles.includes(r)?p.roles.filter(x=>x!==r):[...p.roles, r]}))} className={`flex-1 min-w-[80px] py-3 rounded-xl text-[10px] font-bold uppercase border-2 transition-all ${newStaff.roles.includes(r)?'bg-[#604539] text-white border-[#604539] shadow-md':'border-[#C7886B20] text-[#604539]'}`}>{r}</button>
+                                                <button 
+                                                    key={r} 
+                                                    onClick={()=>setNewStaff(prev => ({...prev, roles: prev.roles.includes(r) ? prev.roles.filter(x=>x!==r) : [...prev.roles, r]}))} 
+                                                    className={`py-3 rounded-xl text-[10px] font-bold uppercase border-2 transition-all text-center ${newStaff.roles.includes(r) ? 'bg-[#604539] border-[#604539] text-white' : 'border-[#C7886B20] text-[#604539]'}`}
+                                                >
+                                                    {r}
+                                                </button>
                                             ))}
                                         </div>
-                                        <button onClick={handleAddStaff} className="w-full bg-[#604539] text-white p-4 rounded-xl uppercase text-xs font-bold tracking-widest hover:opacity-90 shadow-lg">Добавить в список</button>
+                                        <div className="flex gap-2">
+                                            <button onClick={handleAddStaff} className="flex-1 bg-[#604539] text-white p-3 rounded-xl uppercase text-xs font-bold hover:bg-[#4a352c] transition-colors">
+                                                {editingStaffId ? 'Сохранить изменения' : 'Подтвердить'}
+                                            </button>
+                                            {editingStaffId && (
+                                                <button onClick={() => { setEditingStaffId(null); setNewStaff({ name: '', time: '', end: '', roles: [] }); }} className="bg-gray-100 px-4 rounded-xl uppercase font-bold text-[10px]">Отмена</button>
+                                            )}
+                                        </div>
                                     </div>
-                                    <table className="w-full">
-                                        <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="pb-2 text-left">Сотрудник</th><th className="pb-2 text-center">Смена</th><th className="pb-2 text-right">Удалить</th></tr></thead>
+                                    <table className="w-full text-left">
+                                        <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="pb-2 pl-2">Сотрудник</th><th className="pb-2 text-center">Смена</th><th className="pb-2 text-right">Действия</th></tr></thead>
                                         <tbody>
-                                            {currentEvent?.staff && [...currentEvent.staff].sort((a,b) => (a.time || '').localeCompare(b.time || '')).map(s => (
-                                                <tr key={s.id} className="border-b border-gray-50 hover:bg-white/40 transition-colors">
-                                                    <td className="py-4">
+                                            {sortedStaff.map(s => (
+                                                <tr key={s.id} className={`border-b border-gray-50 text-sm transition-colors ${editingStaffId === s.id ? 'bg-[#FFECD230]' : ''}`}>
+                                                    <td className="py-4 pl-2">
                                                         <div className="flex items-center gap-3">
                                                             <div className="flex -space-x-1.5">
-                                                                {s.roles.map((r, i) => (
-                                                                    <div key={i} onClick={()=>toggleStaffRolePaid(s.id, r)} className="role-icon-container rounded-lg bg-[#C7886B20] border border-white cursor-pointer transition-all hover:scale-110">
-                                                                        {s.rolePaid?.[r] ? <span className="ruble-icon">₽</span> : roleIconMap[r]?.icon}
+                                                                {s.roles.map((role, idx) => (
+                                                                    <div 
+                                                                        key={idx} 
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            toggleStaffRolePaid(s.id, role);
+                                                                        }}
+                                                                        className="role-icon-container rounded-lg bg-[#C7886B20] text-[#604539] border border-white shadow-sm cursor-pointer hover:scale-110 active:scale-95 transition-all" 
+                                                                        title={s.rolePaid?.[role] ? "Оплачено" : role}
+                                                                    >
+                                                                        {s.rolePaid?.[role] ? (
+                                                                            <span className="ruble-icon">₽</span>
+                                                                        ) : (
+                                                                            roleIconMap[role]?.icon
+                                                                        )}
                                                                     </div>
                                                                 ))}
                                                             </div>
-                                                            <span className="font-bold">{s.name}</span>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold">{s.name}</span>
+                                                                {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tight">Не указано время прихода</span>}
+                                                            </div>
                                                         </div>
                                                     </td>
-                                                    <td className="py-4 text-center text-xs">
-                                                        <div className="flex flex-col">
-                                                            <span className="font-semibold text-[#604539]">{s.time || '—'}</span>
-                                                            <span className="opacity-30">{s.end}</span>
+                                                    <td className="py-4 text-[#604539] font-medium align-middle text-center">
+                                                        <div className="flex flex-col items-center justify-center leading-tight">
+                                                            {s.time ? (
+                                                                <div className="flex items-center gap-1 text-[11px] mb-0.5">
+                                                                    <span className="opacity-40"><Icons.ArrowIn /></span>
+                                                                    <span>{s.time}</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="text-[11px] text-red-400 font-bold">—</div>
+                                                            )}
+                                                            {s.end && (
+                                                                <div className="flex items-center gap-1 text-[11px]">
+                                                                    <span className="opacity-40"><Icons.ArrowOut /></span>
+                                                                    <span>{s.end}</span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </td>
-                                                    <td className="py-4 text-right">
-                                                        <button onClick={async () => {
-                                                            const upd = { ...currentEvent, staff: currentEvent.staff.filter(x=>x.id !== s.id) };
-                                                            setEvents(events.map(ev => ev.id === selectedEventId ? upd : ev));
-                                                            await saveToCloud(upd);
-                                                        }} className="text-gray-300 hover:text-red-500 transition-colors"><Icons.Trash size={18}/></button>
+                                                    <td className="py-4 text-right pr-2">
+                                                        <div className="flex justify-end gap-2">
+                                                            <button onClick={() => startEditStaff(s)} className="text-gray-400 hover:text-[#604539] transition-colors"><Icons.Edit size={16} /></button>
+                                                            <button onClick={() => setEvents(events.map(e => e.id === selectedEventId ? {...e, staff: e.staff.filter(x=>x.id !== s.id)} : e))} className="text-gray-300 hover:text-red-500 transition-colors"><Icons.Trash size={18}/></button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
-                                            {(!currentEvent?.staff || currentEvent.staff.length === 0) && (
-                                                <tr><td colSpan="3" className="py-8 text-center opacity-20 text-[10px] uppercase font-bold italic">Список пуст</td></tr>
+                                            {sortedStaff.length === 0 && (
+                                                <tr>
+                                                    <td colSpan="3" className="py-8 text-center opacity-30 text-xs uppercase font-bold italic tracking-wider">Список пуст</td>
+                                                </tr>
                                             )}
                                         </tbody>
                                     </table>
@@ -466,4 +702,5 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-</body>/html>
+</body>
+</html>``
