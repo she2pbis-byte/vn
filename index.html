@@ -522,11 +522,11 @@
                                         >
                                             <div className="flex gap-4">
                                                 <div className={`p-3 rounded-xl h-fit ${showArchive ? 'bg-gray-100 opacity-50' : (isToday ? 'bg-green-100' : 'bg-[#FFECD2]')}`}><Icons.Calendar size={20} /></div>
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start">
-                                                        <div className="flex items-center gap-2">
-                                                            <h3 className={`font-bold text-lg leading-tight ${showArchive ? 'text-gray-500' : ''}`}>{ev.name}</h3>
-                                                            <div className="flex gap-1.5 items-center">
+                                                        <div className="flex items-center gap-2 overflow-hidden">
+                                                            <h3 className={`font-bold text-lg leading-tight truncate ${showArchive ? 'text-gray-500' : ''}`}>{ev.name}</h3>
+                                                            <div className="flex gap-1.5 items-center flex-shrink-0">
                                                                 {isAllRolesActive(ev) && (
                                                                     <span className="text-green-500 bg-green-50 rounded-full p-0.5"><Icons.Check size={14} color="#10b981" /></span>
                                                                 )}
@@ -535,7 +535,7 @@
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <span className="text-[10px] font-bold uppercase bg-[#60453910] px-2 py-1 rounded-lg text-[#604539]">{ev.format}</span>
+                                                        <span className="text-[10px] font-bold uppercase bg-[#60453910] px-2 py-1 rounded-lg text-[#604539] flex-shrink-0">{ev.format}</span>
                                                     </div>
                                                     <p className="text-xs text-[#C7886B] font-bold uppercase mb-2 mt-1">
                                                         {ev.displayDate} {ev.start && `| ${ev.start}${ev.end ? ` — ${ev.end}` : ''}`}
@@ -550,8 +550,8 @@
 
                                                     {ev.extraInfo && (
                                                         <div className="mb-3 p-2 bg-[#60453908] rounded-lg border-l-2 border-[#C7886B] flex items-start gap-2">
-                                                            <div className="mt-0.5 opacity-40"><Icons.Info size={10} /></div>
-                                                            <p className="text-[11px] text-[#604539] opacity-80 line-clamp-2 leading-snug">{ev.extraInfo}</p>
+                                                            <div className="mt-0.5 opacity-40 flex-shrink-0"><Icons.Info size={10} /></div>
+                                                            <p className="text-[11px] text-[#604539] opacity-80 leading-snug whitespace-pre-wrap break-words">{ev.extraInfo}</p>
                                                         </div>
                                                     )}
 
@@ -560,7 +560,7 @@
                                                         <span>🧑‍🍳 {ev.staff.length} чел.</span>
                                                     </div>
                                                 </div>
-                                                <div className="flex flex-col gap-2">
+                                                <div className="flex flex-col gap-2 flex-shrink-0">
                                                     <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>
                                                     <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500 p-1 transition-colors"><Icons.Trash size={16} /></button>
                                                 </div>
@@ -624,7 +624,7 @@
                                     {currentEvent?.extraInfo && (
                                         <div className="mt-4 p-3 bg-white/5 rounded-xl border border-white/10">
                                             <p className="text-[10px] uppercase font-bold opacity-30 mb-1">Дополнительная информация:</p>
-                                            <p className="text-sm opacity-80 whitespace-pre-wrap">{currentEvent.extraInfo}</p>
+                                            <p className="text-sm opacity-80 whitespace-pre-wrap break-words">{currentEvent.extraInfo}</p>
                                         </div>
                                     )}
 
@@ -759,4 +759,4 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-</body>ml>
+</body>>
