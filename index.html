@@ -254,6 +254,30 @@
                 });
             };
 
+            // НОВАЯ ЛОГИКА: Определение цвета иконки часов
+            const getStatusColorInfo = (event) => {
+                if (!event) return { color: "#9ca3af", bg: "bg-gray-100", opacity: "opacity-30" };
+                
+                const hasTime = !!event.start;
+                const rolesFilled = isAllRolesActive(event);
+                const hasStaffTimes = event.staff && event.staff.length > 0 
+                    ? !event.staff.some(s => !s.time) 
+                    : true;
+
+                // 1. Если не заполнено время начала ИЛИ не набран весь персонал — Серый
+                if (!hasTime || !rolesFilled) {
+                    return { color: "#9ca3af", bg: "bg-gray-100", opacity: "opacity-30" };
+                }
+
+                // 2. Если персонал набран и время начала есть, но у кого-то из сотрудников нет времени прихода — Красный
+                if (!hasStaffTimes) {
+                    return { color: "#ef4444", bg: "bg-red-100 animate-pulse", opacity: "opacity-100" };
+                }
+
+                // 3. Всё готово — Зеленый
+                return { color: "#10b981", bg: "bg-green-100", opacity: "opacity-100" };
+            };
+
             const isFullyReady = (event) => {
                 if (!event) return false;
                 if (!event.status?.checked) return false;
@@ -266,18 +290,8 @@
                 return true;
             };
 
-            const isTimeMissing = (event) => {
-                if (!event) return false;
-                if (!event.start) return true;
-                if (event.staff && event.staff.length > 0) {
-                    return event.staff.some(s => !s.time);
-                }
-                return false;
-            };
-
             const isAllStaffPaid = (event) => {
                 if (!event || !event.staff || event.staff.length === 0) return false;
-                // Все сотрудники должны иметь оплату (₽) во ВСЕХ своих ролях
                 return event.staff.every(s => 
                     s.roles.length > 0 && s.roles.every(role => s.rolePaid?.[role] === true)
                 );
@@ -456,12 +470,11 @@
                                 {sortedEvents.map(ev => {
                                     const isToday = ev.date === todayStr;
                                     const ready = isFullyReady(ev);
-                                    const timeAlert = isTimeMissing(ev);
                                     const allPaid = isAllStaffPaid(ev);
-                                    
-                                    const timeIconColor = timeAlert ? "#ef4444" : "#10b981";
-                                    const timeIconBg = timeAlert ? "bg-red-100 animate-pulse" : "bg-green-100";
                                     const isChecked = ev.status?.checked;
+                                    
+                                    // Используем обновленную функцию статуса
+                                    const statusInfo = getStatusColorInfo(ev);
                                     
                                     const doubleCheckColor = isChecked ? "#3b82f6" : "#e2e8f0"; 
                                     const doubleCheckBg = isChecked ? "bg-blue-50" : "bg-gray-50/50";
@@ -480,11 +493,11 @@
 
                                             <div className="flex gap-4 p-5">
                                                 <div className="flex flex-col gap-2 flex-shrink-0">
-                                                    <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${showArchive ? (allPaid ? 'bg-green-50' : 'bg-gray-100 opacity-50') : timeIconBg}`}>
+                                                    <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${showArchive ? (allPaid ? 'bg-green-50' : 'bg-gray-100 opacity-50') : `${statusInfo.bg} ${statusInfo.opacity}`}`}>
                                                         {showArchive ? (
                                                             allPaid ? <span className="ruble-icon-large">₽</span> : <Icons.Calendar size={20} />
                                                         ) : (
-                                                            <Icons.Clock size={20} color={timeIconColor} />
+                                                            <Icons.Clock size={20} color={statusInfo.color} />
                                                         )}
                                                     </div>
                                                     <div 
@@ -544,7 +557,10 @@
                                         <div className="flex items-center gap-3">
                                             <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
                                             <div className="flex gap-2">
-                                                <div className={`w-10 h-10 flex items-center justify-center rounded-full ${isTimeMissing(currentEvent) ? 'bg-red-500' : 'bg-green-500'}`}><Icons.Clock size={24} color="white" /></div>
+                                                {/* Иконка в деталях */}
+                                                <div className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${getStatusColorInfo(currentEvent).bg}`}>
+                                                    <Icons.Clock size={24} color={getStatusColorInfo(currentEvent).color} />
+                                                </div>
                                                 <div 
                                                     onClick={(e) => toggleEventChecked(e, currentEvent.id)}
                                                     className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer transition-all active:scale-90 overflow-hidden ${currentEvent?.status?.checked ? 'bg-blue-500' : 'bg-gray-500 opacity-30 hover:opacity-50'}`}
