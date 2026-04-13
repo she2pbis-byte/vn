@@ -521,16 +521,16 @@
                                         <div 
                                             key={ev.id} 
                                             onClick={() => { setSelectedEventId(ev.id); setView('details'); }} 
-                                            className={`pt-8 pb-5 px-5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
+                                            className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
                                         >
-                                            {/* Формат сверху посередине - Укрупненный ярлык */}
-                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                                                <span className="text-[11px] font-extrabold uppercase bg-[#604539] text-white px-5 py-2 rounded-full shadow-lg shadow-[#60453940] tracking-widest border border-white/20 whitespace-nowrap">
+                                            {/* Формат теперь ВНУТРИ карточки сверху */}
+                                            <div className="bg-[#604539] py-1.5 px-4 text-center">
+                                                <span className="text-[10px] font-extrabold uppercase text-white tracking-widest border-b border-white/20">
                                                     {ev.format}
                                                 </span>
                                             </div>
 
-                                            <div className="flex gap-4">
+                                            <div className="flex gap-4 p-5">
                                                 <div className={`p-3 rounded-xl h-fit ${showArchive ? 'bg-gray-100 opacity-50' : (isToday ? 'bg-green-100' : 'bg-[#FFECD2]')}`}><Icons.Calendar size={20} /></div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start">
