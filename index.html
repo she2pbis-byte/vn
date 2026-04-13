@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление персоналом (Cloud)</title>
+    <title>Управление персоналом (Cloud Verified)</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -23,7 +23,7 @@
         }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
-        .ruble-icon { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px; color: #10b981; line-height: 1; }
+        .ruble-icon { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px; color: #10b981; }
         .role-icon-container { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
         .loading-overlay { position: fixed; inset: 0; background: rgba(255,236,210,0.8); z-index: 50; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
     </style>
@@ -57,7 +57,7 @@
             ),
             Pot: ({size=14}) => (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 8h16" /><path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><path d="M10 8V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3" /><path d="M2 11h2" /><path d="M20 11h2" />
+                    <path d="M4 8h16" /><path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><path d="M10 8V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1-1v3" /><path d="M2 11h2" /><path d="M20 11h2" />
                 </svg>
             ),
             Archive: ({size=20}) => (
@@ -184,7 +184,7 @@
             const handleAddStaff = async () => {
                 if (!newStaff.name || newStaff.roles.length === 0) return;
                 const current = events.find(e => e.id === selectedEventId);
-                const updatedStaff = [...current.staff, { id: Date.now().toString(), ...newStaff, rolesDisplay: newStaff.roles.join(', '), rolePaid: {} }];
+                const updatedStaff = [...(current.staff || []), { id: Date.now().toString(), ...newStaff, rolePaid: {} }];
                 
                 const updatedEvent = { ...current, staff: updatedStaff };
                 setEvents(events.map(ev => ev.id === selectedEventId ? updatedEvent : ev));
@@ -212,8 +212,11 @@
             };
 
             const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+            
             const sortedEvents = useMemo(() => {
-                return [...events].filter(ev => showArchive ? ev.date < todayStr : ev.date >= todayStr).sort((a, b) => a.date.localeCompare(b.date));
+                return [...events]
+                    .filter(ev => showArchive ? ev.date < todayStr : ev.date >= todayStr)
+                    .sort((a, b) => a.date.localeCompare(b.date));
             }, [events, showArchive, todayStr]);
 
             const currentEvent = events.find(e => e.id === selectedEventId);
@@ -268,14 +271,14 @@
 
                     <header className="flex items-center justify-between mb-8 border-b border-[#C7886B40] pb-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center text-white"><Icons.Check size={28} /></div>
+                            <div className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center text-white shadow-lg"><Icons.Check size={28} /></div>
                             <div>
                                 <h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1>
-                                <p className="text-[10px] uppercase tracking-widest text-[#604539]">Облачная версия</p>
+                                <p className="text-[10px] uppercase tracking-widest text-[#604539] font-bold">Cloud Sync Active</p>
                             </div>
                         </div>
                         <div className="flex gap-2">
-                             <button onClick={fetchEvents} className="p-3 bg-white rounded-xl border-2 border-[#60453910] text-[#604539] hover:bg-white/50 transition-all">
+                             <button onClick={fetchEvents} className="p-3 bg-white rounded-xl border-2 border-[#60453910] text-[#604539] hover:bg-white/50 transition-all shadow-sm">
                                 <Icons.Clock size={18} />
                              </button>
                             {view === 'list' && (
@@ -289,8 +292,8 @@
                     {view === 'list' ? (
                         <div className="space-y-6 animate-in">
                             {!showArchive && (
-                                <div className="bg-white p-6 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl">
-                                    <h2 className="font-bold mb-4 flex items-center gap-2">{editingEventId ? <Icons.Edit /> : <Icons.Plus />} {editingEventId ? 'Редактировать' : 'Новое'}</h2>
+                                <div className="bg-white p-6 rounded-3xl border-2 border-[#604539] border-l-[12px] shadow-xl">
+                                    <h2 className="font-bold mb-4 flex items-center gap-2 uppercase text-xs tracking-widest text-[#604539]">{editingEventId ? <Icons.Edit /> : <Icons.Plus />} {editingEventId ? 'Редактировать' : 'Новое'}</h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                         <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none" />
                                         <div className="flex flex-col gap-4">
@@ -327,15 +330,15 @@
                                     </select>
                                     <textarea placeholder="Доп. инфо" value={newEvent.extraInfo} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="w-full p-3 mb-4 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] h-16 text-sm" />
                                     <div className="flex gap-2">
-                                        <button onClick={handleAddEvent} className="flex-1 bg-[#604539] text-white p-4 rounded-xl uppercase font-bold text-sm tracking-widest hover:opacity-90 transition-opacity">Сохранить</button>
+                                        <button onClick={handleAddEvent} className="flex-1 bg-[#604539] text-white p-4 rounded-xl uppercase font-bold text-sm tracking-widest hover:opacity-90 transition-opacity shadow-md">Сохранить</button>
                                         {editingEventId && <button onClick={() => setEditingEventId(null)} className="bg-gray-200 px-6 rounded-xl text-xs uppercase font-bold">Отмена</button>}
                                     </div>
                                 </div>
                             )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {sortedEvents.map(ev => (
-                                    <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); }} className={`p-5 rounded-2xl bg-white border border-transparent hover:border-[#C7886B] cursor-pointer shadow-sm transition-all relative ${ev.date === todayStr ? 'bg-green-50' : ''}`}>
+                                {sortedEvents.length > 0 ? sortedEvents.map(ev => (
+                                    <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); }} className={`p-5 rounded-2xl bg-white border border-transparent hover:border-[#C7886B] cursor-pointer shadow-sm transition-all relative ${ev.date === todayStr ? 'ring-2 ring-emerald-400' : ''}`}>
                                         <div className="flex gap-4">
                                             <div className="p-3 rounded-xl bg-[#FFECD2] h-fit"><Icons.Calendar size={20} /></div>
                                             <div className="flex-1">
@@ -358,7 +361,9 @@
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                )) : (
+                                    <div className="col-span-full py-12 text-center opacity-30 text-xs font-bold uppercase tracking-widest">Нет мероприятий</div>
+                                )}
                             </div>
                         </div>
                     ) : (
@@ -373,14 +378,12 @@
                                             {isTimeMissing(currentEvent) && <div className="bg-red-500 rounded-full p-1.5"><Icons.Clock size={20} color="white" /></div>}
                                         </div>
                                     </div>
-                                    <p className="opacity-60 text-sm mt-1">{currentEvent?.displayDate} • {currentEvent?.start} • {currentEvent?.guests} чел.</p>
+                                    <p className="opacity-60 text-sm mt-1">{currentEvent?.displayDate} • {currentEvent?.start || 'Время не указано'} • {currentEvent?.guests} чел.</p>
                                     
                                     <div className="flex gap-3 mt-6">
                                         {Object.entries(headerRoleMap).map(([key, data]) => {
                                             const current = staffCounts[data.key] || 0;
                                             const target = parseInt(currentEvent?.neededStaff?.[key] || 0);
-                                            
-                                            // Обновление: подсвечивать если количество набрано ИЛИ если требуется 0
                                             const isComplete = target === 0 || current >= target;
                                             
                                             return (
@@ -391,7 +394,7 @@
                                                     >
                                                         {data.icon}
                                                     </div>
-                                                    <div className={`text-[10px] font-black tracking-tighter transition-colors ${isComplete ? 'text-green-500 opacity-100 scale-110' : 'text-red-400 opacity-50'}`}>
+                                                    <div className={`text-[10px] font-black tracking-tighter transition-colors ${isComplete ? 'text-green-500' : 'text-red-400 opacity-50'}`}>
                                                         {current} / {target}
                                                     </div>
                                                 </div>
@@ -402,29 +405,29 @@
                                 <div className="p-6">
                                     <div className="bg-[#FFECD240] p-6 rounded-2xl mb-8">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                            <input type="text" placeholder="Имя" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border bg-white focus:border-[#604539] outline-none" />
+                                            <input type="text" placeholder="Имя сотрудника" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border bg-white focus:border-[#604539] outline-none" />
                                             <div className="flex gap-3">
                                                 <SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} colors={colors} />
                                                 <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
                                             </div>
                                         </div>
-                                        <div className="flex gap-2 mb-4">
+                                        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
                                             {['Официант', 'Бармен', 'Мойщица', 'Повар'].map(r => (
-                                                <button key={r} onClick={()=>setNewStaff(p=>({...p, roles: p.roles.includes(r)?p.roles.filter(x=>x!==r):[...p.roles, r]}))} className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase border-2 transition-all ${newStaff.roles.includes(r)?'bg-[#604539] text-white border-[#604539] shadow-md':'border-[#C7886B20] text-[#604539]'}`}>{r}</button>
+                                                <button key={r} onClick={()=>setNewStaff(p=>({...p, roles: p.roles.includes(r)?p.roles.filter(x=>x!==r):[...p.roles, r]}))} className={`flex-1 min-w-[80px] py-3 rounded-xl text-[10px] font-bold uppercase border-2 transition-all ${newStaff.roles.includes(r)?'bg-[#604539] text-white border-[#604539] shadow-md':'border-[#C7886B20] text-[#604539]'}`}>{r}</button>
                                             ))}
                                         </div>
-                                        <button onClick={handleAddStaff} className="w-full bg-[#604539] text-white p-4 rounded-xl uppercase text-xs font-bold tracking-widest hover:opacity-90 shadow-lg">Подтвердить</button>
+                                        <button onClick={handleAddStaff} className="w-full bg-[#604539] text-white p-4 rounded-xl uppercase text-xs font-bold tracking-widest hover:opacity-90 shadow-lg">Добавить в список</button>
                                     </div>
                                     <table className="w-full">
                                         <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="pb-2 text-left">Сотрудник</th><th className="pb-2 text-center">Смена</th><th className="pb-2 text-right">Удалить</th></tr></thead>
                                         <tbody>
-                                            {currentEvent?.staff?.map(s => (
+                                            {currentEvent?.staff && [...currentEvent.staff].sort((a,b) => (a.time || '').localeCompare(b.time || '')).map(s => (
                                                 <tr key={s.id} className="border-b border-gray-50 hover:bg-white/40 transition-colors">
                                                     <td className="py-4">
                                                         <div className="flex items-center gap-3">
                                                             <div className="flex -space-x-1.5">
                                                                 {s.roles.map((r, i) => (
-                                                                    <div key={i} onClick={()=>toggleStaffRolePaid(s.id, r)} className="role-icon-container rounded-lg bg-[#C7886B20] border border-white cursor-pointer transition-all hover:scale-110 active:scale-95">
+                                                                    <div key={i} onClick={()=>toggleStaffRolePaid(s.id, r)} className="role-icon-container rounded-lg bg-[#C7886B20] border border-white cursor-pointer transition-all hover:scale-110">
                                                                         {s.rolePaid?.[r] ? <span className="ruble-icon">₽</span> : roleIconMap[r]?.icon}
                                                                     </div>
                                                                 ))}
@@ -444,3 +447,23 @@
                                                             setEvents(events.map(ev => ev.id === selectedEventId ? upd : ev));
                                                             await saveToCloud(upd);
                                                         }} className="text-gray-300 hover:text-red-500 transition-colors"><Icons.Trash size={18}/></button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {(!currentEvent?.staff || currentEvent.staff.length === 0) && (
+                                                <tr><td colSpan="3" className="py-8 text-center opacity-20 text-[10px] uppercase font-bold italic">Список пуст</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>/html>
