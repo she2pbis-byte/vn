@@ -273,6 +273,27 @@
                 });
             };
 
+            // Новая функция для проверки полной готовности (зеленый ярлык)
+            const isFullyReady = (event) => {
+                if (!event) return false;
+                
+                // 1. Время начала мероприятия заполнено
+                if (!event.start) return false;
+
+                // 2. Весь требуемый персонал набран (используем существующую функцию)
+                if (!isAllRolesActive(event)) return false;
+
+                // 3. У каждого сотрудника заполнено время прихода
+                if (event.staff && event.staff.length > 0) {
+                    const hasMissingStaffTime = event.staff.some(s => !s.time);
+                    if (hasMissingStaffTime) return false;
+                } else {
+                    // Если персонала вообще не требуется, а мероприятие есть - считаем готовым (если нужны люди - проверка выше отсечет)
+                }
+
+                return true;
+            };
+
             const isTimeMissing = (event) => {
                 if (!event) return false;
                 if (!event.start) return true;
@@ -516,14 +537,15 @@
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {sortedEvents.map(ev => {
                                     const isToday = ev.date === todayStr;
+                                    const ready = isFullyReady(ev);
                                     return (
                                         <div 
                                             key={ev.id} 
                                             onClick={() => { setSelectedEventId(ev.id); setView('details'); }} 
                                             className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
                                         >
-                                            {/* Дата теперь в ярлыке сверху */}
-                                            <div className="bg-[#604539] py-1.5 px-4 text-center">
+                                            {/* Динамическая окраска ярлыка даты */}
+                                            <div className={`py-1.5 px-4 text-center transition-colors ${ready ? 'bg-green-600' : 'bg-[#604539]'}`}>
                                                 <span className="text-[10px] font-extrabold uppercase text-white tracking-widest">
                                                     {ev.displayDate}
                                                 </span>
@@ -546,7 +568,6 @@
                                                         </div>
                                                     </div>
                                                     
-                                                    {/* Формат теперь в теле карточки вместе со временем */}
                                                     <p className="text-xs text-[#C7886B] font-bold uppercase mb-2 mt-1">
                                                         {ev.format} {ev.start && `| ${ev.start}${ev.end ? ` — ${ev.end}` : ''}`}
                                                     </p>
@@ -602,8 +623,8 @@
                                 </div>
                             </div>
                             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539]">
-                                {/* Дата в ярлыке на странице деталей */}
-                                <div className="bg-[#604539] py-2 text-center">
+                                {/* Динамическая окраска ярлыка даты в деталях */}
+                                <div className={`py-2 text-center transition-colors ${isFullyReady(currentEvent) ? 'bg-green-600' : 'bg-[#604539]'}`}>
                                     <span className="text-[11px] font-extrabold uppercase text-white tracking-widest">
                                         {currentEvent?.displayDate}
                                     </span>
