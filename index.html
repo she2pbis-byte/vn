@@ -166,7 +166,9 @@
             const [editingStaffId, setEditingStaffId] = useState(null);
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
-            const formats = ["Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Другое"];
+            
+            // Updated format list: replaced "Другое" with "Несколько накрытий"
+            const formats = ["Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Несколько накрытий"];
             const admins = ["Александр", "Илья", "Михаил"];
 
             useEffect(() => {
@@ -551,6 +553,7 @@
                                                     {ev.extraInfo && (
                                                         <div className="mb-3 p-2 bg-[#60453908] rounded-lg border-l-2 border-[#C7886B] flex items-start gap-2">
                                                             <div className="mt-0.5 opacity-40 flex-shrink-0"><Icons.Info size={10} /></div>
+                                                            {/* Retained formatting with whitespace-pre-wrap */}
                                                             <p className="text-[11px] text-[#604539] opacity-80 leading-snug whitespace-pre-wrap break-words">{ev.extraInfo}</p>
                                                         </div>
                                                     )}
@@ -759,4 +762,4 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-</body>>
+</body>tml>
