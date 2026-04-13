@@ -108,7 +108,15 @@
             User: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
             Download: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
             Upload: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
-            Info: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Info: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
+            Users: ({size=18, color="currentColor"}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            )
         };
 
         const SimpleTimePicker = ({ value, onChange, colors, label }) => {
@@ -254,30 +262,47 @@
                 });
             };
 
-            const isFullyReady = (event) => {
+            // ПРОВЕРКА ТОЛЬКО ВРЕМЕНИ (ДЛЯ ИНДИКАТОРА ЧАСОВ)
+            const isTimeParamsReady = (event) => {
                 if (!event) return false;
-                if (!event.status?.checked) return false;
+                // 1. Указано время начала мероприятия
                 if (!event.start) return false;
-                if (!isAllRolesActive(event)) return false;
+                // 2. У каждого сотрудника указано время прихода (если сотрудники есть)
                 if (event.staff && event.staff.length > 0) {
-                    const hasMissingStaffTime = event.staff.some(s => !s.time);
-                    if (hasMissingStaffTime) return false;
+                    if (event.staff.some(s => !s.time)) return false;
                 }
                 return true;
             };
 
-            const isTimeMissing = (event) => {
+            // ГЛОБАЛЬНАЯ ПРОВЕРКА ГОТОВНОСТИ (ДЛЯ ОКРАШИВАНИЯ ДАТЫ)
+            const isFullyReady = (event) => {
                 if (!event) return false;
-                if (!event.start) return true;
-                if (event.staff && event.staff.length > 0) {
-                    return event.staff.some(s => !s.time);
+                
+                // Должны быть выполнены все условия:
+                // 1. Время заполнено (и у мероприятия, и у персонала)
+                if (!isTimeParamsReady(event)) return false;
+                
+                // 2. Галочка подтверждения нажата
+                if (!event.status?.checked) return false;
+                
+                // 3. Персонал набран в полном объеме
+                if (!isAllRolesActive(event)) return false;
+                
+                return true;
+            };
+
+            const getClockStatusInfo = (event) => {
+                if (!event) return { color: "#ef4444", bg: "bg-red-100 animate-pulse" };
+                const timeOk = isTimeParamsReady(event);
+                if (timeOk) {
+                    return { color: "#10b981", bg: "bg-green-100" };
+                } else {
+                    return { color: "#ef4444", bg: "bg-red-100 animate-pulse" };
                 }
-                return false;
             };
 
             const isAllStaffPaid = (event) => {
                 if (!event || !event.staff || event.staff.length === 0) return false;
-                // Все сотрудники должны иметь оплату (₽) во ВСЕХ своих ролях
                 return event.staff.every(s => 
                     s.roles.length > 0 && s.roles.every(role => s.rolePaid?.[role] === true)
                 );
@@ -455,65 +480,47 @@
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {sortedEvents.map(ev => {
                                     const isToday = ev.date === todayStr;
-                                    const ready = isFullyReady(ev);
-                                    const timeAlert = isTimeMissing(ev);
-                                    const allPaid = isAllStaffPaid(ev);
-                                    
-                                    const timeIconColor = timeAlert ? "#ef4444" : "#10b981";
-                                    const timeIconBg = timeAlert ? "bg-red-100 animate-pulse" : "bg-green-100";
+                                    const rolesPlanReady = isAllRolesActive(ev);
+                                    const clockInfo = getClockStatusInfo(ev);
                                     const isChecked = ev.status?.checked;
+                                    const ready = isFullyReady(ev);
                                     
                                     const doubleCheckColor = isChecked ? "#3b82f6" : "#e2e8f0"; 
                                     const doubleCheckBg = isChecked ? "bg-blue-50" : "bg-gray-50/50";
+                                    
+                                    const staffIndicatorColor = rolesPlanReady ? "#10b981" : "#ef4444";
+                                    const staffIndicatorBg = rolesPlanReady ? "bg-green-50" : "bg-red-50";
 
                                     return (
-                                        <div 
-                                            key={ev.id} 
-                                            onClick={() => { setSelectedEventId(ev.id); setView('details'); }} 
-                                            className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
-                                        >
-                                            <div className={`py-1.5 px-4 text-center transition-colors ${ready ? 'bg-green-600' : 'bg-[#604539]'}`}>
-                                                <span className="text-[10px] font-extrabold uppercase text-white tracking-widest">
-                                                    {ev.displayDate}
-                                                </span>
+                                        <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}>
+                                            {/* Дата сверху. Зеленая только если ВСЁ готово (время + персонал + галочка) */}
+                                            <div className={`py-1.5 px-4 text-center transition-colors ${ready ? 'bg-green-600' : 'bg-red-500'}`}>
+                                                <span className="text-[10px] font-extrabold uppercase text-white tracking-widest">{ev.displayDate}</span>
                                             </div>
-
+                                            
                                             <div className="flex gap-4 p-5">
                                                 <div className="flex flex-col gap-2 flex-shrink-0">
-                                                    <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${showArchive ? (allPaid ? 'bg-green-50' : 'bg-gray-100 opacity-50') : timeIconBg}`}>
-                                                        {showArchive ? (
-                                                            allPaid ? <span className="ruble-icon-large">₽</span> : <Icons.Calendar size={20} />
-                                                        ) : (
-                                                            <Icons.Clock size={20} color={timeIconColor} />
-                                                        )}
+                                                    {/* ЧАСЫ: Зеленые, если заполнено время начала и время прихода всех сотрудников */}
+                                                    <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${showArchive ? 'opacity-30' : clockInfo.bg}`}>
+                                                        <Icons.Clock size={20} color={showArchive ? '#9ca3af' : clockInfo.color} />
                                                     </div>
-                                                    <div 
-                                                        onClick={(e) => toggleEventChecked(e, ev.id)}
-                                                        className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 overflow-hidden border border-[#f1f5f9] ${showArchive ? 'bg-gray-100 opacity-30' : doubleCheckBg}`}
-                                                    >
-                                                        <Icons.DoubleCheck size={32} color={doubleCheckColor} />
+                                                    
+                                                    {/* ПЕРСОНАЛ: Зеленый, если набрано нужное кол-во человек по плану */}
+                                                    <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${showArchive ? 'opacity-30' : staffIndicatorBg}`}>
+                                                        <Icons.Users size={22} color={showArchive ? '#9ca3af' : staffIndicatorColor} />
+                                                    </div>
+
+                                                    {/* ГАЛОЧКА: Синяя, если нажата */}
+                                                    <div onClick={(e) => toggleEventChecked(e, ev.id)} className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 overflow-hidden border border-[#f1f5f9] ${showArchive ? 'bg-gray-100 opacity-30' : doubleCheckBg}`}>
+                                                        <Icons.DoubleCheck size={32} color={showArchive ? '#9ca3af' : doubleCheckColor} />
                                                     </div>
                                                 </div>
-                                                
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className={`font-bold text-lg leading-tight truncate ${showArchive ? 'text-gray-500' : ''}`}>{ev.name}</h3>
                                                     <p className="text-xs text-[#C7886B] font-bold uppercase mb-2 mt-1">{ev.format} {ev.start && `| ${ev.start}${ev.end ? ` — ${ev.end}` : ''}`}</p>
-                                                    {ev.admin && (
-                                                        <div className="flex items-center gap-1.5 mb-2 opacity-60">
-                                                            <Icons.User size={10} />
-                                                            <span className="text-[10px] font-bold uppercase tracking-tight">Админ: {ev.admin}</span>
-                                                        </div>
-                                                    )}
-                                                    {ev.extraInfo && (
-                                                        <div className="mb-3 p-2 bg-[#60453908] rounded-lg border-l-2 border-[#C7886B] flex items-start gap-2">
-                                                            <div className="mt-0.5 opacity-40 flex-shrink-0"><Icons.Info size={10} /></div>
-                                                            <p className="text-[11px] text-[#604539] opacity-80 leading-snug whitespace-pre-wrap break-words line-clamp-2">{ev.extraInfo}</p>
-                                                        </div>
-                                                    )}
-                                                    <div className="flex gap-4 opacity-50 text-[10px] font-bold uppercase">
-                                                        <span>👥 {ev.guests}</span>
-                                                        <span>🧑‍🍳 {ev.staff.length} чел.</span>
-                                                    </div>
+                                                    {ev.admin && (<div className="flex items-center gap-1.5 mb-2 opacity-60"><Icons.User size={10} /><span className="text-[10px] font-bold uppercase tracking-tight">Админ: {ev.admin}</span></div>)}
+                                                    {ev.extraInfo && (<div className="mb-3 p-2 bg-[#60453908] rounded-lg border-l-2 border-[#C7886B] flex items-start gap-2"><div className="mt-0.5 opacity-40 flex-shrink-0"><Icons.Info size={10} /></div><p className="text-[11px] text-[#604539] opacity-80 leading-snug whitespace-pre-wrap break-words line-clamp-2">{ev.extraInfo}</p></div>)}
+                                                    <div className="flex gap-4 opacity-50 text-[10px] font-bold uppercase"><span>👥 {ev.guests}</span><span>🧑‍🍳 {ev.staff.length} чел.</span></div>
                                                 </div>
                                                 <div className="flex flex-col gap-2 flex-shrink-0">
                                                     <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>
@@ -535,29 +542,23 @@
                                 </div>
                             </div>
                             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539]">
-                                <div className={`py-2 text-center transition-colors ${isFullyReady(currentEvent) ? 'bg-green-600' : 'bg-[#604539]'}`}>
+                                <div className={`py-2 text-center transition-colors ${isFullyReady(currentEvent) ? 'bg-green-600' : 'bg-red-500'}`}>
                                     <span className="text-[11px] font-extrabold uppercase text-white tracking-widest">{currentEvent?.displayDate}</span>
                                 </div>
-                                
                                 <div className="p-8 bg-[#1F1713] text-white">
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-3">
                                             <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
                                             <div className="flex gap-2">
-                                                <div className={`w-10 h-10 flex items-center justify-center rounded-full ${isTimeMissing(currentEvent) ? 'bg-red-500' : 'bg-green-500'}`}><Icons.Clock size={24} color="white" /></div>
-                                                <div 
-                                                    onClick={(e) => toggleEventChecked(e, currentEvent.id)}
-                                                    className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer transition-all active:scale-90 overflow-hidden ${currentEvent?.status?.checked ? 'bg-blue-500' : 'bg-gray-500 opacity-30 hover:opacity-50'}`}
-                                                >
-                                                    <Icons.DoubleCheck size={44} color="white" />
-                                                </div>
+                                                {/* Индикатор времени в деталях */}
+                                                <div className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${getClockStatusInfo(currentEvent).bg}`}><Icons.Clock size={24} color={getClockStatusInfo(currentEvent).color} /></div>
+                                                <div onClick={(e) => toggleEventChecked(e, currentEvent.id)} className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer transition-all active:scale-90 overflow-hidden ${currentEvent?.status?.checked ? 'bg-blue-500' : 'bg-gray-500 opacity-30 hover:opacity-50'}`}><Icons.DoubleCheck size={44} color="white" /></div>
                                             </div>
                                         </div>
                                     </div>
                                     <p className="opacity-60 text-sm mt-1 uppercase font-bold">{currentEvent?.format} • {currentEvent?.start}{currentEvent?.end ? ` — ${currentEvent?.end}` : ''} • {currentEvent?.guests} гостей</p>
                                     {currentEvent?.admin && <div className="mt-2 flex items-center gap-2 text-xs font-bold uppercase opacity-80"><Icons.User size={12} /><span>Админ: {currentEvent.admin}</span></div>}
                                     {currentEvent?.extraInfo && <div className="mt-4 p-3 bg-white/5 rounded-xl border border-white/10"><p className="text-sm opacity-80 whitespace-pre-wrap">{currentEvent.extraInfo}</p></div>}
-
                                     <div className="flex gap-3 mt-6 overflow-x-auto pb-2">
                                         {Object.entries(headerRoleMap).map(([key, data]) => {
                                             const counts = staffCountsForEvent(currentEvent);
@@ -578,10 +579,7 @@
                                         <h3 className="text-[10px] font-bold uppercase mb-4 opacity-50">{editingStaffId ? 'Редактировать сотрудника' : 'Добавить персонал'}</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                             <input type="text" placeholder="Имя" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border bg-white outline-none focus:border-[#604539]" />
-                                            <div className="flex gap-3">
-                                                <SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} colors={colors} />
-                                                <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
-                                            </div>
+                                            <div className="flex gap-3"><SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} colors={colors} /><SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} /></div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 mb-4">
                                             {['Официант', 'Бармен', 'Мойщица', 'Повар'].map(r => (
@@ -602,23 +600,14 @@
                                                         <div className="flex items-center gap-3">
                                                             <div className="flex -space-x-1.5">
                                                                 {s.roles.map((role, idx) => (
-                                                                    <div key={idx} onClick={()=>toggleStaffRolePaid(s.id, role)} className="role-icon-container rounded-lg bg-[#C7886B20] text-[#604539] border border-white cursor-pointer hover:scale-110 transition-all">
-                                                                        {s.rolePaid?.[role] ? <span className="ruble-icon">₽</span> : roleIconMap[role]?.icon}
-                                                                    </div>
+                                                                    <div key={idx} onClick={()=>toggleStaffRolePaid(s.id, role)} className="role-icon-container rounded-lg bg-[#C7886B20] text-[#604539] border border-white cursor-pointer hover:scale-110 transition-all">{s.rolePaid?.[role] ? <span className="ruble-icon">₽</span> : roleIconMap[role]?.icon}</div>
                                                                 ))}
                                                             </div>
-                                                            <div className="flex flex-col"><span className="font-bold">{s.name}</span>{!s.time && <span className="text-[9px] text-red-500 font-bold">НЕТ ВРЕМЕНИ</span>}</div>
+                                                            <div className="flex flex-col"><span className="font-bold">{s.name}</span>{!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">НЕТ ВРЕМЕНИ</span>}</div>
                                                         </div>
                                                     </td>
-                                                    <td className="py-4 text-center">
-                                                        <div className="text-[11px] font-medium leading-tight">
-                                                            {s.time ? <div>В: {s.time}</div> : <div className="text-red-400">—</div>}
-                                                            {s.end && <div className="opacity-40">У: {s.end}</div>}
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-4 text-right pr-2">
-                                                        <div className="flex justify-end gap-2"><button onClick={()=>startEditStaff(s)} className="text-gray-400"><Icons.Edit size={16}/></button><button onClick={()=>setEvents(events.map(e=>e.id===selectedEventId?{...e,staff:e.staff.filter(x=>x.id!==s.id)}:e))} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button></div>
-                                                    </td>
+                                                    <td className="py-4 text-center"><div className="text-[11px] font-medium leading-tight">{s.time ? <div>В: {s.time}</div> : <div className="text-red-400">—</div>}{s.end && <div className="opacity-40">У: {s.end}</div>}</div></td>
+                                                    <td className="py-4 text-right pr-2"><div className="flex justify-end gap-2"><button onClick={()=>startEditStaff(s)} className="text-gray-400"><Icons.Edit size={16}/></button><button onClick={()=>setEvents(events.map(e=>e.id===selectedEventId?{...e,staff:e.staff.filter(x=>x.id!==s.id)}:e))} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button></div></td>
                                                 </tr>
                                             ))}
                                         </tbody>
