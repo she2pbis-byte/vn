@@ -254,40 +254,34 @@
                 });
             };
 
-            // НОВАЯ ЛОГИКА: Определение цвета иконки часов
-            const getStatusColorInfo = (event) => {
-                if (!event) return { color: "#9ca3af", bg: "bg-gray-100", opacity: "opacity-30" };
-                
-                const hasTime = !!event.start;
-                const rolesFilled = isAllRolesActive(event);
-                const hasStaffTimes = event.staff && event.staff.length > 0 
-                    ? !event.staff.some(s => !s.time) 
-                    : true;
-
-                // 1. Если не заполнено время начала ИЛИ не набран весь персонал — Серый
-                if (!hasTime || !rolesFilled) {
-                    return { color: "#9ca3af", bg: "bg-gray-100", opacity: "opacity-30" };
-                }
-
-                // 2. Если персонал набран и время начала есть, но у кого-то из сотрудников нет времени прихода — Красный
-                if (!hasStaffTimes) {
-                    return { color: "#ef4444", bg: "bg-red-100 animate-pulse", opacity: "opacity-100" };
-                }
-
-                // 3. Всё готово — Зеленый
-                return { color: "#10b981", bg: "bg-green-100", opacity: "opacity-100" };
-            };
-
             const isFullyReady = (event) => {
                 if (!event) return false;
-                if (!event.status?.checked) return false;
+                // Условие 1: Заполнено время начала
                 if (!event.start) return false;
+                // Условие 2: Набран весь персонал по плану
                 if (!isAllRolesActive(event)) return false;
+                // Условие 3: У каждого сотрудника заполнено время прихода
                 if (event.staff && event.staff.length > 0) {
                     const hasMissingStaffTime = event.staff.some(s => !s.time);
                     if (hasMissingStaffTime) return false;
+                } else {
+                    // Если план персонала есть, но сотрудников 0 — тоже не готово
+                    const hasPlan = Object.values(event.neededStaff || {}).some(v => parseInt(v) > 0);
+                    if (hasPlan) return false;
                 }
                 return true;
+            };
+
+            const getStatusColorInfo = (event) => {
+                if (!event) return { color: "#ef4444", bg: "bg-red-100 animate-pulse" };
+                
+                const ready = isFullyReady(event);
+
+                if (ready) {
+                    return { color: "#10b981", bg: "bg-green-100" };
+                } else {
+                    return { color: "#ef4444", bg: "bg-red-100 animate-pulse" };
+                }
             };
 
             const isAllStaffPaid = (event) => {
@@ -472,8 +466,6 @@
                                     const ready = isFullyReady(ev);
                                     const allPaid = isAllStaffPaid(ev);
                                     const isChecked = ev.status?.checked;
-                                    
-                                    // Используем обновленную функцию статуса
                                     const statusInfo = getStatusColorInfo(ev);
                                     
                                     const doubleCheckColor = isChecked ? "#3b82f6" : "#e2e8f0"; 
@@ -485,7 +477,7 @@
                                             onClick={() => { setSelectedEventId(ev.id); setView('details'); }} 
                                             className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
                                         >
-                                            <div className={`py-1.5 px-4 text-center transition-colors ${ready ? 'bg-green-600' : 'bg-[#604539]'}`}>
+                                            <div className={`py-1.5 px-4 text-center transition-colors ${ready ? 'bg-green-600' : 'bg-red-500'}`}>
                                                 <span className="text-[10px] font-extrabold uppercase text-white tracking-widest">
                                                     {ev.displayDate}
                                                 </span>
@@ -493,7 +485,7 @@
 
                                             <div className="flex gap-4 p-5">
                                                 <div className="flex flex-col gap-2 flex-shrink-0">
-                                                    <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${showArchive ? (allPaid ? 'bg-green-50' : 'bg-gray-100 opacity-50') : `${statusInfo.bg} ${statusInfo.opacity}`}`}>
+                                                    <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${showArchive ? (allPaid ? 'bg-green-50' : 'bg-gray-100 opacity-50') : `${statusInfo.bg}`}`}>
                                                         {showArchive ? (
                                                             allPaid ? <span className="ruble-icon-large">₽</span> : <Icons.Calendar size={20} />
                                                         ) : (
@@ -548,7 +540,7 @@
                                 </div>
                             </div>
                             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539]">
-                                <div className={`py-2 text-center transition-colors ${isFullyReady(currentEvent) ? 'bg-green-600' : 'bg-[#604539]'}`}>
+                                <div className={`py-2 text-center transition-colors ${isFullyReady(currentEvent) ? 'bg-green-600' : 'bg-red-500'}`}>
                                     <span className="text-[11px] font-extrabold uppercase text-white tracking-widest">{currentEvent?.displayDate}</span>
                                 </div>
                                 
@@ -557,7 +549,6 @@
                                         <div className="flex items-center gap-3">
                                             <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
                                             <div className="flex gap-2">
-                                                {/* Иконка в деталях */}
                                                 <div className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${getStatusColorInfo(currentEvent).bg}`}>
                                                     <Icons.Clock size={24} color={getStatusColorInfo(currentEvent).color} />
                                                 </div>
@@ -623,7 +614,10 @@
                                                                     </div>
                                                                 ))}
                                                             </div>
-                                                            <div className="flex flex-col"><span className="font-bold">{s.name}</span>{!s.time && <span className="text-[9px] text-red-500 font-bold">НЕТ ВРЕМЕНИ</span>}</div>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold">{s.name}</span>
+                                                                {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">НЕТ ВРЕМЕНИ</span>}
+                                                            </div>
                                                         </div>
                                                     </td>
                                                     <td className="py-4 text-center">
