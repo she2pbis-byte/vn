@@ -1,4 +1,4 @@
-<html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -521,8 +521,15 @@
                                         <div 
                                             key={ev.id} 
                                             onClick={() => { setSelectedEventId(ev.id); setView('details'); }} 
-                                            className={`p-5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
+                                            className={`pt-8 pb-5 px-5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] ${isToday && !showArchive ? 'bg-green-50' : 'bg-white'}`}
                                         >
+                                            {/* Формат сверху посередине - Укрупненный ярлык */}
+                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                                                <span className="text-[11px] font-extrabold uppercase bg-[#604539] text-white px-5 py-2 rounded-full shadow-lg shadow-[#60453940] tracking-widest border border-white/20 whitespace-nowrap">
+                                                    {ev.format}
+                                                </span>
+                                            </div>
+
                                             <div className="flex gap-4">
                                                 <div className={`p-3 rounded-xl h-fit ${showArchive ? 'bg-gray-100 opacity-50' : (isToday ? 'bg-green-100' : 'bg-[#FFECD2]')}`}><Icons.Calendar size={20} /></div>
                                                 <div className="flex-1 min-w-0">
@@ -538,7 +545,6 @@
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <span className="text-[10px] font-bold uppercase bg-[#60453910] px-2 py-1 rounded-lg text-[#604539] flex-shrink-0">{ev.format}</span>
                                                     </div>
                                                     <p className="text-xs text-[#C7886B] font-bold uppercase mb-2 mt-1">
                                                         {ev.displayDate} {ev.start && `| ${ev.start}${ev.end ? ` — ${ev.end}` : ''}`}
@@ -764,4 +770,5 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-</body></html>
+</body>
+</html>
