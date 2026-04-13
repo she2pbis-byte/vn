@@ -167,7 +167,6 @@
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             
-            // Updated format list: replaced "Другое" with "Несколько накрытий"
             const formats = ["Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Несколько накрытий"];
             const admins = ["Александр", "Илья", "Михаил"];
 
@@ -328,8 +327,10 @@
 
             const fastDeleteEvent = (e, eventId) => {
                 if (e) e.stopPropagation();
-                setEvents(prev => prev.filter(x => x.id !== eventId));
-                if (selectedEventId === eventId) setView('list');
+                if (confirm("Вы действительно хотите удалить это мероприятие?")) {
+                    setEvents(prev => prev.filter(x => x.id !== eventId));
+                    if (selectedEventId === eventId) setView('list');
+                }
             };
 
             const handleAddStaff = () => {
@@ -553,7 +554,6 @@
                                                     {ev.extraInfo && (
                                                         <div className="mb-3 p-2 bg-[#60453908] rounded-lg border-l-2 border-[#C7886B] flex items-start gap-2">
                                                             <div className="mt-0.5 opacity-40 flex-shrink-0"><Icons.Info size={10} /></div>
-                                                            {/* Retained formatting with whitespace-pre-wrap */}
                                                             <p className="text-[11px] text-[#604539] opacity-80 leading-snug whitespace-pre-wrap break-words">{ev.extraInfo}</p>
                                                         </div>
                                                     )}
@@ -582,18 +582,20 @@
                         <div className="animate-in">
                             <div className="flex items-center justify-between mb-6">
                                 <button onClick={()=>setView('list')} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад к списку</button>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <button 
                                         onClick={() => startEditEvent(null, currentEvent)} 
-                                        className="text-[#604539] hover:text-[#C7886B] flex items-center gap-2 text-[10px] uppercase font-bold transition-colors border-r border-[#60453920] pr-4"
+                                        title="Редактировать"
+                                        className="text-[#604539] hover:text-[#C7886B] p-2 transition-colors border-r border-[#60453920] pr-4"
                                     >
-                                        Редактировать <Icons.Edit size={14} />
+                                        <Icons.Edit size={20} />
                                     </button>
                                     <button 
                                         onClick={(e) => fastDeleteEvent(e, selectedEventId)} 
-                                        className="text-red-300 hover:text-red-600 flex items-center gap-2 text-[10px] uppercase font-bold transition-colors"
+                                        title="Удалить"
+                                        className="text-red-300 hover:text-red-600 p-2 transition-colors"
                                     >
-                                        Удалить <Icons.Trash size={14} />
+                                        <Icons.Trash size={20} />
                                     </button>
                                 </div>
                             </div>
@@ -687,7 +689,7 @@
                                         </div>
                                     </div>
                                     <table className="w-full text-left">
-                                        <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="pb-2 pl-2">Сотрудник</th><th className="pb-2 text-center">Смена</th><th className="pb-2 text-right">Действия</th></tr></thead>
+                                        <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="pb-2 pl-2">Сотрудник</th><th className="pb-2 text-center">Время</th><th className="pb-2 text-right">—</th></tr></thead>
                                         <tbody>
                                             {sortedStaff.map(s => (
                                                 <tr key={s.id} className={`border-b border-gray-50 text-sm transition-colors ${editingStaffId === s.id ? 'bg-[#FFECD230]' : ''}`}>
@@ -762,4 +764,4 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-</body>tml>
+</body></html>
