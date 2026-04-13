@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Plus, Trash2, Edit, Calendar, Check, Clock, 
-  ChevronLeft, Archive, Info, User, Loader2, TableProperties, Save, AlertCircle
+  ChevronLeft, Archive, Save, AlertCircle, CheckCircle2, Loader2
 } from 'lucide-react';
 
-// URL вашего API Sheetbest
+// URL API Sheetbest
 const SHEETS_API_URL = "https://api.sheetbest.com/sheets/a33570d2-07f4-49c2-baca-4107d550c409"; 
 
 const RoleIcons = {
@@ -29,12 +29,12 @@ const SimpleTimePicker = ({ value, onChange, label }) => {
 
   return (
     <div className="flex-1">
-      {label && <p className="text-[9px] uppercase font-bold mb-1 opacity-40 ml-1">{label}</p>}
+      {label && <p className="text-[10px] uppercase font-bold mb-1.5 opacity-40 ml-1 tracking-wider">{label}</p>}
       <div className="flex items-center gap-1.5">
         <select 
           value={h} 
           onChange={(e) => setHour(e.target.value)} 
-          className="flex-1 p-2.5 rounded-xl border-2 bg-white text-center text-sm cursor-pointer border-[#C7886B20] hover:bg-gray-50 transition-colors"
+          className="flex-1 p-3 rounded-xl border border-black/5 bg-white text-center text-sm font-medium cursor-pointer hover:border-black/20 transition-all outline-none appearance-none"
         >
           <option value="">—</option>
           {Array.from({ length: 24 }, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i} ч</option>)}
@@ -44,7 +44,7 @@ const SimpleTimePicker = ({ value, onChange, label }) => {
           value={m} 
           onChange={(e) => setMinute(e.target.value)} 
           disabled={!h} 
-          className="flex-1 p-2.5 rounded-xl border-2 bg-white text-center text-sm cursor-pointer border-[#C7886B20] hover:bg-gray-50 transition-colors disabled:opacity-30"
+          className="flex-1 p-3 rounded-xl border border-black/5 bg-white text-center text-sm font-medium cursor-pointer hover:border-black/20 transition-all disabled:opacity-30 outline-none appearance-none"
         >
           <option value="00">00</option>
           <option value="30">30</option>
@@ -83,42 +83,35 @@ export default function App() {
     setLoading(true);
     try {
       const response = await fetch(SHEETS_API_URL);
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok) throw new Error('Fetch failed');
       const data = await response.json();
       
-      const parsedData = data.map(ev => ({
-        ...ev,
-        id: ev.id?.toString(),
-        staff: ev.staff_json ? JSON.parse(ev.staff_json) : [],
-        neededStaff: ev.neededStaff_json ? JSON.parse(ev.neededStaff_json) : { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
-      }));
+      const parsedData = data.map(ev => {
+        let staff = [];
+        let neededStaff = { 'оф': '', 'бар': '', 'мой': '', 'пов': '' };
+        try { staff = ev.staff_json ? JSON.parse(ev.staff_json) : []; } catch(e) {}
+        try { neededStaff = ev.neededStaff_json ? JSON.parse(ev.neededStaff_json) : neededStaff; } catch(e) {}
+        return { ...ev, id: ev.id?.toString(), staff, neededStaff };
+      });
+      
       setEvents(parsedData);
       setHasUnsavedChanges(false);
     } catch (e) {
-      console.error("Ошибка загрузки:", e);
+      console.error("Error loading:", e);
     } finally {
       setLoading(false);
     }
   };
 
-  // Глобальное сохранение всех данных
   const saveAllToSheets = async () => {
-    if (!hasUnsavedChanges) return;
     setSyncing(true);
     try {
-      // Подготавливаем данные для полной перезаписи или массового обновления
-      // В Sheetbest проще всего очистить и записать заново или использовать PUT на весь ресурс
-      // Но самый надежный способ для "кнопки" — отправить текущий массив
-      
       const payload = events.map(ev => ({
         ...ev,
         staff_json: JSON.stringify(ev.staff || []),
         neededStaff_json: JSON.stringify(ev.neededStaff || {})
       }));
 
-      // Используем PUT для обновления всего листа (если тариф Sheetbest позволяет)
-      // Либо POST массива, если таблица пуста. 
-      // Для надежности при "ручном сохранении" мы перезаписываем данные.
       await fetch(SHEETS_API_URL, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -127,8 +120,7 @@ export default function App() {
 
       setHasUnsavedChanges(false);
     } catch (e) {
-      console.error("Ошибка сохранения:", e);
-      alert("Не удалось сохранить данные в таблицу.");
+      alert("Ошибка при сохранении.");
     } finally {
       setSyncing(false);
     }
@@ -163,14 +155,14 @@ export default function App() {
   };
 
   const deleteEvent = (id) => {
-    if (!window.confirm("Удалить мероприятие локально? (Изменения вступят в силу после сохранения)")) return;
+    if (!window.confirm("Удалить мероприятие?")) return;
     setEvents(events.filter(ev => ev.id !== id));
     setHasUnsavedChanges(true);
     if (selectedEventId === id) setView('list');
   };
 
   const handleStaffAction = (staffData, isEdit = false) => {
-    if (!currentEvent) return;
+    if (!currentEvent || !staffData.name) return;
     let updatedStaff = [...(currentEvent.staff || [])];
     if (isEdit) {
       updatedStaff = updatedStaff.map(s => s.id === editingStaffId ? { ...s, ...staffData } : s);
@@ -202,211 +194,253 @@ export default function App() {
     setHasUnsavedChanges(true);
   };
 
-  const staffCounts = useMemo(() => {
-    const counts = { 'Официант': 0, 'Бармен': 0, 'Мойщица': 0, 'Повар': 0 };
-    if (!currentEvent || !currentEvent.staff) return counts;
-    currentEvent.staff.forEach(s => {
-      s.roles.forEach(role => { if (counts.hasOwnProperty(role)) counts[role]++; });
-    });
-    return counts;
-  }, [currentEvent]);
+  const getRoleStats = (roleName) => {
+    const roleKey = roleName.toLowerCase().slice(0, 3);
+    const needed = parseInt(currentEvent?.neededStaff?.[roleKey] || 0);
+    const current = currentEvent?.staff?.filter(s => s.roles.includes(roleName)).length || 0;
+    return { current, needed, isComplete: current >= needed && needed > 0 };
+  };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#FFECD2]">
-      <Loader2 className="w-10 h-10 animate-spin text-[#604539] mb-4" />
-      <p className="text-[#604539] font-bold uppercase tracking-widest text-xs">Загрузка данных...</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F9F9F9] font-sans">
+      <Loader2 className="w-8 h-8 animate-spin text-black/20 mb-4" />
+      <p className="text-black/40 font-medium text-xs uppercase tracking-widest">Синхронизация...</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#FFECD2] p-4 md:p-8 font-['Inter'] text-[#1F1713]">
-      <div className="max-w-4xl mx-auto">
-        {/* Кнопка сохранения в верхнем левом углу */}
-        <div className="fixed top-4 left-4 z-50 flex items-center gap-2">
-          <button 
-            onClick={saveAllToSheets}
-            disabled={!hasUnsavedChanges || syncing}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase transition-all shadow-lg ${
-              hasUnsavedChanges 
-                ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' 
-                : 'bg-white/50 text-gray-400 cursor-not-allowed backdrop-blur-sm border border-black/5'
-            }`}
-          >
-            {syncing ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-            {hasUnsavedChanges ? 'Сохранить изменения' : 'Сохранено'}
-          </button>
-          {hasUnsavedChanges && !syncing && (
-            <div className="bg-orange-500 text-white p-2 rounded-full animate-pulse shadow-md" title="Есть несохраненные правки">
-              <AlertCircle size={14} />
-            </div>
-          )}
-        </div>
+    <div className="min-h-screen bg-[#F3F4F6] p-6 md:p-12 font-sans text-slate-900 leading-relaxed tracking-tight selection:bg-blue-100">
+      <style>{`
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      `}</style>
+      
+      <div className="max-w-5xl mx-auto relative">
+        
+        {/* Floating Save Button */}
+        {hasUnsavedChanges && (
+          <div className="fixed top-8 left-8 z-50 animate-in fade-in slide-in-from-left-4 duration-300">
+            <button 
+              onClick={saveAllToSheets}
+              disabled={syncing}
+              className="flex items-center gap-3 px-6 py-3 rounded-full font-bold text-xs uppercase transition-all shadow-xl bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95"
+            >
+              {syncing ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              Сохранить правки
+            </button>
+          </div>
+        )}
 
-        <header className="flex items-center justify-between mb-8 border-b border-[#C7886B40] pb-6 mt-12 md:mt-0">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center text-white">
-              <Check size={28} />
+        <header className="flex items-center justify-between mb-12 border-b border-black/5 pb-10">
+          <div className="flex items-center gap-6">
+            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-lg">
+              <CheckCircle2 size={28} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold uppercase tracking-tight">Персонал</h1>
-              <p className="text-[10px] uppercase tracking-widest text-[#604539]">Ручное управление таблицей</p>
+              <h1 className="text-3xl font-extrabold tracking-tight mb-1">Штат</h1>
+              <p className="text-xs font-semibold uppercase tracking-widest opacity-30">Management System</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-             <TableProperties className={`w-5 h-5 ${hasUnsavedChanges ? 'text-orange-500' : 'text-green-600'}`} />
              {view === 'list' && (
                 <button 
                   onClick={() => setShowArchive(!showArchive)}
-                  className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${showArchive ? 'bg-[#604539] text-white shadow-lg' : 'bg-white border-2 border-[#60453910] text-[#604539]'}`}
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${showArchive ? 'bg-slate-900 text-white shadow-lg' : 'bg-white text-slate-400 hover:text-slate-900 shadow-sm border border-black/5'}`}
                 >
-                  <Archive size={22} />
+                  <Archive size={20} />
                 </button>
              )}
           </div>
         </header>
 
         {view === 'list' ? (
-          <div className="space-y-6 animate-in">
+          <div className="space-y-10">
             {!showArchive && (
-              <div className="bg-white p-6 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl">
-                <h2 className="font-bold mb-4 flex items-center gap-2">
-                  {editingEventId ? <Edit size={18} /> : <Plus size={18} />} 
-                  {editingEventId ? 'Редактировать мероприятие' : 'Создать мероприятие'}
+              <div className="bg-white p-10 rounded-[32px] border border-black/5 shadow-sm">
+                <h2 className="font-bold text-lg mb-8 flex items-center gap-3 opacity-90 uppercase tracking-tighter">
+                  {editingEventId ? <Edit size={20} /> : <Plus size={20} />} 
+                  {editingEventId ? 'Редактировать ивент' : 'Новое мероприятие'}
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none" />
-                  <div className="flex flex-col gap-4">
-                    <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none" />
-                    <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none">
-                      {formats.map(f => <option key={f} value={f}>{f}</option>)}
-                    </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                  <div className="space-y-5">
+                    <input type="text" placeholder="Название события" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-4 rounded-xl border border-black/5 bg-slate-50 font-semibold focus:bg-white focus:ring-2 focus:ring-slate-900/5 outline-none transition-all" />
+                    <div className="flex gap-4">
+                      <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="flex-1 p-4 rounded-xl border border-black/5 bg-slate-50 font-semibold outline-none" />
+                      <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="flex-1 p-4 rounded-xl border border-black/5 bg-slate-50 font-semibold outline-none appearance-none cursor-pointer">
+                        {formats.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    </div>
                   </div>
-                  <div className="flex gap-3">
-                    <SimpleTimePicker label="Начало" value={newEvent.start} onChange={v=>setNewEvent({...newEvent, start: v})} />
-                    <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} />
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <input type="number" placeholder="Гости" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none" />
-                    <div className="flex gap-2">
-                      {['оф', 'бар', 'мой', 'пов'].map(role => (
-                        <input key={role} type="number" placeholder={role} value={newEvent.neededStaff[role]} onChange={e => setNewEvent({...newEvent, neededStaff: {...newEvent.neededStaff, [role]: e.target.value}})} className="w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold" />
-                      ))}
+                  <div className="space-y-5">
+                    <div className="flex gap-4">
+                      <SimpleTimePicker label="Начало" value={newEvent.start} onChange={v=>setNewEvent({...newEvent, start: v})} />
+                      <SimpleTimePicker label="Завершение" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} />
+                    </div>
+                    <div className="flex gap-4 items-end">
+                      <div className="w-24">
+                        <p className="text-[10px] uppercase font-bold mb-1.5 opacity-40 ml-1">Гости</p>
+                        <input type="number" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-4 rounded-xl border border-black/5 bg-slate-50 font-bold outline-none text-center" />
+                      </div>
+                      <div className="flex-1 grid grid-cols-4 gap-2">
+                        {['оф', 'бар', 'мой', 'пов'].map(role => (
+                          <div key={role} className="flex flex-col items-center">
+                            <div className="mb-2 opacity-30">
+                              {role === 'оф' && <RoleIcons.Cloche size={14}/>}
+                              {role === 'бар' && <RoleIcons.Martini size={14}/>}
+                              {role === 'мой' && <RoleIcons.Droplet size={14}/>}
+                              {role === 'пов' && <RoleIcons.Pot size={14}/>}
+                            </div>
+                            <input type="number" placeholder={role} value={newEvent.neededStaff[role]} onChange={e => setNewEvent({...newEvent, neededStaff: {...newEvent.neededStaff, [role]: e.target.value}})} className="w-full p-2.5 rounded-lg border border-black/5 bg-white text-center text-[11px] font-bold uppercase" />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={handleAddEvent} className="flex-1 bg-[#604539] text-white p-4 rounded-xl uppercase font-bold text-sm hover:bg-[#4a352c] transition-all">
-                    {editingEventId ? 'Применить изменения' : 'Добавить в список'}
+                <div className="flex gap-3">
+                  <button onClick={handleAddEvent} className="flex-1 bg-slate-900 text-white p-4 rounded-xl uppercase font-bold text-xs tracking-widest shadow-lg hover:bg-black transition-all">
+                    {editingEventId ? 'Сохранить изменения' : 'Создать мероприятие'}
                   </button>
-                  {editingEventId && <button onClick={() => setEditingEventId(null)} className="bg-gray-100 px-6 rounded-xl uppercase font-bold text-xs">Отмена</button>}
+                  {editingEventId && <button onClick={() => setEditingEventId(null)} className="px-8 rounded-xl font-bold uppercase text-[10px] bg-slate-100">Отмена</button>}
                 </div>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedEvents.map(ev => (
                 <div 
                   key={ev.id} 
                   onClick={() => { setSelectedEventId(ev.id); setView('details'); }}
-                  className="p-5 bg-white rounded-2xl shadow-sm border border-transparent hover:border-[#C7886B] cursor-pointer transition-all"
+                  className="group p-8 bg-white rounded-[32px] border border-black/5 hover:border-slate-900/10 hover:shadow-2xl hover:shadow-black/5 cursor-pointer transition-all duration-300"
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-lg">{ev.name}</h3>
-                    <span className="text-[10px] font-bold uppercase bg-[#60453910] px-2 py-1 rounded-lg text-[#604539]">{ev.format}</span>
+                  <div className="flex justify-between items-start mb-6">
+                    <h3 className="font-bold text-xl tracking-tight leading-tight group-hover:text-blue-600 transition-colors">{ev.name}</h3>
+                    <span className="text-[9px] font-bold uppercase bg-slate-100 px-3 py-1.5 rounded-full text-slate-500 tracking-widest">{ev.format}</span>
                   </div>
-                  <p className="text-xs text-[#C7886B] font-bold uppercase mb-3">{ev.displayDate} {ev.start && `| ${ev.start}`}</p>
-                  <div className="flex gap-4 opacity-50 text-[10px] font-bold uppercase">
+                  <div className="space-y-1.5 mb-8">
+                    <p className="text-[11px] font-bold uppercase tracking-wide flex items-center gap-2 text-emerald-600">
+                      <Calendar size={13} /> {ev.displayDate}
+                    </p>
+                    <p className="text-[11px] font-bold uppercase tracking-wide flex items-center gap-2 opacity-30">
+                      <Clock size={13} /> {ev.start || '—'}
+                    </p>
+                  </div>
+                  <div className="flex gap-4 opacity-40 text-[10px] font-bold uppercase">
                     <span>👥 {ev.guests}</span>
-                    <span>🧑‍🍳 {ev.staff?.length || 0} чел.</span>
+                    <span>🧑‍🍳 {ev.staff?.length || 0}</span>
                   </div>
-                  <div className="flex justify-end gap-2 mt-4">
-                    <button onClick={(e) => { e.stopPropagation(); setEditingEventId(ev.id); setNewEvent(ev); window.scrollTo({top:0, behavior:'smooth'}); }} className="p-1.5 text-gray-400 hover:text-[#604539]"><Edit size={16}/></button>
-                    <button onClick={(e) => { e.stopPropagation(); deleteEvent(ev.id); }} className="p-1.5 text-gray-400 hover:text-red-500"><Trash2 size={16}/></button>
+                  <div className="flex justify-end gap-1 mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={(e) => { e.stopPropagation(); setEditingEventId(ev.id); setNewEvent(ev); window.scrollTo({top:0, behavior:'smooth'}); }} className="p-2 text-slate-300 hover:text-slate-900 transition-all"><Edit size={16}/></button>
+                    <button onClick={(e) => { e.stopPropagation(); deleteEvent(ev.id); }} className="p-2 text-slate-300 hover:text-red-500 transition-all"><Trash2 size={16}/></button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <div className="animate-in">
-            <button onClick={()=>setView('list')} className="flex items-center gap-1 text-xs font-bold uppercase mb-6 text-[#604539]"><ChevronLeft size={16}/> К списку</button>
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden border-t-8 border-[#604539]">
-              <div className="p-8 bg-[#1F1713] text-white">
-                <h2 className="text-3xl font-bold mb-1">{currentEvent?.name}</h2>
-                <p className="opacity-60 text-sm">{currentEvent?.displayDate} • {currentEvent?.guests} гостей</p>
-                
-                <div className="flex gap-3 mt-6">
-                  {['Официант', 'Бармен', 'Мойщица', 'Повар'].map(role => (
-                    <div key={role} className="flex flex-col items-center gap-1">
-                       <div className={`p-3 rounded-xl border ${staffCounts[role] >= (parseInt(currentEvent?.neededStaff?.[role.toLowerCase().slice(0, 3)] || 0)) && staffCounts[role] > 0 ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-white/5 border-white/10 opacity-40'}`}>
-                         {role === 'Официант' && <RoleIcons.Cloche size={18}/>}
-                         {role === 'Бармен' && <RoleIcons.Martini size={18}/>}
-                         {role === 'Мойщица' && <RoleIcons.Droplet size={18}/>}
-                         {role === 'Повар' && <RoleIcons.Pot size={18}/>}
-                       </div>
-                       <span className="text-[10px] font-bold">{staffCounts[role]}</span>
-                    </div>
-                  ))}
+          <div className="animate-in fade-in zoom-in-95 duration-300 max-w-4xl mx-auto">
+            <button onClick={()=>setView('list')} className="flex items-center gap-2 text-[10px] font-bold uppercase mb-10 text-slate-400 hover:text-slate-900 transition-colors"><ChevronLeft size={16}/> К списку событий</button>
+            <div className="bg-white rounded-[40px] shadow-sm border border-black/5 overflow-hidden mb-12">
+              <div className="p-12 bg-slate-900 text-white relative overflow-hidden">
+                <div className="relative z-10">
+                  <h2 className="text-4xl font-extrabold mb-4 tracking-tighter">{currentEvent?.name}</h2>
+                  <div className="flex gap-6 opacity-50 text-[10px] font-bold uppercase tracking-[0.2em]">
+                    <span>{currentEvent?.displayDate}</span>
+                    <span>{currentEvent?.format}</span>
+                    <span>{currentEvent?.guests} гостей</span>
+                  </div>
+                  
+                  <div className="flex gap-6 mt-12">
+                    {['Официант', 'Бармен', 'Мойщица', 'Повар'].map(role => {
+                      const stats = getRoleStats(role);
+                      return (
+                        <div key={role} className="flex flex-col items-center gap-3">
+                           <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center transition-all ${stats.isComplete ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'bg-white/5 border-white/10 text-white/20'}`}>
+                             {role === 'Официант' && <RoleIcons.Cloche size={24}/>}
+                             {role === 'Бармен' && <RoleIcons.Martini size={24}/>}
+                             {role === 'Мойщица' && <RoleIcons.Droplet size={24}/>}
+                             {role === 'Повар' && <RoleIcons.Pot size={24}/>}
+                           </div>
+                           <div className="flex items-center gap-1.5 font-bold text-[11px]">
+                             <span className={stats.isComplete ? 'text-emerald-400' : 'opacity-30'}>{stats.current}/{stats.needed}</span>
+                             {stats.isComplete ? <Check size={12} className="text-emerald-400" strokeWidth={4} /> : (stats.needed > 0 && <Clock size={12} className="text-red-400 animate-pulse" />)}
+                           </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
-              <div className="p-6">
-                <div className="bg-[#FFECD240] p-6 rounded-2xl mb-8 border border-[#C7886B20]">
-                  <h3 className="text-[10px] font-bold uppercase mb-4 opacity-50">Персонал</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <input type="text" placeholder="Имя" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border bg-white focus:border-[#604539] outline-none" />
-                    <div className="flex gap-3">
+              <div className="p-12">
+                <div className="bg-slate-50 p-10 rounded-[32px] mb-12 border border-black/5">
+                  <h3 className="text-[10px] font-bold uppercase mb-8 opacity-40 tracking-widest">Добавить в смену</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <input type="text" placeholder="Имя сотрудника" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-4 rounded-xl border border-black/5 bg-white shadow-sm font-semibold outline-none focus:ring-2 focus:ring-slate-900/5 transition-all" />
+                    <div className="flex gap-4">
                       <SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} />
                       <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
                     {['Официант', 'Бармен', 'Мойщица', 'Повар'].map(r => (
                       <button 
                         key={r} 
                         onClick={()=>setNewStaff(prev => ({...prev, roles: prev.roles.includes(r) ? prev.roles.filter(x=>x!==r) : [...prev.roles, r]}))}
-                        className={`py-2 rounded-xl text-[10px] font-bold uppercase border-2 transition-all ${newStaff.roles.includes(r) ? 'bg-[#604539] border-[#604539] text-white' : 'border-[#C7886B20] text-[#604539]'}`}
+                        className={`py-3.5 rounded-xl text-[10px] font-bold uppercase tracking-tight border transition-all flex items-center justify-center gap-2 ${newStaff.roles.includes(r) ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-black/5 text-slate-400'}`}
                       >
+                        {r === 'Официант' && <RoleIcons.Cloche size={12}/>}
+                        {r === 'Бармен' && <RoleIcons.Martini size={12}/>}
+                        {r === 'Мойщица' && <RoleIcons.Droplet size={12}/>}
+                        {r === 'Повар' && <RoleIcons.Pot size={12}/>}
                         {r}
                       </button>
                     ))}
                   </div>
-                  <button onClick={() => handleStaffAction(newStaff, !!editingStaffId)} className="w-full bg-[#604539] text-white p-3 rounded-xl uppercase text-xs font-bold shadow-lg">
-                    {editingStaffId ? 'Применить изменения' : 'Добавить сотрудника'}
+                  <button onClick={() => handleStaffAction(newStaff, !!editingStaffId)} className="w-full bg-slate-900 text-white p-5 rounded-xl uppercase text-[11px] font-bold tracking-widest hover:bg-black transition-all">
+                    {editingStaffId ? 'Обновить данные' : 'Внести в список'}
                   </button>
                 </div>
 
-                <table className="w-full text-left">
-                  <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="pb-2">Сотрудник</th><th className="pb-2 text-center">Смена</th><th className="pb-2 text-right">Удалить</th></tr></thead>
-                  <tbody>
-                    {currentEvent?.staff?.map(s => (
-                      <tr key={s.id} className="border-b border-gray-50 text-sm">
-                        <td className="py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex -space-x-1.5">
-                              {s.roles.map(role => (
-                                <div key={role} onClick={() => toggleStaffPaid(s.id, role)} className={`w-8 h-8 rounded-lg flex items-center justify-center border border-white shadow-sm cursor-pointer transition-all ${s.rolePaid?.[role] ? 'bg-green-100 text-green-700' : 'bg-[#C7886B20] text-[#604539]'}`}>
-                                  {s.rolePaid?.[role] ? <span className="font-bold text-sm">₽</span> : (
-                                    role === 'Официант' ? <RoleIcons.Cloche size={14}/> :
-                                    role === 'Бармен' ? <RoleIcons.Martini size={14}/> :
-                                    role === 'Мойщица' ? <RoleIcons.Droplet size={14}/> : <RoleIcons.Pot size={14}/>
-                                  )}
-                                </div>
-                              ))}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 text-[10px] font-bold uppercase opacity-20 px-4 mb-4 tracking-widest">
+                    <span>Сотрудник</span>
+                    <span className="text-center">График</span>
+                    <span className="text-right">Управление</span>
+                  </div>
+                  {currentEvent?.staff?.map(s => (
+                    <div key={s.id} className="group flex items-center justify-between p-4 bg-white rounded-2xl border border-black/5 hover:border-slate-900/10 transition-all">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="flex -space-x-2">
+                          {s.roles.map(role => (
+                            <div 
+                              key={role} 
+                              onClick={() => toggleStaffPaid(s.id, role)} 
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center border-4 border-white shadow-sm cursor-pointer transition-all active:scale-90 ${s.rolePaid?.[role] ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400 hover:text-slate-900'}`}
+                            >
+                              {s.rolePaid?.[role] ? <Check size={14} strokeWidth={4} /> : (
+                                role === 'Официант' ? <RoleIcons.Cloche size={14}/> :
+                                role === 'Бармен' ? <RoleIcons.Martini size={14}/> :
+                                role === 'Мойщица' ? <RoleIcons.Droplet size={14}/> : <RoleIcons.Pot size={14}/>
+                              )}
                             </div>
-                            <span className="font-bold">{s.name}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 text-center text-[11px] font-medium opacity-60">
-                          {s.time} {s.end && `— ${s.end}`}
-                        </td>
-                        <td className="py-4 text-right">
-                          <button onClick={() => removeStaff(s.id)} className="text-gray-300 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          ))}
+                        </div>
+                        <span className="font-bold text-sm">{s.name}</span>
+                      </div>
+                      <div className="flex-1 text-center">
+                        <span className="text-[10px] font-bold bg-slate-100 px-3 py-1.5 rounded-full text-slate-500">{s.time} — {s.end}</span>
+                      </div>
+                      <div className="flex-1 text-right">
+                        <button onClick={() => removeStaff(s.id)} className="p-2 text-slate-200 hover:text-red-500 transition-colors"><Trash2 size={18}/></button>
+                      </div>
+                    </div>
+                  ))}
+                  {(!currentEvent?.staff || currentEvent.staff.length === 0) && (
+                    <div className="py-12 text-center opacity-10">
+                      <p className="font-bold uppercase text-[10px] tracking-widest">Список пуст</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
