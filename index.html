@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -55,9 +56,6 @@
 
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
-
-        // Константа для подключения к Sheet.best
-        const SHEET_BEST_URL = 'https://api.sheetbest.com/sheets/a33570d2-07f4-49c2-baca-4107d550c409';
 
         const Icons = {
             Plus: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>,
@@ -173,35 +171,6 @@
                 localStorage.setItem('events_data_v7', JSON.stringify(events));
             }, [events]);
 
-            // Функция синхронизации с Google Таблицей
-            const syncWithSheet = async (eventData) => {
-                if (!eventData) return;
-                try {
-                    // Мы используем метод POST для добавления или обновления всей строки. 
-                    // Если Sheet.best настроен на уникальные ID, можно использовать PATCH/PUT.
-                    // Здесь мы отправляем текущее состояние мероприятия.
-                    await fetch(SHEET_BEST_URL, {
-                        method: 'POST',
-                        mode: 'cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            ID: eventData.id,
-                            Название: eventData.name,
-                            Дата: eventData.date,
-                            Начало: eventData.start,
-                            Конец: eventData.end,
-                            Формат: eventData.format,
-                            Админ: eventData.admin,
-                            Гости: eventData.guests,
-                            Персонал: JSON.stringify(eventData.staff || []),
-                            Инфо: eventData.extraInfo
-                        }),
-                    });
-                } catch (error) {
-                    console.error('Ошибка синхронизации с таблицей:', error);
-                }
-            };
-
             const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
             const sortedEvents = useMemo(() => {
@@ -283,22 +252,13 @@
                 if (!newEvent.name || !newEvent.guests) return;
                 const d = new Date(newEvent.date);
                 const fmtDate = `${d.getDate()} ${d.toLocaleString('ru', { month: 'long' })}`;
-                
-                let updatedList;
-                let finalEvent;
-
                 if (editingEventId) {
-                    finalEvent = { ...events.find(ev => ev.id === editingEventId), ...newEvent, displayDate: fmtDate };
-                    updatedList = events.map(ev => ev.id === editingEventId ? finalEvent : ev);
+                    setEvents(events.map(ev => ev.id === editingEventId ? { ...ev, ...newEvent, displayDate: fmtDate } : ev));
                     setEditingEventId(null);
                 } else {
-                    finalEvent = { id: Date.now().toString(), ...newEvent, displayDate: fmtDate, staff: [], status: {} };
-                    updatedList = [...events, finalEvent];
+                    const item = { id: Date.now().toString(), ...newEvent, displayDate: fmtDate, staff: [], status: {} };
+                    setEvents([...events, item]);
                 }
-                
-                setEvents(updatedList);
-                syncWithSheet(finalEvent);
-
                 setNewEvent({ 
                     name: '', 
                     date: new Date().toISOString().split('T')[0], 
@@ -337,38 +297,33 @@
 
             const handleAddStaff = () => {
                 if (!newStaff.name || newStaff.roles.length === 0) return;
-                
-                let updatedEvent;
-                setEvents(prev => prev.map(ev => {
-                    if (ev.id === selectedEventId) {
-                        if (editingStaffId) {
-                            updatedEvent = { ...ev, staff: ev.staff.map(s => s.id === editingStaffId ? { ...s, ...newStaff, rolesDisplay: newStaff.roles.join(', ') } : s) };
-                        } else {
-                            updatedEvent = { ...ev, staff: [...ev.staff, { id: Date.now().toString(), ...newStaff, rolesDisplay: newStaff.roles.join(', '), rolePaid: {} }] };
-                        }
-                        syncWithSheet(updatedEvent);
-                        return updatedEvent;
-                    }
-                    return ev;
-                }));
-                
-                setEditingStaffId(null);
+                if (editingStaffId) {
+                    setEvents(events.map(ev => ev.id === selectedEventId ? {
+                        ...ev, staff: ev.staff.map(s => s.id === editingStaffId ? { ...s, ...newStaff, rolesDisplay: newStaff.roles.join(', ') } : s)
+                    } : ev));
+                    setEditingStaffId(null);
+                } else {
+                    setEvents(events.map(ev => ev.id === selectedEventId ? {
+                        ...ev, staff: [...ev.staff, { id: Date.now().toString(), ...newStaff, rolesDisplay: newStaff.roles.join(', '), rolePaid: {} }]
+                    } : ev));
+                }
                 setNewStaff({ name: '', time: '', end: '', roles: [] });
             };
 
             const toggleStaffRolePaid = (staffId, role) => {
                 setEvents(prevEvents => prevEvents.map(ev => {
                     if (ev.id !== selectedEventId) return ev;
-                    const updatedEvent = {
+                    return {
                         ...ev,
                         staff: ev.staff.map(s => {
                             if (s.id !== staffId) return s;
                             const currentPaid = s.rolePaid || {};
-                            return { ...s, rolePaid: { ...currentPaid, [role]: !currentPaid[role] } };
+                            return {
+                                ...s,
+                                rolePaid: { ...currentPaid, [role]: !currentPaid[role] }
+                            };
                         })
                     };
-                    syncWithSheet(updatedEvent);
-                    return updatedEvent;
                 }));
             };
 
@@ -397,8 +352,8 @@
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center text-white"><Icons.Check size={28} /></div>
                             <div>
-                                <h1 className="text-2xl font-bold uppercase tracking-tight">Catering Admin</h1>
-                                <p className="text-[10px] uppercase tracking-widest text-[#604539]">Встроенная синхронизация со Sheets</p>
+                                <h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1>
+                                <p className="text-[10px] uppercase tracking-widest text-[#604539]">Кейтеринг Ванильного Неба</p>
                             </div>
                         </div>
                         {view === 'list' && (
@@ -440,7 +395,7 @@
                                             <input type="number" placeholder="Количество гостей" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] focus:border-[#604539] outline-none transition-all" />
                                             
                                             <div className="flex flex-col gap-1.5">
-                                                <p className="text-[10px] uppercase font-bold opacity-30 ml-1">Нужное кол-во персонала:</p>
+                                                <p className="text-[10px] uppercase font-bold opacity-30 ml-1">Информация по организации:</p>
                                                 <div className="flex gap-2">
                                                     {Object.entries({
                                                         'оф': <Icons.Cloche size={16}/>,
@@ -493,7 +448,7 @@
                                     </div>
                                     <div className="flex gap-2">
                                         <button onClick={handleAddEvent} className="flex-1 bg-[#604539] text-white p-4 rounded-xl uppercase font-bold text-sm tracking-widest hover:bg-[#4a352c] transition-colors">
-                                            {editingEventId ? 'Сохранить изменения' : 'Добавить мероприятие'}
+                                            {editingEventId ? 'Сохранить изменения' : 'Добавить в список'}
                                         </button>
                                         {editingEventId && (
                                             <button onClick={() => { setEditingEventId(null); setNewEvent({ name: '', date: new Date().toISOString().split('T')[0], start: '', end: '', format: 'Фуршет', admin: '', guests: '', extraInfo: '', neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' } }); }} className="bg-gray-200 px-6 rounded-xl uppercase font-bold text-xs">Отмена</button>
@@ -566,7 +521,7 @@
                                 })}
                                 {sortedEvents.length === 0 && (
                                     <div className="col-span-full py-12 text-center opacity-30 text-sm font-bold uppercase tracking-widest border-2 border-dashed border-[#60453910] rounded-3xl">
-                                        Нет мероприятий
+                                        Нет мероприятий для отображения
                                     </div>
                                 )}
                             </div>
@@ -611,7 +566,7 @@
 
                                     {currentEvent?.extraInfo && (
                                         <div className="mt-4 p-3 bg-white/5 rounded-xl border border-white/10">
-                                            <p className="text-[10px] uppercase font-bold opacity-30 mb-1">Информация:</p>
+                                            <p className="text-[10px] uppercase font-bold opacity-30 mb-1">Дополнительная информация:</p>
                                             <p className="text-sm opacity-80 whitespace-pre-wrap">{currentEvent.extraInfo}</p>
                                         </div>
                                     )}
@@ -625,9 +580,7 @@
                                                 <div key={key} className="flex flex-col items-center gap-2">
                                                     <div 
                                                         onClick={()=>{
-                                                            const updatedEvent = {...currentEvent, status: {...currentEvent.status, [key]: !currentEvent.status[key]}};
-                                                            setEvents(events.map(e => e.id === selectedEventId ? updatedEvent : e));
-                                                            syncWithSheet(updatedEvent);
+                                                            setEvents(events.map(e => e.id === selectedEventId ? {...e, status: {...e.status, [key]: !e.status[key]}} : e))
                                                         }} 
                                                         className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${currentEvent?.status?.[key] ? 'bg-[#FFECD2] border-[#FFECD2] text-[#604539]' : 'border-white/10 opacity-40'}`}
                                                     >
@@ -647,10 +600,10 @@
                                             {editingStaffId ? 'Редактировать сотрудника' : 'Добавить персонал'}
                                         </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                            <input type="text" placeholder="Имя" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border bg-white outline-none focus:border-[#604539] transition-all" />
+                                            <input type="text" placeholder="Имя сотрудника" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-3 rounded-xl border bg-white outline-none focus:border-[#604539] transition-all" />
                                             <div className="flex gap-3">
                                                 <SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} colors={colors} />
-                                                <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
+                                                <SimpleTimePicker label="Уход (опц.)" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 mb-4">
@@ -674,7 +627,7 @@
                                         </div>
                                     </div>
                                     <table className="w-full text-left">
-                                        <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="pb-2 pl-2">Сотрудник</th><th className="pb-2 text-center">Смена</th><th className="pb-2 text-right">Управление</th></tr></thead>
+                                        <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="pb-2 pl-2">Сотрудник</th><th className="pb-2 text-center">Смена</th><th className="pb-2 text-right">Действия</th></tr></thead>
                                         <tbody>
                                             {sortedStaff.map(s => (
                                                 <tr key={s.id} className={`border-b border-gray-50 text-sm transition-colors ${editingStaffId === s.id ? 'bg-[#FFECD230]' : ''}`}>
@@ -701,7 +654,7 @@
                                                             </div>
                                                             <div className="flex flex-col">
                                                                 <span className="font-bold">{s.name}</span>
-                                                                {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tight">Нет времени прихода</span>}
+                                                                {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tight">Не указано время прихода</span>}
                                                             </div>
                                                         </div>
                                                     </td>
@@ -726,18 +679,14 @@
                                                     <td className="py-4 text-right pr-2">
                                                         <div className="flex justify-end gap-2">
                                                             <button onClick={() => startEditStaff(s)} className="text-gray-400 hover:text-[#604539] transition-colors"><Icons.Edit size={16} /></button>
-                                                            <button onClick={() => {
-                                                                const updatedEvent = {...currentEvent, staff: currentEvent.staff.filter(x=>x.id !== s.id)};
-                                                                setEvents(events.map(e => e.id === selectedEventId ? updatedEvent : e));
-                                                                syncWithSheet(updatedEvent);
-                                                            }} className="text-gray-300 hover:text-red-500 transition-colors"><Icons.Trash size={18}/></button>
+                                                            <button onClick={() => setEvents(events.map(e => e.id === selectedEventId ? {...e, staff: e.staff.filter(x=>x.id !== s.id)} : e))} className="text-gray-300 hover:text-red-500 transition-colors"><Icons.Trash size={18}/></button>
                                                         </div>
                                                     </td>
                                                 </tr>
                                             ))}
                                             {sortedStaff.length === 0 && (
                                                 <tr>
-                                                    <td colSpan="3" className="py-8 text-center opacity-30 text-xs uppercase font-bold italic tracking-wider">Персонал не добавлен</td>
+                                                    <td colSpan="3" className="py-8 text-center opacity-30 text-xs uppercase font-bold italic tracking-wider">Список пуст</td>
                                                 </tr>
                                             )}
                                         </tbody>
@@ -755,3 +704,5 @@
     </script>
 </body>
 </html>
+
+```
