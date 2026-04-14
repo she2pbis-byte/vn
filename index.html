@@ -606,7 +606,7 @@
                                                             <div className="flex flex-col"><span className="font-bold">{s.name}</span>{!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">НЕТ ВРЕМЕНИ</span>}</div>
                                                         </div>
                                                     </td>
-                                                    <td className="py-4 text-center"><div className="text-[11px] font-medium leading-tight">{s.time ? <div>В: {s.time}</div> : <div className="text-red-400">—</div>}{s.end && <div className="opacity-40">У: {s.end}</div>}</div></td>
+                                                    <td className="py-4 text-center"><div className="text-[11px] font-medium leading-tight">{s.time ? <div>- {s.time}</div> : <div className="text-red-400">—</div>}{s.end && <div className="opacity-40">- {s.end}</div>}</div></td>
                                                     <td className="py-4 text-right pr-2"><div className="flex justify-end gap-2"><button onClick={()=>startEditStaff(s)} className="text-gray-400"><Icons.Edit size={16}/></button><button onClick={()=>setEvents(events.map(e=>e.id===selectedEventId?{...e,staff:e.staff.filter(x=>x.id!==s.id)}:e))} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button></div></td>
                                                 </tr>
                                             ))}
