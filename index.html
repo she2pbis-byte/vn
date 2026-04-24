@@ -107,12 +107,16 @@
             const [selectedEventId, setSelectedEventId] = useState(null);
             const [githubToken, setGithubToken] = useState(() => localStorage.getItem('gh_token') || '');
             const [syncStatus, setSyncStatus] = useState('idle');
+            const [isTokenVerified, setIsTokenVerified] = useState(false);
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
 
             const fetchFromGithub = useCallback(async (token) => {
-                if (!token) return;
+                if (!token) {
+                    setIsTokenVerified(false);
+                    return;
+                }
                 setSyncStatus('loading');
                 try {
                     const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?nocache=${Date.now()}`, {
@@ -123,9 +127,15 @@
                         const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
                         setEvents(content);
                         setSyncStatus('success');
+                        setIsTokenVerified(true);
                         setTimeout(() => setSyncStatus('idle'), 2000);
-                    } else throw new Error();
-                } catch (err) { setSyncStatus('error'); }
+                    } else {
+                        throw new Error();
+                    }
+                } catch (err) { 
+                    setSyncStatus('error');
+                    setIsTokenVerified(false);
+                }
             }, []);
 
             const saveToGithub = useCallback(async (updatedEvents) => {
@@ -243,7 +253,7 @@
 
             const startEditEvent = (e, ev) => {
                 if (e) e.stopPropagation();
-                if (ev.date < todayStr) return; // Логика остается, иконки нет
+                if (ev.date < todayStr) return;
                 
                 setEditingEventId(ev.id);
                 setNewEvent({ ...ev, neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
@@ -300,6 +310,7 @@
 
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
+                    {/* СИНХРОНИЗАЦИЯ И ТОКЕН */}
                     <div className="flex items-center justify-between gap-4 mb-6 bg-white/50 p-2 rounded-2xl border border-[#60453910]">
                         <div className="flex items-center gap-3 pl-2">
                             <div className={`sync-status ${syncStatus === 'loading' ? 'sync-loading' : syncStatus === 'success' ? 'sync-success' : syncStatus === 'error' ? 'sync-error' : 'sync-idle'}`}>
@@ -307,7 +318,27 @@
                             </div>
                             <button onClick={() => fetchFromGithub(githubToken)} className="p-1.5 hover:bg-white rounded-lg transition-colors"><Icons.Refresh size={14}/></button>
                         </div>
-                        <input type="password" placeholder="Token" value={githubToken} onChange={e => { setGithubToken(e.target.value); localStorage.setItem('gh_token', e.target.value); }} className="text-[10px] p-2 border rounded-lg w-24 focus:w-40 transition-all outline-none bg-white/50" />
+                        
+                        {!isTokenVerified || syncStatus === 'error' ? (
+                            <input 
+                                type="password" 
+                                placeholder="GitHub Token" 
+                                value={githubToken} 
+                                onChange={e => { setGithubToken(e.target.value); localStorage.setItem('gh_token', e.target.value); }} 
+                                className="text-[10px] p-2 border rounded-lg w-32 focus:w-48 transition-all outline-none bg-white/50" 
+                            />
+                        ) : (
+                            <div className="px-3 py-1 bg-[#10b98110] rounded-lg border border-[#10b98120] flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                <span className="text-[9px] font-bold text-green-700 uppercase">Авторизован</span>
+                                <button 
+                                    onClick={() => { setIsTokenVerified(false); setSyncStatus('idle'); }} 
+                                    className="ml-2 text-[9px] font-bold text-[#604539] underline opacity-40 hover:opacity-100"
+                                >
+                                    Сменить
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <header className="flex items-center justify-between mb-8 border-b border-[#C7886B40] pb-6">
