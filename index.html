@@ -377,7 +377,13 @@
 
                     <header className="flex items-center justify-between mb-8 border-b border-[#C7886B40] pb-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 border-[#604539]">
+                            {/* ССЫЛКА НА САЙТ ПО КЛИКУ НА ИКОНКУ */}
+                            <a 
+                                href="https://she2pbis-byte.github.io/vn-game/" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 border-[#604539] hover:scale-105 active:scale-95 transition-all"
+                            >
                                 <img 
                                     src="catering-b.jpg" 
                                     alt="Catering" 
@@ -387,7 +393,7 @@
                                         e.target.parentElement.innerHTML = '<div class="text-white"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>';
                                     }}
                                 />
-                            </div>
+                            </a>
                             <div>
                                 <h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1>
                                 <p className="text-[10px] uppercase tracking-widest text-[#604539]">Кейтеринг Ванильного Неба</p>
