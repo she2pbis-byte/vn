@@ -802,7 +802,7 @@
         ],
         "rolesDisplay": "Официант",
         "rolePaid": {
-          "Официант": true
+          "Официант": false
         }
       },
       {
