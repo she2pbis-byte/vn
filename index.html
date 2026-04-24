@@ -101,9 +101,7 @@
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
-            const admins = ["Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
-            // --- GitHub Persistence ---
             const fetchFromGithub = useCallback(async (token) => {
                 if (!token) return;
                 setSyncStatus('loading');
@@ -150,7 +148,6 @@
                 }
             }, [fetchFromGithub, githubToken]);
 
-            // --- State Management ---
             const [newEvent, setNewEvent] = useState({ 
                 name: '', date: new Date().toISOString().split('T')[0], start: '', end: '', 
                 format: '', admin: '', guests: '', extraInfo: '', 
@@ -288,7 +285,6 @@
 
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
-                    {/* Sync Bar */}
                     <div className="flex items-center justify-between gap-4 mb-6 bg-white/50 p-2 rounded-2xl border border-[#60453910]">
                         <div className="flex items-center gap-3 pl-2">
                             <div className={`sync-status ${syncStatus === 'loading' ? 'sync-loading' : syncStatus === 'success' ? 'sync-success' : syncStatus === 'error' ? 'sync-error' : 'sync-idle'}`}>
@@ -382,13 +378,17 @@
                                                 )}
 
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className={`font-bold text-lg leading-tight truncate ${showArchive ? 'text-gray-500' : ''}`}>{ev.name}</h3>
-                                                    <p className="text-xs text-[#C7886B] font-bold uppercase mb-2 mt-1">{ev.format} {ev.start && `| ${ev.start}`}</p>
-                                                    <div className="flex gap-4 opacity-50 text-[10px] font-bold uppercase"><span>👥 {ev.guests}</span><span>🧑‍🍳 {ev.staff?.length || 0}</span></div>
+                                                    <h3 className={`font-bold text-lg leading-tight truncate mb-2 ${showArchive ? 'text-gray-500' : ''}`}>{ev.name}</h3>
+                                                    {/* ИНФОРМАЦИЯ НА РАЗНЫХ СТРОЧКАХ */}
+                                                    <div className="space-y-1">
+                                                        <p className="text-[11px] text-[#C7886B] font-bold uppercase tracking-tight">Формат: {ev.format || '—'}</p>
+                                                        <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Время: {ev.start || '—'} {ev.end ? `- ${ev.end}` : ''}</p>
+                                                        <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Гости: {ev.guests || 0} чел</p>
+                                                    </div>
+                                                    <div className="flex gap-4 opacity-50 text-[10px] font-bold uppercase mt-3"><span>🧑‍🍳 Персонал: {ev.staff?.length || 0}</span></div>
                                                 </div>
 
                                                 <div className="flex flex-col gap-2">
-                                                    {/* Иконка карандаша скрывается в архиве */}
                                                     {!showArchive && (
                                                         <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>
                                                     )}
@@ -415,7 +415,7 @@
                                     <span className="text-[11px] font-extrabold uppercase text-white tracking-widest">{currentEvent?.displayDate}</span>
                                 </div>
                                 <div className="p-8 bg-[#1F1713] text-white">
-                                    <div className="flex justify-between items-start">
+                                    <div className="flex justify-between items-start mb-4">
                                         <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
                                         {currentEvent?.date >= todayStr && (
                                             <div className="flex gap-2">
@@ -424,7 +424,23 @@
                                             </div>
                                         )}
                                     </div>
-                                    <p className="opacity-60 text-sm mt-1 uppercase font-bold">{currentEvent?.format} • {currentEvent?.start} • {currentEvent?.guests} чел</p>
+
+                                    {/* ИНФОРМАЦИЯ НА РАЗНЫХ СТРОЧКАХ В ДЕТАЛЯХ */}
+                                    <div className="space-y-2 mb-6">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#C7886B]"></div>
+                                            <p className="text-xs uppercase font-bold tracking-wider text-[#C7886B]">{currentEvent?.format || 'Формат не указан'}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-white opacity-40"></div>
+                                            <p className="text-xs uppercase font-bold tracking-wider opacity-60">Время проведения: {currentEvent?.start || '—'} {currentEvent?.end ? `— ${currentEvent?.end}` : ''}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-white opacity-40"></div>
+                                            <p className="text-xs uppercase font-bold tracking-wider opacity-60">Количество гостей: {currentEvent?.guests || 0} чел</p>
+                                        </div>
+                                    </div>
+
                                     {currentEvent?.extraInfo && <div className="mt-4 p-3 bg-white/5 rounded-xl border border-white/10 text-sm opacity-80">{currentEvent.extraInfo}</div>}
                                     
                                     <div className="flex gap-3 mt-6 overflow-x-auto pb-2">
