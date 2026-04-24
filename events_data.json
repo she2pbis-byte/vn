@@ -623,19 +623,7 @@
       "пов": ""
     },
     "displayDate": "20 апрель",
-    "staff": [
-      {
-        "id": "1776631885078",
-        "name": "Илья",
-        "time": "09:00",
-        "end": "",
-        "roles": [
-          "Официант"
-        ],
-        "rolesDisplay": "Официант",
-        "rolePaid": {}
-      }
-    ],
+    "staff": [],
     "status": {
       "checked": true
     }
