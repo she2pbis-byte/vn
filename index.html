@@ -27,13 +27,13 @@
             font-weight: 800; 
             padding: 4px 12px; 
             border-radius: 99px; 
-            min-width: 120px; 
+            min-width: 100px; 
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
             line-height: 1.4; 
-            letter-spacing: 0.025em; 
+            letter-spacing: 0.05em; 
             transition: all 0.3s ease;
         }
         .sync-idle { background: #e2e8f0; color: #64748b; }
@@ -144,7 +144,7 @@
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
-            const admins = ["Выберите админа", "Наталья", "Оксана", "Екатерина", "Татьяна", "Юлия", "Светлана"];
+            const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
             const fetchFromGithub = useCallback(async (token) => {
                 if (!token) {
@@ -242,12 +242,9 @@
                 return true;
             };
 
-            // ОБНОВЛЕННАЯ ЛОГИКА: Если сотрудников нет — оплачено (зеленый). Иначе проверка каждой роли.
             const isAllStaffPaid = (event) => {
                 if (!event) return false;
-                // Если сотрудников нет совсем, считаем мероприятие "закрытым" по финансам
                 if (!event.staff || event.staff.length === 0) return true;
-                
                 return event.staff.every(s => {
                     if (!s.roles || s.roles.length === 0) return true;
                     return s.roles.every(role => s.rolePaid && s.rolePaid[role] === true);
@@ -338,22 +335,22 @@
 
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
-                    {/* СИНХРОНИЗАЦИИ */}
+                    {/* ОБЛАСТЬ СИНХРОНИЗАЦИИ */}
                     <div className="flex items-center justify-between gap-4 mb-6 bg-white/60 p-2 rounded-2xl border border-[#60453915] backdrop-blur-sm shadow-sm">
                         <div className="flex items-center gap-2">
-                            <div className={`sync-status ${syncStatus === 'loading' ? 'sync-loading' : syncStatus === 'success' ? 'sync-success' : syncStatus === 'error' ? 'sync-error' : 'sync-idle'}`}>
-                                <Icons.Refresh size={12} className={syncStatus === 'loading' ? 'spin-slow' : ''} />
-                                <span>
-                                    {syncStatus === 'loading' ? 'СИНХРОНИЗАЦИЯ...' : syncStatus === 'success' ? 'ОБНОВЛЕНО' : syncStatus === 'error' ? 'ОШИБКА СЕТИ' : 'ГОТОВО К РАБОТЕ'}
-                                </span>
-                            </div>
+                            {/* Значок обновления перенесен в левый край */}
                             <button 
                                 onClick={() => fetchFromGithub(githubToken)} 
                                 className="p-2 hover:bg-white rounded-xl transition-all shadow-sm text-[#604539] flex items-center justify-center active:scale-95"
                                 title="Обновить вручную"
                             >
-                                <Icons.Refresh size={14}/>
+                                <Icons.Refresh size={14} className={syncStatus === 'loading' ? 'spin-slow' : ''} />
                             </button>
+                            <div className={`sync-status ${syncStatus === 'loading' ? 'sync-loading' : syncStatus === 'success' ? 'sync-success' : syncStatus === 'error' ? 'sync-error' : 'sync-idle'}`}>
+                                <span>
+                                    {syncStatus === 'loading' ? 'ЗАГРУЗКА...' : syncStatus === 'success' ? 'ОБНОВЛЕНО' : syncStatus === 'error' ? 'ОШИБКА' : 'ГОТОВО'}
+                                </span>
+                            </div>
                         </div>
                         
                         {!isTokenVerified || syncStatus === 'error' ? (
@@ -367,12 +364,12 @@
                         ) : (
                             <div className="px-3 py-1.5 bg-[#10b98110] rounded-xl border border-[#10b98120] flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
-                                <span className="text-[9px] font-bold text-green-700 uppercase tracking-wide">Cloud Online</span>
+                                <span className="text-[9px] font-bold text-green-700 uppercase tracking-widest">ОНЛАЙН</span>
                                 <button 
                                     onClick={() => { setIsTokenVerified(false); setSyncStatus('idle'); }} 
                                     className="ml-1 text-[9px] font-black text-[#604539] opacity-20 hover:opacity-100 transition-opacity"
                                 >
-                                    LOGOUT
+                                    ВЫХОД
                                 </button>
                             </div>
                         )}
@@ -400,7 +397,7 @@
                                     {!isFormOpen ? (
                                         <button 
                                             onClick={() => setIsFormOpen(true)}
-                                            className="w-full bg-white p-4 rounded-2xl border-2 border-dashed border-[#60453940] flex items-center justify-center gap-3 text-[#604539] hover:bg-[#60453905] hover:border-[#604539] transition-all group"
+                                            className="w-full bg-white p-4 rounded-2xl border border-[#604539] flex items-center justify-center gap-3 text-[#604539] hover:bg-[#60453905] transition-all group"
                                         >
                                             <div className="p-2 bg-[#60453910] rounded-lg group-hover:bg-[#60453920] transition-colors">
                                                 <Icons.Plus size={18} />
@@ -427,9 +424,8 @@
                                                     <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none">
                                                         {formats.map(f => <option key={f} value={f}>{f}</option>)}
                                                     </select>
-                                                    <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none">
-                                                        {admins.map(a => <option key={a} value={a}>{a}</option>)}
-                                                    </select>
+                                                    {/* Поля количества гостей и администратора поменялись местами по вертикали */}
+                                                    <input type="number" placeholder="Кол-во гостей" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none" />
                                                 </div>
 
                                                 <div className="space-y-4">
@@ -438,7 +434,9 @@
                                                         <SimpleTimePicker label="Окончание" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
                                                     </div>
                                                     <div className="flex flex-col gap-3">
-                                                        <input type="number" placeholder="Кол-во гостей" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none" />
+                                                        <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none">
+                                                            {admins.map(a => <option key={a} value={a}>{a}</option>)}
+                                                        </select>
                                                         <div className="flex gap-2">
                                                             {Object.entries({'оф': <Icons.Cloche size={16}/>, 'бар': <Icons.Martini size={16}/>, 'мой': <Icons.Droplet size={16}/>, 'пов': <Icons.Pot size={16}/>}).map(([role, icon]) => (
                                                                 <div key={role} className="flex-1 relative">
