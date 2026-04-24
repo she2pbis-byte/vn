@@ -215,6 +215,16 @@
                 return isTimeParamsReady(event) && event.status?.checked && isAllRolesActive(event);
             };
 
+            // НОВАЯ ЛОГИКА: Проверка полной оплаты всех сотрудников на мероприятии
+            const isAllPaid = (event) => {
+                if (!event.staff || event.staff.length === 0) return true;
+                return event.staff.every(s => {
+                    if (!s.roles || s.roles.length === 0) return true;
+                    // Каждая роль в массиве roles должна иметь флаг true в объекте rolePaid
+                    return s.roles.every(role => s.rolePaid && s.rolePaid[role] === true);
+                });
+            };
+
             const handleAddEvent = () => {
                 if (!newEvent.name || !newEvent.guests) return;
                 const d = new Date(newEvent.date);
@@ -241,7 +251,6 @@
 
             const startEditEvent = (e, ev) => {
                 if (e) e.stopPropagation();
-                // Запрещаем редактирование параметров, если дата прошла
                 if (ev.date < todayStr) return;
                 
                 setEditingEventId(ev.id);
@@ -370,6 +379,7 @@
                                     const timeReady = isTimeParamsReady(ev);
                                     const isChecked = ev.status?.checked;
                                     const isPast = ev.date < todayStr;
+                                    const paidStatus = isAllPaid(ev);
 
                                     return (
                                         <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
@@ -378,7 +388,7 @@
                                             </div>
                                             
                                             <div className="flex gap-4 p-5">
-                                                {!isPast && (
+                                                {!isPast ? (
                                                     <div className="flex flex-col gap-2 flex-shrink-0">
                                                         <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${timeReady ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}>
                                                             <Icons.Clock size={20} color={timeReady ? '#10b981' : '#ef4444'} />
@@ -390,13 +400,14 @@
                                                             <Icons.DoubleCheck size={32} color={isChecked ? '#3b82f6' : '#e2e8f0'} />
                                                         </div>
                                                     </div>
-                                                )}
-                                                
-                                                {/* Иконка замка для прошедших событий */}
-                                                {isPast && (
+                                                ) : (
+                                                    // ДЛЯ АРХИВА: ИНДИКАЦИЯ ОПЛАТЫ
                                                     <div className="flex flex-col gap-2 flex-shrink-0">
-                                                        <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-100 text-gray-400">
-                                                            <Icons.Lock size={20} />
+                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${paidStatus ? 'bg-green-100' : 'bg-red-100'}`}>
+                                                            <span className={`text-2xl font-bold ${paidStatus ? 'text-green-600' : 'text-red-500'}`}>₽</span>
+                                                        </div>
+                                                        <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400">
+                                                            <Icons.Lock size={18} />
                                                         </div>
                                                     </div>
                                                 )}
@@ -428,12 +439,12 @@
                             <div className="flex items-center justify-between mb-6">
                                 <button onClick={()=>setView('list')} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад</button>
                                 <div className="flex items-center gap-3">
-                                    {/* Блокируем карандаш в деталях, если мероприятие прошло */}
                                     {currentEvent?.date >= todayStr ? (
                                         <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>
                                     ) : (
-                                        <div className="text-gray-300 p-2 opacity-50 cursor-not-allowed" title="Редактирование параметров заблокировано (дата прошла)">
-                                            <Icons.Lock size={20} />
+                                        <div className="text-gray-300 p-2 opacity-50 cursor-not-allowed flex items-center gap-2" title="Редактирование параметров заблокировано (дата прошла)">
+                                             <Icons.Lock size={20} />
+                                             <span className={`text-xl font-bold ${isAllPaid(currentEvent) ? 'text-green-500' : 'text-red-500'}`}>₽</span>
                                         </div>
                                     )}
                                     <button onClick={(e) => fastDeleteEvent(e, selectedEventId)} className="text-red-300 p-2"><Icons.Trash size={20} /></button>
@@ -448,7 +459,12 @@
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-center gap-3">
                                             <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
-                                            {currentEvent?.date < todayStr && <Icons.Lock size={20} className="text-[#C7886B] opacity-50" />}
+                                            {currentEvent?.date < todayStr && (
+                                                <div className="flex items-center gap-2 opacity-60">
+                                                    <Icons.Lock size={20} className="text-[#C7886B]" />
+                                                    <span className={`text-xl font-bold ${isAllPaid(currentEvent) ? 'text-green-400' : 'text-red-400'}`}>₽</span>
+                                                </div>
+                                            )}
                                         </div>
                                         {currentEvent?.date >= todayStr && (
                                             <div className="flex gap-2">
