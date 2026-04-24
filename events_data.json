@@ -287,17 +287,6 @@
         ],
         "rolesDisplay": "Официант",
         "rolePaid": {}
-      },
-      {
-        "id": "1776111308863",
-        "name": "Телов (лодка)",
-        "time": "12:00",
-        "end": "",
-        "roles": [
-          "Официант"
-        ],
-        "rolesDisplay": "Официант",
-        "rolePaid": {}
       }
     ],
     "status": {
