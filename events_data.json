@@ -822,5 +822,27 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1777042627430",
+    "name": "Белояр",
+    "date": "2026-04-25",
+    "start": "15:00",
+    "end": "16:00",
+    "format": "Банкет",
+    "admin": "Илья",
+    "guests": "8",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "1",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "25 апрель",
+    "staff": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
