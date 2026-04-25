@@ -119,6 +119,16 @@
             70% { border-color: #ef4444; box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
             100% { border-color: #ef4444; box-shadow: 0 0 0 0px rgba(239, 68, 68, 0); }
         }
+
+        /* Полностью скрываем input для вызова пикера */
+        .hidden-date-input {
+            position: absolute;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -194,6 +204,7 @@
 
         const Calendar = ({ events, onSelectDate, selectedDate, calendarRef }) => {
             const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate || new Date()));
+            const dateInputRef = useRef(null);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
@@ -211,6 +222,30 @@
 
             const prevMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month - 1, 1)); };
             const nextMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month + 1, 1)); };
+
+            const handleJumpDate = (e) => {
+                const dateVal = e.target.value;
+                if (!dateVal) return;
+                const d = new Date(dateVal);
+                setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+                onSelectDate(dateVal);
+            };
+
+            const triggerJump = (e) => {
+                e.stopPropagation();
+                if (dateInputRef.current) {
+                    try {
+                        if (dateInputRef.current.showPicker) {
+                            dateInputRef.current.showPicker();
+                        } else {
+                            dateInputRef.current.focus();
+                            dateInputRef.current.click();
+                        }
+                    } catch (err) {
+                        dateInputRef.current.click();
+                    }
+                }
+            };
 
             const hasDebtsInPastMonths = useMemo(() => {
                 const currentMonthStart = new Date(year, month, 1);
@@ -328,6 +363,21 @@
                             );
                         })}
                     </div>
+                    <div className="mt-4 pt-4 border-t border-[#60453910]">
+                        <input 
+                            ref={dateInputRef}
+                            type="date" 
+                            className="hidden-date-input" 
+                            onChange={handleJumpDate}
+                        />
+                        <button 
+                            onClick={triggerJump}
+                            className="w-full py-2.5 px-4 bg-[#60453908] hover:bg-[#60453915] text-[#604539] rounded-xl flex items-center justify-center gap-2 transition-all border border-[#60453910]"
+                        >
+                            <Icons.Calendar size={14} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Перейти к дате</span>
+                        </button>
+                    </div>
                 </div>
             );
         };
@@ -412,7 +462,7 @@
             useEffect(() => {
                 const handleClickOutside = (event) => {
                     if (isCalendarOpen && calendarRef.current && !calendarRef.current.contains(event.target) && calendarButtonRef.current && !calendarButtonRef.current.contains(event.target)) {
-                        setIsCalendarOpen(false);
+                        // Не закрываем при выборе даты
                     }
                 };
                 document.addEventListener('click', handleClickOutside);
