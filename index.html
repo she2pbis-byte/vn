@@ -328,9 +328,6 @@
                             );
                         })}
                     </div>
-                    <div className="flex justify-center mt-4">
-                        <button onClick={(e) => { e.stopPropagation(); onSelectDate(null); }} className="text-[10px] font-bold uppercase tracking-widest text-[#604539] opacity-40 hover:opacity-100 transition-opacity">Сбросить фильтр</button>
-                    </div>
                 </div>
             );
         };
@@ -408,7 +405,6 @@
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
             const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
-            // --- НОВОЕ: Прокрутка вверх при любой смене экрана ---
             useEffect(() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, [view, selectedEventId, isFormOpen, isCalendarOpen]);
