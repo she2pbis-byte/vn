@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Управление персоналом</title>
-    <link rel="icon" type="image/x-icon" href="catering-b.ico">
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -95,7 +94,6 @@
             background-color: #f3f4f6;
             color: #9ca3af;
         }
-        /* Красная рамка для дат с ошибками или неподтвержденных */
         .calendar-day.has-error:not(.selected) {
             box-shadow: inset 0 0 0 1.5px #ef4444;
         }
@@ -151,29 +149,19 @@
             return counts;
         };
 
-        // Проверка полноты заполнения мероприятия
         const checkEventCompleteness = (ev) => {
-            // Проверка базового тайминга
             if (!ev.start) return false;
-            
-            // Проверка тайминга персонала
             if (ev.staff && ev.staff.length > 0) {
                 if (ev.staff.some(s => !s.time)) return false;
             }
-            
-            // Проверка соответствия требуемому количеству персонала
             const counts = getStaffCounts(ev);
             const rolesComplete = ['оф', 'бар', 'мой', 'пов'].every(roleKey => {
                 const target = parseInt(ev.neededStaff?.[roleKey] || 0);
                 const actual = counts[keyToLabel[roleKey]];
                 return target === 0 || actual >= target;
             });
-            
             if (!rolesComplete) return false;
-            
-            // Проверка клика по кнопке с двойной галочкой (isChecked)
             if (!ev.status?.checked) return false;
-            
             return true;
         };
 
@@ -226,18 +214,10 @@
 
             const hasError = (day) => {
                 if (!day) return false;
-                
-                // Игнорируем правило красной рамки, если дата уже прошла
                 if (isPast(day)) return false;
-
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const daysEvents = events.filter(e => e.date === dateStr);
-                
-                // Если мероприятий на дату нет - ошибок нет
                 if (daysEvents.length === 0) return false;
-                
-                // Красная рамка отображается, если хотя бы одно мероприятие на эту дату не заполнено полностью
-                // или не отмечено двойной галочкой (логика внутри checkEventCompleteness)
                 return daysEvents.some(ev => !checkEventCompleteness(ev));
             };
 
@@ -470,7 +450,6 @@
 
             const toggleEventChecked = (e, eventId) => {
                 e.stopPropagation();
-                // Даже в архиве разрешим переключать статус, если нужно
                 const updated = events.map(ev => ev.id === eventId ? { ...ev, status: { ...ev.status, checked: !ev.status?.checked } } : ev);
                 setEvents(updated);
                 saveToGithub(updated);
@@ -523,7 +502,9 @@
 
             const handleBackFromFilter = () => {
                 setFilterDate(null);
-                setIsCalendarOpen(true);
+                setView('list'); // Принудительно возвращаемся к списку
+                setIsCalendarOpen(true); // Принудительно открываем календарь
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
             const handleToggleCalendar = () => {
@@ -701,7 +682,7 @@
                     ) : (
                         <div className="animate-in">
                             <div className="flex items-center justify-between mb-6">
-                                <button onClick={()=>setView('list')} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад</button>
+                                <button onClick={handleBackFromFilter} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад к календарю</button>
                                 <div className="flex items-center gap-3">
                                     {(currentEvent?.date >= todayStr || showArchive) && <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>}
                                     <button onClick={(e) => fastDeleteEvent(e, selectedEventId)} className="text-red-300 p-2"><Icons.Trash size={20} /></button>
