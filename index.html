@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Управление персоналом</title>
+    <!-- Добавление favicon -->
+    <link rel="icon" type="image/x-icon" href="catering-b.ico">
+    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -65,7 +68,6 @@
         .col-timing { width: 25%; }
         .col-actions { width: 20%; }
 
-        /* Стиль для авто-расширяемого текстового поля */
         .auto-textarea {
             resize: none;
             overflow: hidden;
@@ -107,10 +109,8 @@
             X: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         };
 
-        // Компонент авто-расширяемого текстового поля
         const AutoHeightTextarea = ({ value, onChange, placeholder, className }) => {
             const textareaRef = useRef(null);
-
             const adjustHeight = () => {
                 const textarea = textareaRef.current;
                 if (textarea) {
@@ -118,19 +118,12 @@
                     textarea.style.height = `${textarea.scrollHeight}px`;
                 }
             };
-
-            useEffect(() => {
-                adjustHeight();
-            }, [value]);
-
+            useEffect(() => { adjustHeight(); }, [value]);
             return (
                 <textarea
                     ref={textareaRef}
                     value={value}
-                    onChange={(e) => {
-                        onChange(e);
-                        adjustHeight();
-                    }}
+                    onChange={(e) => { onChange(e); adjustHeight(); }}
                     placeholder={placeholder}
                     className={`${className} auto-textarea`}
                 />
@@ -185,10 +178,7 @@
             const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
             const fetchFromGithub = useCallback(async (token) => {
-                if (!token) {
-                    setIsTokenVerified(false);
-                    return;
-                }
+                if (!token) { setIsTokenVerified(false); return; }
                 setSyncStatus('loading');
                 try {
                     const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?nocache=${Date.now()}`, {
@@ -374,7 +364,6 @@
 
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
-                    {/* ОБЛАСТЬ СИНХРОНИЗАЦИИ */}
                     <div className="flex items-center justify-between gap-4 mb-6 bg-white/60 p-2 rounded-2xl border border-[#60453915] backdrop-blur-sm shadow-sm">
                         <div className="flex items-center gap-2">
                             <button 
@@ -423,7 +412,7 @@
                                 className="w-12 h-12 bg-[#604539] rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 border-[#604539] hover:scale-105 active:scale-95 transition-all"
                             >
                                 <img 
-                                    src="catering-b.jpg" 
+                                    src="catering-b.ico" 
                                     alt="Catering" 
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
@@ -512,18 +501,8 @@
                                             </div>
 
                                             <div className="flex gap-2">
-                                                <button 
-                                                    onClick={handleAddEvent} 
-                                                    className="flex-[3] bg-[#604539] text-white py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest shadow-lg active:scale-[0.98] transition-transform"
-                                                >
-                                                    {editingEventId ? 'Сохранить' : 'Добавить'}
-                                                </button>
-                                                <button 
-                                                    onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} 
-                                                    className="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest hover:bg-gray-200 transition-colors"
-                                                >
-                                                    Отмена
-                                                </button>
+                                                <button onClick={handleAddEvent} className="flex-[3] bg-[#604539] text-white py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest shadow-lg active:scale-[0.98] transition-transform">{editingEventId ? 'Сохранить' : 'Добавить'}</button>
+                                                <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest hover:bg-gray-200 transition-colors">Отмена</button>
                                             </div>
                                         </div>
                                     )}
@@ -575,9 +554,7 @@
                                                 </div>
 
                                                 <div className="flex flex-col gap-2">
-                                                    {!isPast && (
-                                                        <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>
-                                                    )}
+                                                    {!isPast && <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>}
                                                     <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500 p-1"><Icons.Trash size={16} /></button>
                                                 </div>
                                             </div>
@@ -591,9 +568,7 @@
                             <div className="flex items-center justify-between mb-6">
                                 <button onClick={()=>setView('list')} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад</button>
                                 <div className="flex items-center gap-3">
-                                    {currentEvent?.date >= todayStr && (
-                                        <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>
-                                    )}
+                                    {currentEvent?.date >= todayStr && <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>}
                                     <button onClick={(e) => fastDeleteEvent(e, selectedEventId)} className="text-red-300 p-2"><Icons.Trash size={20} /></button>
                                 </div>
                             </div>
@@ -625,9 +600,7 @@
                                         <p className="text-xs uppercase font-bold tracking-wider opacity-60">Тайминг: {currentEvent?.start || '—'} {currentEvent?.end ? `— ${currentEvent?.end}` : ''}</p>
                                         <p className="text-xs uppercase font-bold tracking-wider opacity-60">Гости: {currentEvent?.guests || 0} чел</p>
                                         {currentEvent?.extraInfo && (
-                                            <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10 text-sm italic opacity-80 whitespace-pre-wrap">
-                                                {currentEvent.extraInfo}
-                                            </div>
+                                            <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10 text-sm italic opacity-80 whitespace-pre-wrap">{currentEvent.extraInfo}</div>
                                         )}
                                     </div>
                                     
@@ -654,24 +627,13 @@
                                                 onClick={() => setIsStaffFormOpen(true)}
                                                 className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl border-none outline-none mb-4"
                                             >
-                                                <div className="p-2 bg-[#60453910] rounded-lg">
-                                                    <Icons.Plus size={18} />
-                                                </div>
+                                                <div className="p-2 bg-[#60453910] rounded-lg"><Icons.Plus size={18} /></div>
                                                 <span className="font-bold uppercase tracking-widest text-xs">Добавить сотрудника</span>
                                             </button>
                                         ) : (
                                             <div className="bg-[#FFECD240] p-4 rounded-2xl border-2 border-[#604539] border-l-8 animate-in relative">
-                                                <button 
-                                                    onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); }}
-                                                    className="absolute right-3 top-3 p-1.5 text-gray-300 hover:text-red-500 transition-colors"
-                                                >
-                                                    <Icons.X size={16}/>
-                                                </button>
-                                                <h3 className="text-xs font-bold mb-4 flex items-center gap-2 text-[#604539] uppercase tracking-wide">
-                                                    {editingStaffId ? <Icons.Edit size={14}/> : <Icons.Plus size={14}/>} 
-                                                    {editingStaffId ? 'Редактировать' : 'Новый сотрудник'}
-                                                </h3>
-
+                                                <button onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); }} className="absolute right-3 top-3 p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={16}/></button>
+                                                <h3 className="text-xs font-bold mb-4 flex items-center gap-2 text-[#604539] uppercase tracking-wide">{editingStaffId ? <Icons.Edit size={14}/> : <Icons.Plus size={14}/>} {editingStaffId ? 'Редактировать' : 'Новый сотрудник'}</h3>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                                                     <input type="text" placeholder="Имя сотрудника" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-2.5 rounded-lg border-2 border-[#60453910] bg-white outline-none text-sm placeholder:text-gray-300" />
                                                     <div className="flex gap-2">
@@ -684,20 +646,9 @@
                                                         <button key={r} onClick={()=>setNewStaff(p=>({...p, roles: p.roles.includes(r)?p.roles.filter(x=>x!==r):[...p.roles, r]}))} className={`py-2 rounded-lg text-[9px] font-bold uppercase border-2 transition-all ${newStaff.roles.includes(r)?'bg-[#604539] border-[#604539] text-white':'border-[#60453910] bg-white text-[#604539]'}`}>{r}</button>
                                                     ))}
                                                 </div>
-                                                
                                                 <div className="flex gap-2">
-                                                    <button 
-                                                        onClick={handleAddStaff} 
-                                                        className="flex-[2] bg-[#604539] text-white py-2.5 rounded-lg uppercase font-bold text-[10px] tracking-widest shadow-sm active:scale-[0.98] transition-transform"
-                                                    >
-                                                        {editingStaffId ? 'Сохранить' : 'Подтвердить'}
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); }} 
-                                                        className="flex-1 bg-white border-2 border-[#60453915] text-[#604539] py-2.5 rounded-lg uppercase font-bold text-[10px] tracking-widest active:scale-[0.98] transition-transform"
-                                                    >
-                                                        Отмена
-                                                    </button>
+                                                    <button onClick={handleAddStaff} className="flex-[2] bg-[#604539] text-white py-2.5 rounded-lg uppercase font-bold text-[10px] tracking-widest shadow-sm active:scale-[0.98] transition-transform">{editingStaffId ? 'Сохранить' : 'Подтвердить'}</button>
+                                                    <button onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); }} className="flex-1 bg-white border-2 border-[#60453915] text-[#604539] py-2.5 rounded-lg uppercase font-bold text-[10px] tracking-widest active:scale-[0.98] transition-transform">Отмена</button>
                                                 </div>
                                             </div>
                                         )}
@@ -722,11 +673,7 @@
                                                             </div>
                                                             <div className="flex flex-wrap gap-1.5 mt-1">
                                                                 {s.roles.map((role, idx) => (
-                                                                    <div 
-                                                                        key={idx} 
-                                                                        onClick={() => toggleStaffRolePaid(s.id, role)}
-                                                                        className={`role-badge border ${s.rolePaid?.[role] ? 'bg-green-100 border-green-200 text-green-700' : 'bg-gray-50 border-gray-100 text-gray-500'}`}
-                                                                    >
+                                                                    <div key={idx} onClick={() => toggleStaffRolePaid(s.id, role)} className={`role-badge border ${s.rolePaid?.[role] ? 'bg-green-100 border-green-200 text-green-700' : 'bg-gray-50 border-gray-100 text-gray-500'}`}>
                                                                         {roleIconMap[role]?.icon}
                                                                         <span className="leading-none">{role}</span>
                                                                         {s.rolePaid?.[role] && <span className="font-black text-xs">₽</span>}
