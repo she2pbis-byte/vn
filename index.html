@@ -90,12 +90,18 @@
             background: #C7886B;
             border-radius: 50%;
         }
+        /* Стиль для текущей даты (сегодня) */
+        .calendar-day.is-today {
+            background-color: #604539 !important;
+            color: white !important;
+            font-weight: 800 !important;
+        }
         .calendar-day.has-unpaid-debt {
             background-color: #ef4444 !important;
             color: white !important;
             font-weight: 800;
         }
-        .calendar-day.past-date:not(.selected):not(.has-unpaid-debt) {
+        .calendar-day.past-date:not(.selected):not(.has-unpaid-debt):not(.is-today) {
             background-color: #f3f4f6;
             color: #9ca3af;
         }
@@ -207,17 +213,14 @@
             const prevMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month - 1, 1)); };
             const nextMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month + 1, 1)); };
 
-            // Проверка на наличие долгов в ПРЕДЫДУЩИХ месяцах относительно текущего отображаемого
             const hasDebtsInPastMonths = useMemo(() => {
                 const currentMonthStart = new Date(year, month, 1);
                 return events.some(ev => {
                     const evDate = new Date(ev.date);
-                    // Событие раньше текущего отображаемого месяца И в прошлом относительно сегодня И не оплачено
                     return evDate < currentMonthStart && evDate < today && !isEventFullyPaid(ev);
                 });
             }, [events, year, month, today]);
 
-            // Проверка на ошибки в БУДУЩЕМ относительно отображаемого
             const checkNextMonthHasErrors = () => {
                 const currentMonthEnd = new Date(year, month + 1, 1);
                 return events.some(ev => {
@@ -311,11 +314,11 @@
                                     }}
                                     className={`
                                         calendar-day ${!day ? 'invisible' : ''} 
-                                        ${selected ? 'bg-[#604539] text-white font-black scale-110 z-10' : ''}
-                                        ${!selected && unpaid ? 'has-unpaid-debt' : ''}
-                                        ${!selected && !unpaid && past ? 'past-date' : ''}
-                                        ${!selected && !unpaid && !past ? 'hover:bg-[#FFECD2]' : ''}
-                                        ${current ? 'font-black border-2 border-[#60453920]' : ''}
+                                        ${selected ? 'bg-[#C7886B] text-white font-black scale-110 z-10' : ''}
+                                        ${current && !selected ? 'is-today shadow-lg scale-105' : ''}
+                                        ${!selected && !current && unpaid ? 'has-unpaid-debt' : ''}
+                                        ${!selected && !current && !unpaid && past ? 'past-date' : ''}
+                                        ${!selected && !current && !unpaid && !past ? 'hover:bg-[#FFECD2]' : ''}
                                         ${hasEv ? 'has-event' : ''}
                                         ${err ? 'has-error' : ''}
                                         transition-all duration-200
