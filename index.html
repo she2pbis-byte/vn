@@ -120,7 +120,6 @@
             100% { border-color: #ef4444; box-shadow: 0 0 0 0px rgba(239, 68, 68, 0); }
         }
 
-        /* Полностью скрываем input для вызова пикера */
         .hidden-date-input {
             position: absolute;
             opacity: 0;
@@ -459,16 +458,6 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, [view, selectedEventId, isFormOpen, isCalendarOpen]);
 
-            useEffect(() => {
-                const handleClickOutside = (event) => {
-                    if (isCalendarOpen && calendarRef.current && !calendarRef.current.contains(event.target) && calendarButtonRef.current && !calendarButtonRef.current.contains(event.target)) {
-                        // Не закрываем при выборе даты
-                    }
-                };
-                document.addEventListener('click', handleClickOutside);
-                return () => document.removeEventListener('click', handleClickOutside);
-            }, [isCalendarOpen]);
-
             const fetchFromGithub = useCallback(async (token) => {
                 if (!token) { setIsTokenVerified(false); return; }
                 setSyncStatus('loading');
@@ -606,10 +595,15 @@
                 saveToGithub(updated);
             };
 
-            const handleBackFromFilter = () => {
-                setFilterDate(null);
-                setView('list'); 
-                setIsCalendarOpen(true); 
+            const handleBackToPrevState = () => {
+                setView('list');
+                if (filterDate) {
+                    setIsCalendarOpen(false);
+                } else if (showArchive) {
+                    setIsCalendarOpen(false);
+                } else {
+                    setIsCalendarOpen(false);
+                }
             };
 
             const handleToggleCalendar = () => {
@@ -621,6 +615,14 @@
                     setView('list');
                     setIsFormOpen(false);
                 }
+            };
+
+            // НОВАЯ ЛОГИКА: Сброс фильтра и открытие календаря
+            const handleGoToCalendar = () => {
+                setFilterDate(null);
+                setIsCalendarOpen(true);
+                setView('list');
+                setShowArchive(false);
             };
 
             const roleIconMap = {
@@ -685,7 +687,8 @@
                             {filterDate && (
                                 <div className="flex items-center justify-between bg-white/40 px-4 py-2 rounded-xl border border-[#60453920]">
                                     <span className="text-[10px] font-black uppercase text-[#604539]">Фильтр по дате: {filterDate.split('-').reverse().join('.')}</span>
-                                    <button onClick={handleBackFromFilter} className="text-[10px] font-black text-[#604539] hover:underline uppercase tracking-widest">НАЗАД</button>
+                                    {/* Измененная кнопка: К календарю */}
+                                    <button onClick={handleGoToCalendar} className="text-[10px] font-black text-[#604539] hover:underline uppercase tracking-widest">К КАЛЕНДАРЮ</button>
                                 </div>
                             )}
 
@@ -787,7 +790,7 @@
                     ) : (
                         <div className="animate-in">
                             <div className="flex items-center justify-between mb-6">
-                                <button onClick={handleBackFromFilter} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад к календарю</button>
+                                <button onClick={handleBackToPrevState} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад</button>
                                 <div className="flex items-center gap-3">
                                     {(currentEvent?.date >= todayStr || showArchive) && <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>}
                                     <button onClick={(e) => fastDeleteEvent(e, selectedEventId)} className="text-red-300 p-2"><Icons.Trash size={20} /></button>
