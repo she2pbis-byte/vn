@@ -816,7 +816,9 @@
           "Официант"
         ],
         "rolesDisplay": "Официант",
-        "rolePaid": {}
+        "rolePaid": {
+          "Официант": true
+        }
       }
     ],
     "status": {
