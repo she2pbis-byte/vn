@@ -90,7 +90,6 @@
             background: #C7886B;
             border-radius: 50%;
         }
-        /* Стиль для неоплаченных долгов в календаре */
         .calendar-day.has-unpaid-debt {
             background-color: #ef4444 !important;
             color: white !important;
@@ -108,7 +107,7 @@
         }
 
         .pulse-red-border {
-            animation: pulse-red 2s infinite;
+            animation: pulse-red 1.5s infinite;
         }
         @keyframes pulse-red {
             0% { border-color: #ef4444; box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.4); }
@@ -208,15 +207,22 @@
             const prevMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month - 1, 1)); };
             const nextMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month + 1, 1)); };
 
-            const checkNextMonthHasErrors = () => {
-                const nextMonthDate = new Date(year, month + 1, 1);
-                const nmYear = nextMonthDate.getFullYear();
-                const nmMonth = nextMonthDate.getMonth();
-                
+            // Проверка на наличие долгов в ПРЕДЫДУЩИХ месяцах относительно текущего отображаемого
+            const hasDebtsInPastMonths = useMemo(() => {
+                const currentMonthStart = new Date(year, month, 1);
                 return events.some(ev => {
                     const evDate = new Date(ev.date);
-                    const isNextMonth = evDate.getFullYear() === nmYear && evDate.getMonth() === nmMonth;
-                    return isNextMonth && !checkEventCompleteness(ev);
+                    // Событие раньше текущего отображаемого месяца И в прошлом относительно сегодня И не оплачено
+                    return evDate < currentMonthStart && evDate < today && !isEventFullyPaid(ev);
+                });
+            }, [events, year, month, today]);
+
+            // Проверка на ошибки в БУДУЩЕМ относительно отображаемого
+            const checkNextMonthHasErrors = () => {
+                const currentMonthEnd = new Date(year, month + 1, 1);
+                return events.some(ev => {
+                    const evDate = new Date(ev.date);
+                    return evDate >= currentMonthEnd && !checkEventCompleteness(ev);
                 });
             };
 
@@ -257,19 +263,22 @@
                 return daysEvents.some(ev => !checkEventCompleteness(ev));
             };
 
-            // Новая логика: проверка долгов по оплате для прошедших дат
             const hasUnpaidDebt = (day) => {
                 if (!day || !isPast(day)) return false;
                 const daysEvents = getDayEvents(day);
                 if (daysEvents.length === 0) return false;
-                // Если хоть одно мероприятие в этот день имеет неоплаченных сотрудников
                 return daysEvents.some(ev => !isEventFullyPaid(ev));
             };
 
             return (
                 <div ref={calendarRef} className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
                     <div className="flex items-center justify-between mb-4">
-                        <button onClick={prevMonth} className="p-1 hover:bg-[#60453910] rounded-lg transition-colors"><Icons.ChevronLeft /></button>
+                        <button 
+                            onClick={prevMonth} 
+                            className={`p-1 rounded-lg border-2 transition-all duration-300 ${hasDebtsInPastMonths ? 'pulse-red-border text-red-500 bg-red-50 border-red-500' : 'hover:bg-[#60453910] border-transparent'}`}
+                        >
+                            <Icons.ChevronLeft />
+                        </button>
                         <h3 className="font-bold uppercase tracking-widest text-[#604539] text-sm">{monthName} {year}</h3>
                         <button 
                             onClick={nextMonth} 
