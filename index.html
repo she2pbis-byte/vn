@@ -80,6 +80,7 @@
             border-radius: 8px;
             cursor: pointer;
             position: relative;
+            box-sizing: border-box;
         }
         .calendar-day.has-event::after {
             content: '';
@@ -93,6 +94,13 @@
         .calendar-day.past-date:not(.selected) {
             background-color: #f3f4f6;
             color: #9ca3af;
+        }
+        /* Красная рамка для дат с ошибками или неподтвержденных */
+        .calendar-day.has-error:not(.selected) {
+            box-shadow: inset 0 0 0 1.5px #ef4444;
+        }
+        .calendar-day.has-error.selected {
+            box-shadow: 0 0 0 2px #ef4444;
         }
     </style>
 </head>
@@ -130,6 +138,43 @@
             Users: ({size=18, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
             Refresh: ({size=14, className=""}) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>,
             X: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        };
+
+        const keyToLabel = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
+        
+        const getStaffCounts = (ev) => {
+            const counts = { 'Официант': 0, 'Бармен': 0, 'Мойщица': 0, 'Повар': 0 };
+            if (!ev || !ev.staff) return counts;
+            ev.staff.forEach(s => {
+                s.roles.forEach(role => { if (counts.hasOwnProperty(role)) counts[role]++; });
+            });
+            return counts;
+        };
+
+        // Проверка полноты заполнения мероприятия
+        const checkEventCompleteness = (ev) => {
+            // Проверка базового тайминга
+            if (!ev.start) return false;
+            
+            // Проверка тайминга персонала
+            if (ev.staff && ev.staff.length > 0) {
+                if (ev.staff.some(s => !s.time)) return false;
+            }
+            
+            // Проверка соответствия требуемому количеству персонала
+            const counts = getStaffCounts(ev);
+            const rolesComplete = ['оф', 'бар', 'мой', 'пов'].every(roleKey => {
+                const target = parseInt(ev.neededStaff?.[roleKey] || 0);
+                const actual = counts[keyToLabel[roleKey]];
+                return target === 0 || actual >= target;
+            });
+            
+            if (!rolesComplete) return false;
+            
+            // Проверка клика по кнопке с двойной галочкой (isChecked)
+            if (!ev.status?.checked) return false;
+            
+            return true;
         };
 
         const Calendar = ({ events, onSelectDate, selectedDate, calendarRef }) => {
@@ -179,6 +224,23 @@
                 return events.some(e => e.date === dateStr);
             };
 
+            const hasError = (day) => {
+                if (!day) return false;
+                
+                // Игнорируем правило красной рамки, если дата уже прошла
+                if (isPast(day)) return false;
+
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const daysEvents = events.filter(e => e.date === dateStr);
+                
+                // Если мероприятий на дату нет - ошибок нет
+                if (daysEvents.length === 0) return false;
+                
+                // Красная рамка отображается, если хотя бы одно мероприятие на эту дату не заполнено полностью
+                // или не отмечено двойной галочкой (логика внутри checkEventCompleteness)
+                return daysEvents.some(ev => !checkEventCompleteness(ev));
+            };
+
             return (
                 <div ref={calendarRef} className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
                     <div className="flex items-center justify-between mb-4">
@@ -195,6 +257,7 @@
                             const current = isToday(day);
                             const selected = isSelected(day);
                             const hasEv = hasEvent(day);
+                            const err = hasError(day);
 
                             return (
                                 <div 
@@ -211,6 +274,7 @@
                                         ${selected ? 'bg-[#604539] text-white font-black scale-110 z-10 selected' : (past ? 'past-date' : 'hover:bg-[#FFECD2]')}
                                         ${current ? 'font-black border-2 border-[#60453920]' : ''}
                                         ${hasEv ? 'has-event' : ''}
+                                        ${err ? 'has-error' : ''}
                                         transition-all duration-200
                                     `}
                                 >
@@ -299,21 +363,12 @@
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
             const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
-            // Улучшенная логика закрытия календаря: клик "проходит" к цели
             useEffect(() => {
                 const handleClickOutside = (event) => {
-                    if (isCalendarOpen && 
-                        calendarRef.current && 
-                        !calendarRef.current.contains(event.target) &&
-                        calendarButtonRef.current &&
-                        !calendarButtonRef.current.contains(event.target)) {
-                        
-                        // Просто закрываем календарь. Клик сработает на элементе под ним автоматически.
+                    if (isCalendarOpen && calendarRef.current && !calendarRef.current.contains(event.target) && calendarButtonRef.current && !calendarButtonRef.current.contains(event.target)) {
                         setIsCalendarOpen(false);
                     }
                 };
-                
-                // Используем click вместо mousedown, чтобы событие успело дойти до кнопок
                 document.addEventListener('click', handleClickOutside);
                 return () => document.removeEventListener('click', handleClickOutside);
             }, [isCalendarOpen]);
@@ -386,35 +441,6 @@
             }, [events, showArchive, todayStr, filterDate]);
 
             const currentEvent = events.find(e => e.id === selectedEventId);
-            const keyToLabel = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
-
-            const staffCountsForEvent = (ev) => {
-                const counts = { 'Официант': 0, 'Бармен': 0, 'Мойщица': 0, 'Повар': 0 };
-                if (!ev || !ev.staff) return counts;
-                ev.staff.forEach(s => {
-                    s.roles.forEach(role => { if (counts.hasOwnProperty(role)) counts[role]++; });
-                });
-                return counts;
-            };
-
-            const isAllRolesActive = (event) => {
-                if (!event) return false;
-                const counts = staffCountsForEvent(event);
-                return ['оф', 'бар', 'мой', 'пов'].every(role => {
-                    const target = parseInt(event.neededStaff?.[role] || 0);
-                    const actual = counts[keyToLabel[role]];
-                    return target === 0 || actual >= target;
-                });
-            };
-
-            const isTimeParamsReady = (event) => {
-                if (!event) return false;
-                if (!event.start) return false;
-                if (event.staff && event.staff.length > 0) {
-                    if (event.staff.some(s => !s.time)) return false;
-                }
-                return true;
-            };
 
             const isAllStaffPaid = (event) => {
                 if (!event) return false;
@@ -444,7 +470,7 @@
 
             const toggleEventChecked = (e, eventId) => {
                 e.stopPropagation();
-                if (showArchive) return;
+                // Даже в архиве разрешим переключать статус, если нужно
                 const updated = events.map(ev => ev.id === eventId ? { ...ev, status: { ...ev.status, checked: !ev.status?.checked } } : ev);
                 setEvents(updated);
                 saveToGithub(updated);
@@ -529,50 +555,27 @@
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
                     <div className="flex items-center justify-between gap-4 mb-6 bg-white/60 p-2 rounded-2xl border border-[#60453915] backdrop-blur-sm shadow-sm">
                         <div className="flex items-center gap-2">
-                            <button 
-                                onClick={() => fetchFromGithub(githubToken)} 
-                                className="p-2 hover:bg-white rounded-xl transition-all shadow-sm text-[#604539] flex items-center justify-center active:scale-95"
-                                title="Обновить вручную"
-                            >
+                            <button onClick={() => fetchFromGithub(githubToken)} className="p-2 hover:bg-white rounded-xl transition-all shadow-sm text-[#604539] flex items-center justify-center active:scale-95" title="Обновить вручную">
                                 <Icons.Refresh size={14} className={syncStatus === 'loading' ? 'spin-slow' : ''} />
                             </button>
-
                             <div className={`sync-status ${syncStatus === 'loading' ? 'sync-loading' : syncStatus === 'success' ? 'sync-success' : syncStatus === 'error' ? 'sync-error' : 'sync-idle'}`}>
-                                <span>
-                                    {syncStatus === 'loading' ? 'ЗАГРУЗКА...' : syncStatus === 'success' ? 'ОБНОВЛЕНО' : syncStatus === 'error' ? 'ОШИБКА' : 'ГОТОВО'}
-                                </span>
+                                <span>{syncStatus === 'loading' ? 'ЗАГРУЗКА...' : syncStatus === 'success' ? 'ОБНОВЛЕНО' : syncStatus === 'error' ? 'ОШИБКА' : 'ГОТОВО'}</span>
                             </div>
                         </div>
-                        
                         {!isTokenVerified || syncStatus === 'error' ? (
-                            <input 
-                                type="password" 
-                                placeholder="GitHub Token" 
-                                value={githubToken} 
-                                onChange={e => { setGithubToken(e.target.value); localStorage.setItem('gh_token', e.target.value); }} 
-                                className="text-[10px] p-2 border rounded-xl w-32 focus:w-48 transition-all outline-none bg-white shadow-inner font-mono" 
-                            />
+                            <input type="password" placeholder="GitHub Token" value={githubToken} onChange={e => { setGithubToken(e.target.value); localStorage.setItem('gh_token', e.target.value); }} className="text-[10px] p-2 border rounded-xl w-32 focus:w-48 transition-all outline-none bg-white shadow-inner font-mono" />
                         ) : (
                             <div className="px-3 py-1.5 bg-[#10b98110] rounded-xl border border-[#10b98120] flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
                                 <span className="text-[9px] font-bold text-green-700 uppercase tracking-widest">ОНЛАЙН</span>
-                                <button 
-                                    onClick={() => { setIsTokenVerified(false); setSyncStatus('idle'); }} 
-                                    className="ml-1 text-[9px] font-black text-[#604539] opacity-20 hover:opacity-100 transition-opacity"
-                                >
-                                    ВЫХОД
-                                </button>
+                                <button onClick={() => { setIsTokenVerified(false); setSyncStatus('idle'); }} className="ml-1 text-[9px] font-black text-[#604539] opacity-20 hover:opacity-100 transition-opacity">ВЫХОД</button>
                             </div>
                         )}
                     </div>
 
                     <header className="flex items-center justify-between mb-8 border-b border-[#C7886B40] pb-6">
                         <div className="flex items-center gap-4">
-                            <button 
-                                ref={calendarButtonRef}
-                                onClick={(e) => { e.stopPropagation(); handleToggleCalendar(); }}
-                                className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 hover:scale-105 active:scale-95 transition-all ${isCalendarOpen ? 'bg-white border-[#604539] text-[#604539]' : 'bg-[#604539] border-[#604539] text-white'}`}
-                            >
+                            <button ref={calendarButtonRef} onClick={(e) => { e.stopPropagation(); handleToggleCalendar(); }} className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 hover:scale-105 active:scale-95 transition-all ${isCalendarOpen ? 'bg-white border-[#604539] text-[#604539]' : 'bg-[#604539] border-[#604539] text-white'}`}>
                                 <Icons.Calendar size={24} />
                             </button>
                             <div>
@@ -581,10 +584,7 @@
                             </div>
                         </div>
                         {view === 'list' && (
-                            <button 
-                                onClick={(e) => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); }} 
-                                className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all border-2 ${showArchive ? 'bg-white border-[#604539] text-[#604539] shadow-sm' : 'bg-[#604539] border-[#604539] text-white shadow-lg'}`}
-                            >
+                            <button onClick={(e) => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); }} className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all border-2 ${showArchive ? 'bg-white border-[#604539] text-[#604539] shadow-sm' : 'bg-[#604539] border-[#604539] text-white shadow-lg'}`}>
                                 <Icons.Archive size={22} />
                             </button>
                         )}
@@ -593,12 +593,7 @@
                     {view === 'list' ? (
                         <div className="space-y-6 animate-in">
                             {isCalendarOpen && (
-                                <Calendar 
-                                    calendarRef={calendarRef}
-                                    events={events} 
-                                    selectedDate={filterDate} 
-                                    onSelectDate={(date) => { setFilterDate(date); if(date) setIsCalendarOpen(false); }} 
-                                />
+                                <Calendar calendarRef={calendarRef} events={events} selectedDate={filterDate} onSelectDate={(date) => { setFilterDate(date); if(date) setIsCalendarOpen(false); }} />
                             )}
 
                             {filterDate && (
@@ -611,47 +606,28 @@
                             {!showArchive && !filterDate && (
                                 <div className="space-y-4">
                                     {!isFormOpen ? (
-                                        <button 
-                                            onClick={() => { setIsFormOpen(true); setIsCalendarOpen(false); }}
-                                            className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl"
-                                        >
-                                            <div className="p-2 bg-[#60453910] rounded-lg">
-                                                <Icons.Plus size={18} />
-                                            </div>
+                                        <button onClick={() => { setIsFormOpen(true); setIsCalendarOpen(false); }} className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl">
+                                            <div className="p-2 bg-[#60453910] rounded-lg"><Icons.Plus size={18} /></div>
                                             <span className="font-bold uppercase tracking-widest text-xs">Новое мероприятие</span>
                                         </button>
                                     ) : (
                                         <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl relative animate-in">
-                                            <button 
-                                                onClick={() => { setIsFormOpen(false); setEditingEventId(null); }}
-                                                className="absolute right-4 top-4 p-2 text-gray-300 hover:text-red-500 transition-colors"
-                                            >
-                                                <Icons.X />
-                                            </button>
-                                            <h2 className="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-[#604539]">
-                                                {editingEventId ? <Icons.Edit size={16} /> : <Icons.Plus size={16} />} 
-                                                {editingEventId ? 'Редактировать' : 'Создать мероприятие'}
-                                            </h2>
-                                            
+                                            <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="absolute right-4 top-4 p-2 text-gray-300 hover:text-red-500 transition-colors"><Icons.X /></button>
+                                            <h2 className="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-[#604539]">{editingEventId ? <Icons.Edit size={16} /> : <Icons.Plus size={16} />} {editingEventId ? 'Редактировать' : 'Создать мероприятие'}</h2>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                                                 <div className="space-y-3">
                                                     <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
                                                     <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
-                                                    <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">
-                                                        {formats.map(f => <option key={f} value={f}>{f}</option>)}
-                                                    </select>
+                                                    <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{formats.map(f => <option key={f} value={f}>{f}</option>)}</select>
                                                     <input type="number" placeholder="Гости (чел)" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
                                                 </div>
-
                                                 <div className="space-y-3">
                                                     <div className="flex gap-2">
                                                         <SimpleTimePicker label="Начало" value={newEvent.start} onChange={v=>setNewEvent({...newEvent, start: v})} colors={colors} />
                                                         <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
                                                     </div>
                                                     <div className="flex flex-col gap-3">
-                                                        <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">
-                                                            {admins.map(a => <option key={a} value={a}>{a}</option>)}
-                                                        </select>
+                                                        <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{admins.map(a => <option key={a} value={a}>{a}</option>)}</select>
                                                         <div className="flex gap-1.5">
                                                             {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
                                                                 <div key={role} className="flex-1 relative">
@@ -663,16 +639,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <div className="mb-4">
-                                                <AutoHeightTextarea 
-                                                    placeholder="Дополнительная информация (адрес, меню, детали...)" 
-                                                    value={newEvent.extraInfo} 
-                                                    onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} 
-                                                    className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm"
-                                                />
-                                            </div>
-
+                                            <div className="mb-4"><AutoHeightTextarea placeholder="Дополнительная информация..." value={newEvent.extraInfo} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" /></div>
                                             <div className="flex gap-2">
                                                 <button onClick={handleAddEvent} className="flex-[3] bg-[#604539] text-white py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest shadow-lg active:scale-[0.98] transition-transform">{editingEventId ? 'Сохранить' : 'Добавить'}</button>
                                                 <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest hover:bg-gray-200 transition-colors">Отмена</button>
@@ -684,39 +651,34 @@
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {sortedEvents.map(ev => {
-                                    const timeReady = isTimeParamsReady(ev);
-                                    const rolesReady = isAllRolesActive(ev);
+                                    const isComplete = checkEventCompleteness(ev);
                                     const isChecked = ev.status?.checked;
                                     const isPast = ev.date < todayStr;
                                     const allPaid = isAllStaffPaid(ev);
 
                                     return (
                                         <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); setIsCalendarOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
-                                            <div className={`py-1.5 px-4 text-center ${isPast ? 'bg-[#604539]' : (timeReady && rolesReady && isChecked ? 'bg-green-600' : 'bg-red-500')}`}>
+                                            <div className={`py-1.5 px-4 text-center ${isPast ? 'bg-[#604539]' : (isComplete ? 'bg-green-600' : 'bg-red-500')}`}>
                                                 <span className="text-[10px] font-extrabold uppercase text-white tracking-widest">{ev.displayDate}</span>
                                             </div>
-                                            
                                             <div className="flex gap-4 p-5">
                                                 {!isPast ? (
                                                     <div className="flex flex-col gap-2 flex-shrink-0">
-                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${timeReady ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}>
-                                                            <Icons.Clock size={20} color={timeReady ? '#10b981' : '#ef4444'} />
+                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${ev.start && (ev.staff?.every(s=>s.time) || true) ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}>
+                                                            <Icons.Clock size={20} color={(ev.start && (ev.staff?.every(s=>s.time) || true)) ? '#10b981' : '#ef4444'} />
                                                         </div>
-                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${rolesReady ? 'bg-green-100' : 'bg-red-50'}`}>
-                                                            <Icons.Users size={22} color={rolesReady ? '#10b981' : '#ef4444'} />
+                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${Object.entries(ev.neededStaff || {}).every(([k, v]) => parseInt(v||0) === 0 || getStaffCounts(ev)[keyToLabel[k]] >= parseInt(v)) ? 'bg-green-100' : 'bg-red-50'}`}>
+                                                            <Icons.Users size={22} color={Object.entries(ev.neededStaff || {}).every(([k, v]) => parseInt(v||0) === 0 || getStaffCounts(ev)[keyToLabel[k]] >= parseInt(v)) ? '#10b981' : '#ef4444'} />
                                                         </div>
-                                                        <div onClick={(e) => toggleEventChecked(e, ev.id)} className={`w-11 h-11 flex items-center justify-center rounded-xl border ${isChecked ? 'bg-blue-50' : 'bg-gray-50'}`}>
-                                                            <Icons.DoubleCheck size={32} color={isChecked ? '#3b82f6' : '#e2e8f0'} />
+                                                        <div onClick={(e) => toggleEventChecked(e, ev.id)} className={`w-11 h-11 flex items-center justify-center rounded-xl border transition-all ${isChecked ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-red-200 shadow-[0_0_5px_rgba(239,68,68,0.2)]'}`}>
+                                                            <Icons.DoubleCheck size={32} color={isChecked ? '#3b82f6' : '#ef4444'} />
                                                         </div>
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-col gap-2 flex-shrink-0">
-                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${allPaid ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}>
-                                                            <span className={`text-2xl font-black ${allPaid ? 'text-green-600' : 'text-red-500'}`}>₽</span>
-                                                        </div>
+                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${allPaid ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}><span className={`text-2xl font-black ${allPaid ? 'text-green-600' : 'text-red-500'}`}>₽</span></div>
                                                     </div>
                                                 )}
-
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className={`font-bold text-lg leading-tight truncate mb-2 ${isPast ? 'text-gray-500' : ''}`}>{ev.name}</h3>
                                                     <div className="space-y-1">
@@ -725,7 +687,6 @@
                                                         <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Гости: {ev.guests || 0} чел</p>
                                                     </div>
                                                 </div>
-
                                                 <div className="flex flex-col gap-2">
                                                     {(!isPast || showArchive) && <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>}
                                                     <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500 p-1"><Icons.Trash size={16} /></button>
@@ -734,9 +695,7 @@
                                         </div>
                                     );
                                 })}
-                                {sortedEvents.length === 0 && (
-                                    <div className="col-span-full py-12 text-center text-[#60453940] uppercase font-black text-xs tracking-widest">Мероприятий не найдено</div>
-                                )}
+                                {sortedEvents.length === 0 && <div className="col-span-full py-12 text-center text-[#60453940] uppercase font-black text-xs tracking-widest">Мероприятий не найдено</div>}
                             </div>
                         </div>
                     ) : (
@@ -748,18 +707,15 @@
                                     <button onClick={(e) => fastDeleteEvent(e, selectedEventId)} className="text-red-300 p-2"><Icons.Trash size={20} /></button>
                                 </div>
                             </div>
-                            
                             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539]">
-                                <div className={`py-2 text-center ${(currentEvent?.date < todayStr) ? 'bg-[#604539]' : 'bg-[#C7886B]'}`}>
-                                    <span className="text-[11px] font-extrabold uppercase text-white tracking-widest">{currentEvent?.displayDate}</span>
-                                </div>
+                                <div className={`py-2 text-center ${(currentEvent?.date < todayStr) ? 'bg-[#604539]' : 'bg-[#C7886B]'}`}><span className="text-[11px] font-extrabold uppercase text-white tracking-widest">{currentEvent?.displayDate}</span></div>
                                 <div className="p-8 bg-[#1F1713] text-white">
                                     <div className="flex justify-between items-start mb-4">
                                         <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
                                         {currentEvent?.date >= todayStr && (
                                             <div className="flex gap-2">
-                                                <div className={`w-10 h-10 flex items-center justify-center rounded-full ${isTimeParamsReady(currentEvent) ? 'bg-green-500' : 'bg-red-500'}`}><Icons.Clock size={24} color="white" /></div>
-                                                <div onClick={(e) => toggleEventChecked(e, currentEvent.id)} className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer ${currentEvent?.status?.checked ? 'bg-blue-500' : 'bg-white/10'}`}><Icons.DoubleCheck size={44} color="white" /></div>
+                                                <div className={`w-10 h-10 flex items-center justify-center rounded-full ${checkEventCompleteness(currentEvent) ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`}><Icons.Clock size={24} color="white" /></div>
+                                                <div onClick={(e) => toggleEventChecked(e, currentEvent.id)} className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer transition-all ${currentEvent?.status?.checked ? 'bg-blue-500' : 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`}><Icons.DoubleCheck size={44} color="white" /></div>
                                             </div>
                                         )}
                                         {currentEvent?.date < todayStr && (
@@ -769,20 +725,16 @@
                                             </div>
                                         )}
                                     </div>
-
                                     <div className="space-y-2 mb-6">
                                         <p className="text-xs uppercase font-bold tracking-wider text-[#C7886B]">{currentEvent?.format || '—'}</p>
                                         <p className="text-xs uppercase font-bold tracking-wider opacity-60">Админ: {currentEvent?.admin || '—'}</p>
                                         <p className="text-xs uppercase font-bold tracking-wider opacity-60">Тайминг: {currentEvent?.start || '—'} {currentEvent?.end ? `— ${currentEvent?.end}` : ''}</p>
                                         <p className="text-xs uppercase font-bold tracking-wider opacity-60">Гости: {currentEvent?.guests || 0} чел</p>
-                                        {currentEvent?.extraInfo && (
-                                            <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10 text-sm italic opacity-80 whitespace-pre-wrap">{currentEvent.extraInfo}</div>
-                                        )}
+                                        {currentEvent?.extraInfo && <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10 text-sm italic opacity-80 whitespace-pre-wrap">{currentEvent.extraInfo}</div>}
                                     </div>
-                                    
                                     <div className="flex gap-3 mt-6 overflow-x-auto pb-2">
                                         {Object.entries(headerRoleMap).map(([key, data]) => {
-                                            const counts = staffCountsForEvent(currentEvent);
+                                            const counts = getStaffCounts(currentEvent);
                                             const target = parseInt(currentEvent?.neededStaff?.[key] || 0);
                                             const actual = counts[data.key];
                                             const ok = target === 0 || actual >= target;
@@ -795,14 +747,10 @@
                                         })}
                                     </div>
                                 </div>
-
                                 <div className="p-6">
                                     <div className="mb-6">
                                         {!isStaffFormOpen ? (
-                                            <button 
-                                                onClick={() => setIsStaffFormOpen(true)}
-                                                className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl border-none outline-none mb-4"
-                                            >
+                                            <button onClick={() => setIsStaffFormOpen(true)} className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl border-none outline-none mb-4">
                                                 <div className="p-2 bg-[#60453910] rounded-lg"><Icons.Plus size={18} /></div>
                                                 <span className="font-bold uppercase tracking-widest text-xs">Добавить сотрудника</span>
                                             </button>
@@ -829,47 +777,25 @@
                                             </div>
                                         )}
                                     </div>
-
                                     <table className="staff-table">
-                                        <thead>
-                                            <tr className="text-[10px] uppercase opacity-30 border-b">
-                                                <th className="col-staff pb-2 text-left pl-2">Персонал</th>
-                                                <th className="col-timing pb-2 text-center">Тайминг</th>
-                                                <th className="col-actions pb-2 text-right pr-2">Действия</th>
-                                            </tr>
-                                        </thead>
+                                        <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="col-staff pb-2 text-left pl-2">Персонал</th><th className="col-timing pb-2 text-center">Тайминг</th><th className="col-actions pb-2 text-right pr-2">Действия</th></tr></thead>
                                         <tbody>
                                             {currentEvent?.staff?.sort((a,b) => a.name.localeCompare(b.name)).map(s => (
                                                 <tr key={s.id} className="border-b border-gray-50 text-sm">
                                                     <td className="col-staff py-4 pl-2 overflow-hidden">
                                                         <div className="flex flex-col gap-1.5">
-                                                            <div className="flex flex-col min-w-0">
-                                                                <span className="font-bold truncate" title={s.name}>{s.name}</span>
-                                                                {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">НЕТ ТАЙМИНГА</span>}
-                                                            </div>
+                                                            <div className="flex flex-col min-w-0"><span className="font-bold truncate" title={s.name}>{s.name}</span>{!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">НЕТ ТАЙМИНГА</span>}</div>
                                                             <div className="flex flex-wrap gap-1.5 mt-1">
                                                                 {s.roles.map((role, idx) => (
                                                                     <div key={idx} onClick={() => toggleStaffRolePaid(s.id, role)} className={`role-badge border ${s.rolePaid?.[role] ? 'bg-green-100 border-green-200 text-green-700' : 'bg-gray-50 border-gray-100 text-gray-500'}`}>
-                                                                        {roleIconMap[role]?.icon}
-                                                                        <span className="leading-none">{role}</span>
-                                                                        {s.rolePaid?.[role] && <span className="font-black text-xs">₽</span>}
+                                                                        {roleIconMap[role]?.icon}<span className="leading-none">{role}</span>{s.rolePaid?.[role] && <span className="font-black text-xs">₽</span>}
                                                                     </div>
                                                                 ))}
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="col-timing py-4 text-center">
-                                                        <div className="text-[11px] font-medium leading-tight">
-                                                            <div>{s.time || '—'}</div>
-                                                            {s.end && <div className="opacity-40">- {s.end}</div>}
-                                                        </div>
-                                                    </td>
-                                                    <td className="col-actions py-4 text-right pr-2">
-                                                        <div className="flex justify-end gap-2">
-                                                            <button onClick={()=> { setEditingStaffId(s.id); setNewStaff({ name: s.name, time: s.time || '', end: s.end || '', roles: s.roles }); setIsStaffFormOpen(true); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16}/></button>
-                                                            <button onClick={()=> { const upd = events.map(e=>e.id===selectedEventId?{...e,staff:e.staff.filter(x=>x.id!==s.id)}:e); setEvents(upd); saveToGithub(upd); }} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button>
-                                                        </div>
-                                                    </td>
+                                                    <td className="col-timing py-4 text-center"><div className="text-[11px] font-medium leading-tight"><div>{s.time || '—'}</div>{s.end && <div className="opacity-40">- {s.end}</div>}</div></td>
+                                                    <td className="col-actions py-4 text-right pr-2"><div className="flex justify-end gap-2"><button onClick={()=> { setEditingStaffId(s.id); setNewStaff({ name: s.name, time: s.time || '', end: s.end || '', roles: s.roles }); setIsStaffFormOpen(true); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16}/></button><button onClick={()=> { const upd = events.map(e=>e.id===selectedEventId?{...e,staff:e.staff.filter(x=>x.id!==s.id)}:e); setEvents(upd); saveToGithub(upd); }} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button></div></td>
                                                 </tr>
                                             ))}
                                         </tbody>
