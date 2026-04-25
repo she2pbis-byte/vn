@@ -90,15 +90,30 @@
             background: #C7886B;
             border-radius: 50%;
         }
-        .calendar-day.past-date:not(.selected) {
+        /* Стиль для неоплаченных долгов в календаре */
+        .calendar-day.has-unpaid-debt {
+            background-color: #ef4444 !important;
+            color: white !important;
+            font-weight: 800;
+        }
+        .calendar-day.past-date:not(.selected):not(.has-unpaid-debt) {
             background-color: #f3f4f6;
             color: #9ca3af;
         }
-        .calendar-day.has-error:not(.selected) {
+        .calendar-day.has-error:not(.selected):not(.has-unpaid-debt) {
             box-shadow: inset 0 0 0 1.5px #ef4444;
         }
         .calendar-day.has-error.selected {
             box-shadow: 0 0 0 2px #ef4444;
+        }
+
+        .pulse-red-border {
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { border-color: #ef4444; box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.4); }
+            70% { border-color: #ef4444; box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { border-color: #ef4444; box-shadow: 0 0 0 0px rgba(239, 68, 68, 0); }
         }
     </style>
 </head>
@@ -150,7 +165,7 @@
         };
 
         const checkEventCompleteness = (ev) => {
-            if (!ev.start) return false;
+            if (!ev || !ev.start) return false;
             if (ev.staff && ev.staff.length > 0) {
                 if (ev.staff.some(s => !s.time)) return false;
             }
@@ -163,6 +178,14 @@
             if (!rolesComplete) return false;
             if (!ev.status?.checked) return false;
             return true;
+        };
+
+        const isEventFullyPaid = (ev) => {
+            if (!ev || !ev.staff || ev.staff.length === 0) return true;
+            return ev.staff.every(s => {
+                if (!s.roles || s.roles.length === 0) return true;
+                return s.roles.every(role => s.rolePaid && s.rolePaid[role] === true);
+            });
         };
 
         const Calendar = ({ events, onSelectDate, selectedDate, calendarRef }) => {
@@ -185,6 +208,20 @@
             const prevMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month - 1, 1)); };
             const nextMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month + 1, 1)); };
 
+            const checkNextMonthHasErrors = () => {
+                const nextMonthDate = new Date(year, month + 1, 1);
+                const nmYear = nextMonthDate.getFullYear();
+                const nmMonth = nextMonthDate.getMonth();
+                
+                return events.some(ev => {
+                    const evDate = new Date(ev.date);
+                    const isNextMonth = evDate.getFullYear() === nmYear && evDate.getMonth() === nmMonth;
+                    return isNextMonth && !checkEventCompleteness(ev);
+                });
+            };
+
+            const nextMonthErrors = checkNextMonthHasErrors();
+
             const calendarDays = [];
             for (let i = 0; i < startDay; i++) calendarDays.push(null);
             for (let i = 1; i <= days; i++) calendarDays.push(i);
@@ -206,19 +243,27 @@
                 return d < today;
             };
 
-            const hasEvent = (day) => {
-                if (!day) return false;
+            const getDayEvents = (day) => {
+                if (!day) return [];
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                return events.some(e => e.date === dateStr);
+                return events.filter(e => e.date === dateStr);
             };
 
+            const hasEvent = (day) => getDayEvents(day).length > 0;
+
             const hasError = (day) => {
-                if (!day) return false;
-                if (isPast(day)) return false;
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const daysEvents = events.filter(e => e.date === dateStr);
-                if (daysEvents.length === 0) return false;
+                if (!day || isPast(day)) return false;
+                const daysEvents = getDayEvents(day);
                 return daysEvents.some(ev => !checkEventCompleteness(ev));
+            };
+
+            // Новая логика: проверка долгов по оплате для прошедших дат
+            const hasUnpaidDebt = (day) => {
+                if (!day || !isPast(day)) return false;
+                const daysEvents = getDayEvents(day);
+                if (daysEvents.length === 0) return false;
+                // Если хоть одно мероприятие в этот день имеет неоплаченных сотрудников
+                return daysEvents.some(ev => !isEventFullyPaid(ev));
             };
 
             return (
@@ -226,7 +271,12 @@
                     <div className="flex items-center justify-between mb-4">
                         <button onClick={prevMonth} className="p-1 hover:bg-[#60453910] rounded-lg transition-colors"><Icons.ChevronLeft /></button>
                         <h3 className="font-bold uppercase tracking-widest text-[#604539] text-sm">{monthName} {year}</h3>
-                        <button onClick={nextMonth} className="p-1 hover:bg-[#60453910] rounded-lg transition-colors"><Icons.ChevronRight /></button>
+                        <button 
+                            onClick={nextMonth} 
+                            className={`p-1 rounded-lg border-2 transition-all duration-300 ${nextMonthErrors ? 'pulse-red-border text-red-500 bg-red-50 border-red-500' : 'hover:bg-[#60453910] border-transparent'}`}
+                        >
+                            <Icons.ChevronRight />
+                        </button>
                     </div>
                     <div className="calendar-grid mb-1">
                         {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
@@ -238,6 +288,7 @@
                             const selected = isSelected(day);
                             const hasEv = hasEvent(day);
                             const err = hasError(day);
+                            const unpaid = hasUnpaidDebt(day);
 
                             return (
                                 <div 
@@ -251,7 +302,10 @@
                                     }}
                                     className={`
                                         calendar-day ${!day ? 'invisible' : ''} 
-                                        ${selected ? 'bg-[#604539] text-white font-black scale-110 z-10 selected' : (past ? 'past-date' : 'hover:bg-[#FFECD2]')}
+                                        ${selected ? 'bg-[#604539] text-white font-black scale-110 z-10' : ''}
+                                        ${!selected && unpaid ? 'has-unpaid-debt' : ''}
+                                        ${!selected && !unpaid && past ? 'past-date' : ''}
+                                        ${!selected && !unpaid && !past ? 'hover:bg-[#FFECD2]' : ''}
                                         ${current ? 'font-black border-2 border-[#60453920]' : ''}
                                         ${hasEv ? 'has-event' : ''}
                                         ${err ? 'has-error' : ''}
@@ -422,15 +476,6 @@
 
             const currentEvent = events.find(e => e.id === selectedEventId);
 
-            const isAllStaffPaid = (event) => {
-                if (!event) return false;
-                if (!event.staff || event.staff.length === 0) return true;
-                return event.staff.every(s => {
-                    if (!s.roles || s.roles.length === 0) return true;
-                    return s.roles.every(role => s.rolePaid && s.rolePaid[role] === true);
-                });
-            };
-
             const handleAddEvent = () => {
                 if (!newEvent.name || !newEvent.guests) return;
                 const d = new Date(newEvent.date);
@@ -502,8 +547,8 @@
 
             const handleBackFromFilter = () => {
                 setFilterDate(null);
-                setView('list'); // Принудительно возвращаемся к списку
-                setIsCalendarOpen(true); // Принудительно открываем календарь
+                setView('list'); 
+                setIsCalendarOpen(true); 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
@@ -635,7 +680,7 @@
                                     const isComplete = checkEventCompleteness(ev);
                                     const isChecked = ev.status?.checked;
                                     const isPast = ev.date < todayStr;
-                                    const allPaid = isAllStaffPaid(ev);
+                                    const allPaid = isEventFullyPaid(ev);
 
                                     return (
                                         <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); setIsCalendarOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
@@ -700,9 +745,9 @@
                                             </div>
                                         )}
                                         {currentEvent?.date < todayStr && (
-                                            <div className={`px-4 py-2 rounded-xl flex items-center gap-2 border ${isAllStaffPaid(currentEvent) ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-red-500/20 border-red-500 text-red-400'}`}>
+                                            <div className={`px-4 py-2 rounded-xl flex items-center gap-2 border ${isEventFullyPaid(currentEvent) ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-red-500/20 border-red-500 text-red-400'}`}>
                                                 <span className="text-xl font-black">₽</span>
-                                                <span className="text-[10px] font-bold uppercase tracking-widest">{isAllStaffPaid(currentEvent) ? 'Оплачено' : 'Есть долги'}</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">{isEventFullyPaid(currentEvent) ? 'Оплачено' : 'Есть долги'}</span>
                                             </div>
                                         )}
                                     </div>
