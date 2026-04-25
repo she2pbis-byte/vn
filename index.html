@@ -11,7 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #FFECD2; }
+        body { font-family: 'Inter', sans-serif; background-color: #FFECD2; scroll-behavior: smooth; }
         .animate-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -90,7 +90,6 @@
             background: #C7886B;
             border-radius: 50%;
         }
-        /* Стиль для текущей даты (сегодня) */
         .calendar-day.is-today {
             background-color: #604539 !important;
             color: white !important;
@@ -136,7 +135,7 @@
 
         const Icons = {
             Plus: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>,
-            Trash: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>,
+            Trash: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14c0-1-1-2-2-2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>,
             Edit: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
             Check: ({size=20, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>,
             DoubleCheck: ({size=20, color="currentColor"}) => (
@@ -409,6 +408,11 @@
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
             const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
+            // --- НОВОЕ: Прокрутка вверх при любой смене экрана ---
+            useEffect(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, [view, selectedEventId, isFormOpen, isCalendarOpen]);
+
             useEffect(() => {
                 const handleClickOutside = (event) => {
                     if (isCalendarOpen && calendarRef.current && !calendarRef.current.contains(event.target) && calendarButtonRef.current && !calendarButtonRef.current.contains(event.target)) {
@@ -520,7 +524,6 @@
                 setIsFormOpen(true);
                 setIsCalendarOpen(false);
                 setView('list');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
             const fastDeleteEvent = (e, eventId) => {
@@ -561,7 +564,6 @@
                 setFilterDate(null);
                 setView('list'); 
                 setIsCalendarOpen(true); 
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
             const handleToggleCalendar = () => {
