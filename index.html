@@ -81,15 +81,26 @@
             position: relative;
             box-sizing: border-box;
         }
+        
+        /* Измененная индикация: полоска вместо точки */
         .calendar-day.has-event::after {
             content: '';
             position: absolute;
-            bottom: 4px;
-            width: 4px;
-            height: 4px;
-            background: #C7886B;
-            border-radius: 50%;
+            bottom: 6px;
+            width: 50%;
+            height: 2px;
+            background: #000; /* По умолчанию черная */
+            border-radius: 1px;
+            transition: background 0.2s;
         }
+
+        /* Белая полоска на коричневом/красном/выбранном фоне */
+        .calendar-day.is-today.has-event::after,
+        .calendar-day.has-unpaid-debt.has-event::after,
+        .calendar-day.selected.has-event::after {
+            background: #fff !important;
+        }
+
         .calendar-day.is-today {
             background-color: #604539 !important;
             color: white !important;
@@ -347,7 +358,7 @@
                                     }}
                                     className={`
                                         calendar-day ${!day ? 'invisible' : ''} 
-                                        ${selected ? 'bg-[#C7886B] text-white font-black scale-110 z-10' : ''}
+                                        ${selected ? 'bg-[#C7886B] text-white font-black scale-110 z-10 selected' : ''}
                                         ${current && !selected ? 'is-today shadow-lg scale-105' : ''}
                                         ${!selected && !current && unpaid ? 'has-unpaid-debt' : ''}
                                         ${!selected && !current && !unpaid && past ? 'past-date' : ''}
@@ -617,7 +628,6 @@
                 }
             };
 
-            // НОВАЯ ЛОГИКА: Сброс фильтра и открытие календаря
             const handleGoToCalendar = () => {
                 setFilterDate(null);
                 setIsCalendarOpen(true);
@@ -687,7 +697,6 @@
                             {filterDate && (
                                 <div className="flex items-center justify-between bg-white/40 px-4 py-2 rounded-xl border border-[#60453920]">
                                     <span className="text-[10px] font-black uppercase text-[#604539]">Фильтр по дате: {filterDate.split('-').reverse().join('.')}</span>
-                                    {/* Измененная кнопка: К календарю */}
                                     <button onClick={handleGoToCalendar} className="text-[10px] font-black text-[#604539] hover:underline uppercase tracking-widest">К КАЛЕНДАРЮ</button>
                                 </div>
                             )}
