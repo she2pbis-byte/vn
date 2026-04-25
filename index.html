@@ -129,7 +129,7 @@
             X: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         };
 
-        const Calendar = ({ events, onSelectDate, selectedDate }) => {
+        const Calendar = ({ events, onSelectDate, selectedDate, calendarRef }) => {
             const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate || new Date()));
             
             const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
@@ -164,7 +164,7 @@
             };
 
             return (
-                <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
+                <div ref={calendarRef} className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
                     <div className="flex items-center justify-between mb-4">
                         <button onClick={prevMonth} className="p-1 hover:bg-[#60453910] rounded-lg transition-colors"><Icons.ChevronLeft /></button>
                         <h3 className="font-bold uppercase tracking-widest text-[#604539] text-sm">{monthName} {year}</h3>
@@ -262,9 +262,28 @@
             const [syncStatus, setSyncStatus] = useState('idle');
             const [isTokenVerified, setIsTokenVerified] = useState(false);
 
+            // Refs for outside click handling
+            const calendarRef = useRef(null);
+            const calendarButtonRef = useRef(null);
+
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
             const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
+
+            // Handle outside click to close calendar
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (isCalendarOpen && 
+                        calendarRef.current && 
+                        !calendarRef.current.contains(event.target) &&
+                        calendarButtonRef.current &&
+                        !calendarButtonRef.current.contains(event.target)) {
+                        setIsCalendarOpen(false);
+                    }
+                };
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, [isCalendarOpen]);
 
             const fetchFromGithub = useCallback(async (token) => {
                 if (!token) { setIsTokenVerified(false); return; }
@@ -501,6 +520,7 @@
                     <header className="flex items-center justify-between mb-8 border-b border-[#C7886B40] pb-6">
                         <div className="flex items-center gap-4">
                             <button 
+                                ref={calendarButtonRef}
                                 onClick={() => { setIsCalendarOpen(!isCalendarOpen); setIsFormOpen(false); }}
                                 className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 hover:scale-105 active:scale-95 transition-all ${isCalendarOpen ? 'bg-white border-[#604539] text-[#604539]' : 'bg-[#604539] border-[#604539] text-white'}`}
                             >
@@ -513,7 +533,7 @@
                         </div>
                         {view === 'list' && (
                             <button 
-                                onClick={() => { setShowArchive(!showArchive); setFilterDate(null); }} 
+                                onClick={() => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); }} 
                                 className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all border-2 ${showArchive ? 'bg-white border-[#604539] text-[#604539] shadow-sm' : 'bg-[#604539] border-[#604539] text-white shadow-lg'}`}
                             >
                                 <Icons.Archive size={22} />
@@ -525,6 +545,7 @@
                         <div className="space-y-6 animate-in">
                             {isCalendarOpen && (
                                 <Calendar 
+                                    calendarRef={calendarRef}
                                     events={events} 
                                     selectedDate={filterDate} 
                                     onSelectDate={(date) => { setFilterDate(date); if(date) setIsCalendarOpen(false); }} 
@@ -621,7 +642,7 @@
                                     const allPaid = isAllStaffPaid(ev);
 
                                     return (
-                                        <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
+                                        <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); setIsCalendarOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
                                             <div className={`py-1.5 px-4 text-center ${isPast ? 'bg-[#604539]' : (timeReady && rolesReady && isChecked ? 'bg-green-600' : 'bg-red-500')}`}>
                                                 <span className="text-[10px] font-extrabold uppercase text-white tracking-widest">{ev.displayDate}</span>
                                             </div>
