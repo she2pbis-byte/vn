@@ -512,7 +512,10 @@
                             </div>
                         </div>
                         {view === 'list' && (
-                            <button onClick={() => { setShowArchive(!showArchive); setFilterDate(null); }} className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all ${showArchive ? 'bg-[#604539] text-white shadow-lg' : 'bg-white border-2 border-[#60453910] text-[#604539]'}`}>
+                            <button 
+                                onClick={() => { setShowArchive(!showArchive); setFilterDate(null); }} 
+                                className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all border-2 ${showArchive ? 'bg-white border-[#604539] text-[#604539] shadow-sm' : 'bg-[#604539] border-[#604539] text-white shadow-lg'}`}
+                            >
                                 <Icons.Archive size={22} />
                             </button>
                         )}
