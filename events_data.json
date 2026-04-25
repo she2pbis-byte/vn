@@ -845,27 +845,5 @@
     "status": {
       "checked": true
     }
-  },
-  {
-    "id": "1777154496459",
-    "name": "а",
-    "date": "2026-04-30",
-    "start": "13:00",
-    "end": "",
-    "format": "Туристы",
-    "admin": "Михаил",
-    "guests": "20",
-    "extraInfo": "",
-    "neededStaff": {
-      "оф": "",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "30 апрель",
-    "staff": [],
-    "status": {
-      "checked": false
-    }
   }
 ]
