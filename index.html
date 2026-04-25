@@ -66,7 +66,6 @@
 
         .auto-textarea { resize: none; overflow: hidden; min-height: 60px; }
 
-        /* Calendar Styles */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -141,7 +140,7 @@
             const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
             const startDayOfMonth = (year, month) => {
                 let day = new Date(year, month, 1).getDay();
-                return day === 0 ? 6 : day - 1; // Adjust to Monday start
+                return day === 0 ? 6 : day - 1; 
             };
 
             const year = currentMonth.getFullYear();
@@ -150,8 +149,8 @@
             const startDay = startDayOfMonth(year, month);
             const monthName = currentMonth.toLocaleString('ru', { month: 'long' });
 
-            const prevMonth = () => setCurrentMonth(new Date(year, month - 1, 1));
-            const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1));
+            const prevMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month - 1, 1)); };
+            const nextMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month + 1, 1)); };
 
             const calendarDays = [];
             for (let i = 0; i < startDay; i++) calendarDays.push(null);
@@ -200,8 +199,9 @@
                             return (
                                 <div 
                                     key={idx} 
-                                    onClick={() => {
+                                    onClick={(e) => {
                                         if (day) {
+                                            e.stopPropagation();
                                             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                                             onSelectDate(dateStr);
                                         }
@@ -220,7 +220,7 @@
                         })}
                     </div>
                     <div className="flex justify-center mt-4">
-                        <button onClick={() => onSelectDate(null)} className="text-[10px] font-bold uppercase tracking-widest text-[#604539] opacity-40 hover:opacity-100 transition-opacity">Сбросить фильтр</button>
+                        <button onClick={(e) => { e.stopPropagation(); onSelectDate(null); }} className="text-[10px] font-bold uppercase tracking-widest text-[#604539] opacity-40 hover:opacity-100 transition-opacity">Сбросить фильтр</button>
                     </div>
                 </div>
             );
@@ -299,6 +299,7 @@
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
             const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
+            // Улучшенная логика закрытия календаря: клик "проходит" к цели
             useEffect(() => {
                 const handleClickOutside = (event) => {
                     if (isCalendarOpen && 
@@ -306,11 +307,15 @@
                         !calendarRef.current.contains(event.target) &&
                         calendarButtonRef.current &&
                         !calendarButtonRef.current.contains(event.target)) {
+                        
+                        // Просто закрываем календарь. Клик сработает на элементе под ним автоматически.
                         setIsCalendarOpen(false);
                     }
                 };
-                document.addEventListener('mousedown', handleClickOutside);
-                return () => document.removeEventListener('mousedown', handleClickOutside);
+                
+                // Используем click вместо mousedown, чтобы событие успело дойти до кнопок
+                document.addEventListener('click', handleClickOutside);
+                return () => document.removeEventListener('click', handleClickOutside);
             }, [isCalendarOpen]);
 
             const fetchFromGithub = useCallback(async (token) => {
@@ -495,17 +500,14 @@
                 setIsCalendarOpen(true);
             };
 
-            // Логика кнопки календаря: при открытии/переключении сбрасываем архив и возвращаемся на главную
             const handleToggleCalendar = () => {
                 const nextState = !isCalendarOpen;
                 setIsCalendarOpen(nextState);
-                
-                // Если мы открываем календарь или переключаем его
                 if (nextState) {
-                    setShowArchive(false); // Выходим из архива
-                    setFilterDate(null);   // Сбрасываем фильтр дня
-                    setView('list');       // Возвращаемся в общий список
-                    setIsFormOpen(false);  // Закрываем формы
+                    setShowArchive(false);
+                    setFilterDate(null);
+                    setView('list');
+                    setIsFormOpen(false);
                 }
             };
 
@@ -568,7 +570,7 @@
                         <div className="flex items-center gap-4">
                             <button 
                                 ref={calendarButtonRef}
-                                onClick={handleToggleCalendar}
+                                onClick={(e) => { e.stopPropagation(); handleToggleCalendar(); }}
                                 className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 hover:scale-105 active:scale-95 transition-all ${isCalendarOpen ? 'bg-white border-[#604539] text-[#604539]' : 'bg-[#604539] border-[#604539] text-white'}`}
                             >
                                 <Icons.Calendar size={24} />
@@ -580,7 +582,7 @@
                         </div>
                         {view === 'list' && (
                             <button 
-                                onClick={() => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); }} 
+                                onClick={(e) => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); }} 
                                 className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all border-2 ${showArchive ? 'bg-white border-[#604539] text-[#604539] shadow-sm' : 'bg-[#604539] border-[#604539] text-white shadow-lg'}`}
                             >
                                 <Icons.Archive size={22} />
