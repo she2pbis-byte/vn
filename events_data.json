@@ -832,7 +832,7 @@
     "format": "Банкет",
     "admin": "Илья",
     "guests": "8",
-    "extraInfo": "\n",
+    "extraInfo": "",
     "neededStaff": {
       "оф": "1",
       "бар": "",
