@@ -91,7 +91,6 @@
             background: #C7886B;
             border-radius: 50%;
         }
-        /* Прошедшие даты в календаре: серый фон, серый текст */
         .calendar-day.past-date:not(.selected) {
             background-color: #f3f4f6;
             color: #9ca3af;
@@ -293,7 +292,6 @@
             const [syncStatus, setSyncStatus] = useState('idle');
             const [isTokenVerified, setIsTokenVerified] = useState(false);
 
-            // Refs for outside click handling
             const calendarRef = useRef(null);
             const calendarButtonRef = useRef(null);
 
@@ -301,7 +299,6 @@
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
             const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
-            // Handle outside click to close calendar
             useEffect(() => {
                 const handleClickOutside = (event) => {
                     if (isCalendarOpen && 
@@ -493,10 +490,23 @@
                 saveToGithub(updated);
             };
 
-            // Новая функция для кнопки Назад
             const handleBackFromFilter = () => {
                 setFilterDate(null);
                 setIsCalendarOpen(true);
+            };
+
+            // Логика кнопки календаря: при открытии/переключении сбрасываем архив и возвращаемся на главную
+            const handleToggleCalendar = () => {
+                const nextState = !isCalendarOpen;
+                setIsCalendarOpen(nextState);
+                
+                // Если мы открываем календарь или переключаем его
+                if (nextState) {
+                    setShowArchive(false); // Выходим из архива
+                    setFilterDate(null);   // Сбрасываем фильтр дня
+                    setView('list');       // Возвращаемся в общий список
+                    setIsFormOpen(false);  // Закрываем формы
+                }
             };
 
             const roleIconMap = {
@@ -558,7 +568,7 @@
                         <div className="flex items-center gap-4">
                             <button 
                                 ref={calendarButtonRef}
-                                onClick={() => { setIsCalendarOpen(!isCalendarOpen); setIsFormOpen(false); }}
+                                onClick={handleToggleCalendar}
                                 className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 hover:scale-105 active:scale-95 transition-all ${isCalendarOpen ? 'bg-white border-[#604539] text-[#604539]' : 'bg-[#604539] border-[#604539] text-white'}`}
                             >
                                 <Icons.Calendar size={24} />
