@@ -616,21 +616,7 @@
       "пов": "1"
     },
     "displayDate": "20 апрель",
-    "staff": [
-      {
-        "id": "1776655253939",
-        "name": "Саша",
-        "time": "10:00",
-        "end": "",
-        "roles": [
-          "Повар"
-        ],
-        "rolesDisplay": "Повар",
-        "rolePaid": {
-          "Повар": true
-        }
-      }
-    ],
+    "staff": [],
     "status": {
       "checked": true
     }
