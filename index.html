@@ -422,42 +422,42 @@
                                             <span className="font-bold uppercase tracking-widest text-xs">Новое мероприятие</span>
                                         </button>
                                     ) : (
-                                        <div className="bg-white p-6 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl relative animate-in">
+                                        <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl relative animate-in">
                                             <button 
                                                 onClick={() => { setIsFormOpen(false); setEditingEventId(null); }}
                                                 className="absolute right-4 top-4 p-2 text-gray-300 hover:text-red-500 transition-colors"
                                             >
                                                 <Icons.X />
                                             </button>
-                                            <h2 className="font-bold mb-4 flex items-center gap-2">
-                                                {editingEventId ? <Icons.Edit /> : <Icons.Plus />} 
-                                                {editingEventId ? 'Правка' : 'Создать'}
+                                            <h2 className="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-[#604539]">
+                                                {editingEventId ? <Icons.Edit size={16} /> : <Icons.Plus size={16} />} 
+                                                {editingEventId ? 'Редактировать' : 'Создать мероприятие'}
                                             </h2>
                                             
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                                <div className="space-y-4">
-                                                    <input type="text" placeholder="Название мероприятия" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none" />
-                                                    <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none" />
-                                                    <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                                <div className="space-y-3">
+                                                    <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                    <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                    <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">
                                                         {formats.map(f => <option key={f} value={f}>{f}</option>)}
                                                     </select>
-                                                    <input type="number" placeholder="Кол-во гостей" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none" />
+                                                    <input type="number" placeholder="Гости (чел)" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
                                                 </div>
 
-                                                <div className="space-y-4">
-                                                    <div className="flex gap-3">
+                                                <div className="space-y-3">
+                                                    <div className="flex gap-2">
                                                         <SimpleTimePicker label="Начало" value={newEvent.start} onChange={v=>setNewEvent({...newEvent, start: v})} colors={colors} />
-                                                        <SimpleTimePicker label="Окончание" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
+                                                        <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
                                                     </div>
                                                     <div className="flex flex-col gap-3">
-                                                        <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none">
+                                                        <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">
                                                             {admins.map(a => <option key={a} value={a}>{a}</option>)}
                                                         </select>
-                                                        <div className="flex gap-2">
-                                                            {Object.entries({'оф': <Icons.Cloche size={16}/>, 'бар': <Icons.Martini size={16}/>, 'мой': <Icons.Droplet size={16}/>, 'пов': <Icons.Pot size={16}/>}).map(([role, icon]) => (
+                                                        <div className="flex gap-1.5">
+                                                            {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
                                                                 <div key={role} className="flex-1 relative">
-                                                                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-30">{icon}</div>
-                                                                    <input type="number" value={newEvent.neededStaff[role]} onChange={e => setNewEvent({...newEvent, neededStaff: { ...newEvent.neededStaff, [role]: e.target.value }})} placeholder="0" className="w-full p-3 pl-8 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-sm font-bold" />
+                                                                    <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-30">{icon}</div>
+                                                                    <input type="number" value={newEvent.neededStaff[role]} onChange={e => setNewEvent({...newEvent, neededStaff: { ...newEvent.neededStaff, [role]: e.target.value }})} placeholder="0" className="w-full p-2.5 pl-6 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold" />
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -465,18 +465,29 @@
                                                 </div>
                                             </div>
 
-                                            <div className="mb-6">
+                                            <div className="mb-4">
                                                 <textarea 
-                                                    placeholder="Дополнительная информация..." 
+                                                    placeholder="Инфо..." 
                                                     value={newEvent.extraInfo} 
                                                     onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} 
-                                                    className="w-full p-3 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none min-h-[80px]"
+                                                    className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none min-h-[60px] text-sm"
                                                 ></textarea>
                                             </div>
 
+                                            {/* КОМПАКТНЫЕ КНОПКИ ДЛЯ МЕРОПРИЯТИЯ */}
                                             <div className="flex gap-2">
-                                                <button onClick={handleAddEvent} className="flex-1 bg-[#604539] text-white p-4 rounded-xl uppercase font-bold text-sm tracking-widest">{editingEventId ? 'Сохранить' : 'Добавить мероприятие'}</button>
-                                                <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="bg-gray-100 px-6 rounded-xl uppercase font-bold text-xs hover:bg-gray-200 transition-colors">Отмена</button>
+                                                <button 
+                                                    onClick={handleAddEvent} 
+                                                    className="flex-[3] bg-[#604539] text-white py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest shadow-lg active:scale-[0.98] transition-transform"
+                                                >
+                                                    {editingEventId ? 'Сохранить' : 'Добавить'}
+                                                </button>
+                                                <button 
+                                                    onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} 
+                                                    className="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest hover:bg-gray-200 transition-colors"
+                                                >
+                                                    Отмена
+                                                </button>
                                             </div>
                                         </div>
                                     )}
@@ -638,7 +649,6 @@
                                                     ))}
                                                 </div>
                                                 
-                                                {/* КОМПАКТНЫЕ КНОПКИ В ОДНУ СТРОКУ */}
                                                 <div className="flex gap-2">
                                                     <button 
                                                         onClick={handleAddStaff} 
