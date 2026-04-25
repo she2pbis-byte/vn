@@ -764,7 +764,7 @@
         ],
         "rolesDisplay": "Официант",
         "rolePaid": {
-          "Официант": false
+          "Официант": true
         }
       },
       {
