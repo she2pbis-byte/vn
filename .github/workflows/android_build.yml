@@ -23,53 +23,38 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
 
-      # Исправляем ошибку 127: Устанавливаем Gradle в систему принудительно
-      - name: Install Gradle
+      - name: Create and Build Project
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gradle
-
-      - name: Prepare Project Structure
-        run: |
-          echo '{"name": "vn", "version": "0.0.1", "private": true, "dependencies": {"react": "18.2.0", "react-native": "0.72.6"}}' > package.json || true
-          echo '{"name": "vn", "displayName": "VN"}' > app.json || true
-          echo "import {AppRegistry} from 'react-native'; import App from './App'; import {name as appName} from './app.json'; AppRegistry.registerComponent(appName, () => App);" > index.js || true
-          echo "import React from 'react'; import {View, Text} from 'react-native'; export default function App() { return (<View style={{flex:1, justifyContent:'center', alignItems:'center'}}><Text>VN Project Started</Text></View>); }" > App.js || true
-
-      - name: Install Dependencies
-        run: |
-          npm install --legacy-peer-deps || true
-          npm install -g react-native-cli || true
-
-      - name: Generate Android Folder
-        run: |
-          # Пытаемся создать нативную структуру
-          npx react-native init TempApp --version 0.72.6 --skip-install --skip-git || true
-          if [ -d "TempApp/android" ]; then
-            cp -r TempApp/android . || true
-            rm -rf TempApp || true
-          fi
-
-      - name: Build Android Release
-        run: |
-          # Проверка наличия папки перед сборкой
-          if [ ! -d "android" ]; then
-            mkdir -p android/app
-          fi
+          # 1. Устанавливаем CLI
+          npm install -g react-native-cli
           
+          # 2. Создаем абсолютно новый проект во временной папке
+          # Это гарантирует наличие всех файлов: gradlew, манифестов и т.д.
+          npx react-native init MyVNProject --version 0.72.6 --skip-install
+          
+          # 3. Переходим в проект
+          cd MyVNProject
+          
+          # 4. Копируем ваши файлы из корня репозитория (если они есть) в новый проект
+          # Мы копируем все, кроме папки .git и самого проекта
+          cp -r ../* . || true
+          
+          # 5. Устанавливаем зависимости внутри нового проекта
+          npm install --legacy-peer-deps
+          
+          # 6. Сборка APK внутри созданного проекта
           cd android
-          # Теперь команда gradle сработает, так как мы установили его выше
-          gradle wrapper --gradle-version 8.0.1 || true
-          chmod +x gradlew || true
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon -x lint -x test
           
-          # Запуск сборки APK (Release или Debug в зависимости от того, что пройдет)
-          ./gradlew assembleRelease -x lint -x test --no-daemon || ./gradlew assembleDebug --no-daemon
+          # 7. Перемещаем готовый APK в корень для загрузки
+          mkdir -p ../../output
+          cp app/build/outputs/apk/release/*.apk ../../output/ || true
+          cp app/build/outputs/apk/debug/*.apk ../../output/ || true
 
       - name: Upload APK
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: vn-app-package
-          path: |
-            android/app/build/outputs/apk/release/*.apk
-            android/app/build/outputs/apk/debug/*.apk
+          name: vn-app-final
+          path: output/*.apk
