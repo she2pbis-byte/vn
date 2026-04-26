@@ -1,0 +1,15 @@
+{
+  "name": "Управление персоналом VN",
+  "short_name": "VN Staff",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#FFECD2",
+  "theme_color": "#604539",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/912/912214.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
