@@ -1,8 +1,8 @@
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "she2pbis-byte-patch-1" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "she2pbis-byte-patch-1"  ]
 
 jobs:
   build:
