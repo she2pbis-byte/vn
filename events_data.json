@@ -845,5 +845,27 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1777235810326",
+    "name": "а",
+    "date": "2026-04-26",
+    "start": "",
+    "end": "",
+    "format": "",
+    "admin": "",
+    "guests": "50",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "26 апрель",
+    "staff": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
