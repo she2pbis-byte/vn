@@ -9,43 +9,60 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Клонируем код
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Устанавливаем Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          # Убрали cache: 'npm', чтобы не было ошибки из-за отсутствия lock-файла
 
+      # 3. Устанавливаем Java
       - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'zulu'
-          cache: 'gradle'
 
+      # 4. Установка зависимостей
       - name: Install dependencies
         run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
+          npm install
+          # Устанавливаем react-native cli глобально для генерации файлов
+          npm install -g react-native-cli
+
+      # 5. Попытка генерации папки android, если её нет
+      # Мы используем встроенный скрипт инициализации шаблона
+      - name: Generate Android Folder
+        run: |
+          if [ ! -d "android" ]; then
+            echo "Папка android не найдена. Пытаюсь генерировать..."
+            # Создаем временный проект и копируем оттуда папку android
+            npx react-native init TempApp --version $(node -p "require('./package.json').dependencies['react-native']")
+            cp -r TempApp/android .
+            rm -rf TempApp
           fi
 
-      - name: Make Gradle executable
-        run: chmod +x android/gradlew
-
+      # 6. Сборка APK
       - name: Build Android Release
         run: |
-          cd android
-          ./gradlew assembleRelease --stacktrace
+          if [ -d "android" ]; then
+            cd android
+            chmod +x gradlew
+            ./gradlew assembleRelease --stacktrace
+          else
+            echo "Ошибка: папка android так и не появилась."
+            exit 1
+          fi
 
+      # 7. Загрузка результата
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release-unsigned
-          # Путь может отличаться, если в проекте несколько модулей. 
-          # Этот путь стандартный для React Native:
-          path: android/app/build/outputs/apk/release/*.apk
+          path: |
+            android/app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/release/*.apk
           retention-days: 7
