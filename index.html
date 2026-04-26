@@ -71,7 +71,6 @@
             gap: 2px;
         }
 
-        /* Обновленные стили для дней недели */
         .weekday-header {
             text-align: center;
             font-size: 9px;
@@ -119,11 +118,14 @@
             color: white !important;
             font-weight: 800 !important;
         }
+
+        /* Обновленные стили для неоплаченных долгов - еле заметный красный */
         .calendar-day.has-unpaid-debt {
-            background-color: #ef4444 !important;
-            color: white !important;
-            font-weight: 800;
+            background-color: #fee2e2 !important; /* Мягкий бледно-красный */
+            color: #991b1b !important;
+            font-weight: 700;
         }
+
         .calendar-day.past-date:not(.selected):not(.has-unpaid-debt):not(.is-today) {
             background-color: #f3f4f6;
             color: #9ca3af;
@@ -373,9 +375,9 @@
                                     }}
                                     className={`
                                         calendar-day ${!day ? 'invisible' : ''} 
+                                        ${unpaid && !selected && !current ? 'has-unpaid-debt' : ''}
                                         ${selected ? 'bg-[#C7886B] text-white font-black scale-110 z-10 selected' : ''}
                                         ${current && !selected ? 'is-today shadow-lg scale-105' : ''}
-                                        ${!selected && !current && unpaid ? 'has-unpaid-debt' : ''}
                                         ${!selected && !current && !unpaid && past ? 'past-date' : ''}
                                         ${!selected && !current && !unpaid && !past ? 'hover:bg-[#FFECD2]' : ''}
                                         ${hasEv ? 'has-event' : ''}
