@@ -850,5 +850,28 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1777297244454",
+    "name": "ПЯО",
+    "date": "2026-04-29",
+    "start": "",
+    "end": "",
+    "format": "Чайный стол",
+    "location": "ПЯО",
+    "admin": "Илья",
+    "guests": "10",
+    "extraInfo": "Зал приема\nиностранных делегаций",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "29 апрель",
+    "staff": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
