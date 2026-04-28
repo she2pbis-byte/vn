@@ -280,20 +280,6 @@
         "rolesDisplay": "Официант",
         "rolePaid": {},
         "phone": "79038241807"
-      },
-      {
-        "id": "1776344725155",
-        "name": "Сухановская",
-        "time": "09:00",
-        "end": "",
-        "roles": [
-          "Официант"
-        ],
-        "rolesDisplay": "Официант",
-        "rolePaid": {
-          "Официант": false
-        },
-        "phone": ""
       }
     ],
     "status": {
