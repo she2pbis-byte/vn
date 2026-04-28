@@ -242,11 +242,11 @@
     "name": "МЧС",
     "date": "2026-04-30",
     "start": "10:00",
-    "end": "21:00",
-    "format": "Несколько накрытий",
+    "end": "13:00",
+    "format": "Фуршет",
     "admin": "Михаил",
     "guests": "60",
-    "extraInfo": "КЗЦ:\n10:00 Велком-10\n12:00 Фуршет-60\n\nКорабль\n18:00 Банкет-40",
+    "extraInfo": "КЗЦ:\n10:00 Велком-10\n12:00 Фуршет-60",
     "neededStaff": {
       "оф": "3",
       "бар": "",
@@ -257,7 +257,7 @@
     "staff": [
       {
         "id": "1776111329621",
-        "name": "Коршунов (КЗЦ)",
+        "name": "Коршунов",
         "time": "09:00",
         "end": "",
         "roles": [
@@ -270,7 +270,7 @@
       },
       {
         "id": "1776344677183",
-        "name": "Салина (КЗЦ)",
+        "name": "Салина",
         "time": "09:00",
         "end": "",
         "roles": [
@@ -281,19 +281,40 @@
       },
       {
         "id": "1776344725155",
-        "name": "Сухановская (КЗЦ)",
+        "name": "Сухановская",
         "time": "09:00",
         "end": "",
         "roles": [
           "Официант"
         ],
         "rolesDisplay": "Официант",
-        "rolePaid": {}
+        "rolePaid": {
+          "Официант": false
+        }
       }
     ],
     "status": {
-      "checked": false
-    }
+      "checked": true
+    },
+    "location": "КЗЦ",
+    "files": [
+      {
+        "name": "1)30.04 КБ Велком.pdf",
+        "path": "attachments/1776111285429/1777359168568_1)30.04 КБ Велком.pdf",
+        "sha": "ffd1af64f86d27206395dadb25cfbb50962bbaff",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1776111285429/1777359168568_1)30.04 КБ Велком.pdf",
+        "size": 115181,
+        "uploadedAt": "2026-04-28T06:52:50.270Z"
+      },
+      {
+        "name": "2)30.04 Ф-60 КЗЦ.pdf",
+        "path": "attachments/1776111285429/1777359177864_2)30.04 Ф-60 КЗЦ.pdf",
+        "sha": "fdc91f50b8d05b816a7db31af4811823ffb07834",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1776111285429/1777359177864_2)30.04 Ф-60 КЗЦ.pdf",
+        "size": 124630,
+        "uploadedAt": "2026-04-28T06:52:59.319Z"
+      }
+    ]
   },
   {
     "id": "1776111416416",
@@ -301,7 +322,7 @@
     "date": "2026-05-09",
     "start": "",
     "end": "",
-    "format": "Несколько накрытий",
+    "format": "Кофе-брейк",
     "admin": "Илья",
     "guests": "100",
     "extraInfo": "",
@@ -314,14 +335,13 @@
     "displayDate": "9 май",
     "staff": [
       {
-        "id": "1776111438526",
-        "name": "Телов",
+        "id": "1777306911824",
+        "name": "? Прохоров",
         "time": "",
         "end": "",
         "roles": [
           "Официант"
         ],
-        "rolesDisplay": "Официант",
         "rolePaid": {}
       },
       {
@@ -345,11 +365,24 @@
         ],
         "rolesDisplay": "Официант",
         "rolePaid": {}
+      },
+      {
+        "id": "1776111438526",
+        "name": "Телов",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {}
       }
     ],
     "status": {
       "checked": false
-    }
+    },
+    "location": "ПЯО",
+    "files": []
   },
   {
     "id": "1776111545652",
@@ -426,14 +459,14 @@
     "displayDate": "29 май",
     "staff": [
       {
-        "id": "1776111693329",
-        "name": "Телов",
+        "id": "1776111747146",
+        "name": "Беловуров",
         "time": "",
         "end": "",
         "roles": [
-          "Официант"
+          "Повар"
         ],
-        "rolesDisplay": "Официант",
+        "rolesDisplay": "Повар",
         "rolePaid": {}
       },
       {
@@ -459,20 +492,21 @@
         "rolePaid": {}
       },
       {
-        "id": "1776111747146",
-        "name": "Беловуров",
+        "id": "1776111693329",
+        "name": "Телов",
         "time": "",
         "end": "",
         "roles": [
-          "Повар"
+          "Официант"
         ],
-        "rolesDisplay": "Повар",
+        "rolesDisplay": "Официант",
         "rolePaid": {}
       }
     ],
     "status": {
       "checked": false
-    }
+    },
+    "location": "КЗЦ"
   },
   {
     "id": "1776111860018",
