@@ -336,19 +336,22 @@
 
             return (
                 <div ref={calendarRef} className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-6">
                         <button 
                             onClick={prevMonth} 
-                            className="p-1 rounded-lg border-2 hover:bg-[#60453910] border-transparent transition-all duration-300"
+                            className="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-[#60453910] text-[#604539] hover:bg-[#604539] hover:text-white transition-all duration-300 font-black text-xl"
                         >
-                            <Icons.ChevronLeft />
+                            «
                         </button>
-                        <h3 className="font-bold uppercase tracking-widest text-[#604539] text-sm">{monthName} {year}</h3>
+                        <div className="text-center">
+                            <h3 className="font-black uppercase tracking-[0.2em] text-[#604539] text-sm leading-none">{monthName}</h3>
+                            <span className="text-[10px] font-bold opacity-30 tracking-widest">{year}</span>
+                        </div>
                         <button 
                             onClick={nextMonth} 
-                            className="p-1 rounded-lg border-2 hover:bg-[#60453910] border-transparent transition-all duration-300"
+                            className="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-[#60453910] text-[#604539] hover:bg-[#604539] hover:text-white transition-all duration-300 font-black text-xl"
                         >
-                            <Icons.ChevronRight />
+                            »
                         </button>
                     </div>
                     <div className="calendar-grid mb-1">
@@ -806,7 +809,7 @@
                                                     <div className="space-y-1">
                                                         <p className="text-[11px] text-[#C7886B] font-bold uppercase tracking-tight">{ev.format || '—'}</p>
                                                         {ev.location && (
-                                                            <div className="flex items-center gap-1 text-[11px] text-gray-500 font-medium">
+                                                            <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
                                                                 <Icons.MapPin size={10} />
                                                                 <span className="truncate">{ev.location}</span>
                                                             </div>
