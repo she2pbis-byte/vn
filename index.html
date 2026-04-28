@@ -975,9 +975,9 @@
                                                         <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Админ: {ev.admin || '—'}</p>
                                                         <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Гости: {ev.guests || 0} чел</p>
                                                         {ev.files?.length > 0 && (
-                                                            <div className="flex items-center gap-1 text-[10px] text-blue-500 font-bold">
+                                                            <div className="flex items-center gap-1 text-[10px] text-blue-500 font-bold uppercase tracking-tighter mt-1">
                                                                 <Icons.Paperclip size={10} />
-                                                                <span>{ev.files.length} файл(ов)</span>
+                                                                <span>есть прикрепленные файлы</span>
                                                             </div>
                                                         )}
                                                     </div>
