@@ -165,6 +165,11 @@
             overflow: hidden;
             pointer-events: none;
         }
+
+        /* Убираем изменение фона у кнопок переключения месяцев в календаре */
+        .calendar-nav-btn:hover {
+            background-color: transparent !important;
+        }
     </style>
 </head>
 <body>
@@ -342,7 +347,7 @@
                     <div className="flex items-center justify-between mb-6">
                         <button 
                             onClick={prevMonth} 
-                            className="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-[#60453910] text-[#604539] hover:bg-[#604539] hover:text-white transition-all duration-300 font-black text-xl"
+                            className="calendar-nav-btn w-10 h-10 flex items-center justify-center rounded-xl border-2 border-[#60453910] text-[#604539] hover:text-[#C7886B] transition-all duration-300 font-black text-xl"
                         >
                             «
                         </button>
@@ -352,7 +357,7 @@
                         </div>
                         <button 
                             onClick={nextMonth} 
-                            className="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-[#60453910] text-[#604539] hover:bg-[#604539] hover:text-white transition-all duration-300 font-black text-xl"
+                            className="calendar-nav-btn w-10 h-10 flex items-center justify-center rounded-xl border-2 border-[#60453910] text-[#604539] hover:text-[#C7886B] transition-all duration-300 font-black text-xl"
                         >
                             »
                         </button>
