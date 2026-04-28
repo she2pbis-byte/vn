@@ -293,7 +293,9 @@
         "roles": [
           "Официант"
         ],
-        "rolePaid": {}
+        "rolePaid": {
+          "Официант": true
+        }
       }
     ],
     "status": {
