@@ -61,7 +61,8 @@
           "Официант"
         ],
         "rolesDisplay": "Официант",
-        "rolePaid": {}
+        "rolePaid": {},
+        "phone": "79038241807"
       }
     ],
     "status": {
