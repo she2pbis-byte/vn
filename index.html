@@ -166,7 +166,6 @@
             pointer-events: none;
         }
 
-        /* Убираем изменение фона у кнопок переключения месяцев в календаре */
         .calendar-nav-btn:hover {
             background-color: transparent !important;
         }
@@ -628,6 +627,40 @@
                 }
             };
 
+            // НОВАЯ ФУНКЦИЯ ДЛЯ СКАЧИВАНИЯ С ЧИСТЫМ ИМЕНЕМ ЧЕРЕЗ BLOB
+            const handleFileDownload = async (fileData) => {
+                if (!githubToken) return;
+                setSyncStatus('loading');
+                
+                try {
+                    const response = await fetch(fileData.download_url, {
+                        headers: { 'Authorization': `token ${githubToken}` }
+                    });
+                    
+                    if (!response.ok) throw new Error('Download failed');
+                    
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    
+                    link.href = url;
+                    // Используем оригинальное имя файла
+                    link.download = fileData.name; 
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    // Очистка
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    setSyncStatus('success');
+                    setTimeout(() => setSyncStatus('idle'), 2000);
+                } catch (err) {
+                    console.error(err);
+                    setSyncStatus('error');
+                }
+            };
+
             useEffect(() => {
                 if (githubToken) fetchFromGithub(githubToken);
             }, [fetchFromGithub, githubToken]);
@@ -1047,7 +1080,6 @@
                                 </div>
                             </div>
 
-                            {/* Секция файлов */}
                             <div className="bg-white rounded-3xl shadow-xl border-t-8 border-[#604539] p-6 animate-in">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xs font-black uppercase tracking-widest text-[#604539] flex items-center gap-2">
@@ -1089,15 +1121,13 @@
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 shrink-0">
-                                                    <a 
-                                                        href={file.download_url} 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer"
+                                                    <button 
+                                                        onClick={() => handleFileDownload(file)}
                                                         className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-gray-200 text-gray-500 hover:text-[#604539] hover:border-[#604539] transition-all"
-                                                        title="Открыть/Скачать"
+                                                        title="Скачать файл"
                                                     >
                                                         <Icons.ExternalLink size={16} />
-                                                    </a>
+                                                    </button>
                                                     <button 
                                                         onClick={() => handleFileDelete(file)}
                                                         className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-gray-200 text-gray-300 hover:text-red-500 hover:border-red-500 transition-all"
