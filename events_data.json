@@ -505,7 +505,8 @@
           "Официант"
         ],
         "rolesDisplay": "Официант",
-        "rolePaid": {}
+        "rolePaid": {},
+        "phone": "+79969265172"
       }
     ],
     "status": {
