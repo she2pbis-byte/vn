@@ -222,7 +222,8 @@
             MapPin: ({size=14, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
             Paperclip: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>,
             FileText: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/></svg>,
-            ExternalLink: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            ExternalLink: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
+            Phone: ({size=12, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         };
 
         const keyToLabel = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
@@ -689,7 +690,7 @@
                 neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
             });
             const [editingEventId, setEditingEventId] = useState(null);
-            const [newStaff, setNewStaff] = useState({ name: '', time: '', end: '', roles: [] });
+            const [newStaff, setNewStaff] = useState({ name: '', phone: '', time: '', end: '', roles: [] });
             const [editingStaffId, setEditingStaffId] = useState(null);
 
             const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
@@ -764,7 +765,7 @@
                 }
                 setEvents(updated);
                 saveToGithub(updated);
-                setNewStaff({ name: '', time: '', end: '', roles: [] });
+                setNewStaff({ name: '', phone: '', time: '', end: '', roles: [] });
                 setIsStaffFormOpen(false);
             };
 
@@ -821,6 +822,13 @@
                 if (['xls', 'xlsx'].includes(ext)) return { label: 'exel', color: '#16a34a' }; // Green
                 if (['png', 'jpg', 'jpeg', 'svg', 'webp', 'gif'].includes(ext)) return { label: 'pic', color: '#7c3aed' }; // Purple
                 return { label: 'file', color: '#4b5563' }; // Dark Gray
+            };
+
+            // Валидация телефона (простой паттерн для РФ)
+            const isPhoneValid = (phone) => {
+                if (!phone) return true; // Необязательно
+                const clean = phone.replace(/\D/g, '');
+                return clean.length === 11 || clean.length === 10;
             };
 
             return (
@@ -1067,7 +1075,16 @@
                                                 <tr key={s.id} className="border-b border-gray-50 text-sm">
                                                     <td className="col-staff py-4 pl-2 overflow-hidden">
                                                         <div className="flex flex-col gap-1.5">
-                                                            <div className="flex flex-col min-w-0"><span className="font-bold truncate" title={s.name}>{s.name}</span>{!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">НЕТ ТАЙМИНГА</span>}</div>
+                                                            <div className="flex flex-col min-w-0">
+                                                                <span className="font-bold truncate" title={s.name}>{s.name}</span>
+                                                                {s.phone && (
+                                                                    <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-0.5">
+                                                                        <Icons.Phone size={10} />
+                                                                        <span>{s.phone}</span>
+                                                                    </div>
+                                                                )}
+                                                                {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter mt-0.5">НЕТ ТАЙМИНГА</span>}
+                                                            </div>
                                                             <div className="flex flex-wrap gap-1.5 mt-1">
                                                                 {s.roles.map((role, idx) => (
                                                                     <div key={idx} onClick={() => toggleStaffRolePaid(s.id, role)} className={`role-badge border ${s.rolePaid?.[role] ? 'bg-green-100 border-green-200 text-green-700' : 'bg-gray-50 border-gray-100 text-gray-500'}`}>
@@ -1078,7 +1095,7 @@
                                                         </div>
                                                     </td>
                                                     <td className="col-timing py-4 text-center"><div className="text-[11px] font-medium leading-tight"><div>{s.time || '—'}</div>{s.end && <div className="opacity-40">- {s.end}</div>}</div></td>
-                                                    <td className="col-actions py-4 text-right pr-2"><div className="flex justify-end gap-2"><button onClick={()=> { setEditingStaffId(s.id); setNewStaff({ name: s.name, time: s.time || '', end: s.end || '', roles: s.roles }); setIsStaffFormOpen(true); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16}/></button><button onClick={()=> { const upd = events.map(e=>e.id===selectedEventId?{...e,staff:e.staff.filter(x=>x.id!==s.id)}:e); setEvents(upd); saveToGithub(upd); }} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button></div></td>
+                                                    <td className="col-actions py-4 text-right pr-2"><div className="flex justify-end gap-2"><button onClick={()=> { setEditingStaffId(s.id); setNewStaff({ name: s.name, phone: s.phone || '', time: s.time || '', end: s.end || '', roles: s.roles }); setIsStaffFormOpen(true); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16}/></button><button onClick={()=> { const upd = events.map(e=>e.id===selectedEventId?{...e,staff:e.staff.filter(x=>x.id!==s.id)}:e); setEvents(upd); saveToGithub(upd); }} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button></div></td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -1092,23 +1109,44 @@
                                             </button>
                                         ) : (
                                             <div className="bg-[#FFECD240] p-4 rounded-2xl border-2 border-[#604539] border-l-8 animate-in relative">
-                                                <button onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); }} className="absolute right-3 top-3 p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={16}/></button>
+                                                <button onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); setNewStaff({ name: '', phone: '', time: '', end: '', roles: [] }); }} className="absolute right-3 top-3 p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={16}/></button>
                                                 <h3 className="text-xs font-bold mb-4 flex items-center gap-2 text-[#604539] uppercase tracking-wide">{editingStaffId ? <Icons.Edit size={14}/> : <Icons.Plus size={14}/>} {editingStaffId ? 'Редактировать' : 'Новый сотрудник'}</h3>
+                                                
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                                                    <input type="text" placeholder="Имя сотрудника" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="p-2.5 rounded-lg border-2 border-[#60453910] bg-white outline-none text-sm placeholder:text-gray-300" />
+                                                    <div className="space-y-3">
+                                                        <input type="text" placeholder="Имя сотрудника" value={newStaff.name} onChange={e=>setNewStaff({...newStaff, name: e.target.value})} className="w-full p-2.5 rounded-lg border-2 border-[#60453910] bg-white outline-none text-sm placeholder:text-gray-300" />
+                                                        
+                                                        {/* Поле номера телефона */}
+                                                        <div className="relative">
+                                                            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300">
+                                                                <Icons.Phone size={14} />
+                                                            </div>
+                                                            <input 
+                                                                type="tel" 
+                                                                placeholder="Телефон (необязательно)" 
+                                                                value={newStaff.phone} 
+                                                                onChange={e=>setNewStaff({...newStaff, phone: e.target.value})} 
+                                                                className={`w-full p-2.5 pl-8 rounded-lg border-2 bg-white outline-none text-sm placeholder:text-gray-300 transition-colors ${isPhoneValid(newStaff.phone) ? 'border-[#60453910]' : 'border-red-300 bg-red-50'}`} 
+                                                            />
+                                                            {!isPhoneValid(newStaff.phone) && <p className="text-[9px] text-red-500 font-bold mt-1 ml-1 uppercase">Неверный формат</p>}
+                                                        </div>
+                                                    </div>
+                                                    
                                                     <div className="flex gap-2">
                                                         <SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} colors={colors} />
                                                         <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
                                                     </div>
                                                 </div>
+
                                                 <div className="grid grid-cols-2 gap-1.5 mb-4">
                                                     {['Официант', 'Бармен', 'Мойщица', 'Повар'].map(r => (
                                                         <button key={r} onClick={()=>setNewStaff(p=>({...p, roles: p.roles.includes(r)?p.roles.filter(x=>x!==r):[...p.roles, r]}))} className={`py-2 rounded-lg text-[9px] font-bold uppercase border-2 transition-all ${newStaff.roles.includes(r)?'bg-[#604539] border-[#604539] text-white':'border-[#60453910] bg-white text-[#604539]'}`}>{r}</button>
                                                     ))}
                                                 </div>
+                                                
                                                 <div className="flex gap-2">
                                                     <button onClick={handleAddStaff} className="flex-[2] bg-[#604539] text-white py-2.5 rounded-lg uppercase font-bold text-[10px] tracking-widest shadow-sm active:scale-[0.98] transition-transform">{editingStaffId ? 'Сохранить' : 'Подтвердить'}</button>
-                                                    <button onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); }} className="flex-1 bg-white border-2 border-[#60453915] text-[#604539] py-2.5 rounded-lg uppercase font-bold text-[10px] tracking-widest active:scale-[0.98] transition-transform">Отмена</button>
+                                                    <button onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); setNewStaff({ name: '', phone: '', time: '', end: '', roles: [] }); }} className="flex-1 bg-white border-2 border-[#60453915] text-[#604539] py-2.5 rounded-lg uppercase font-bold text-[10px] tracking-widest active:scale-[0.98] transition-transform">Отмена</button>
                                                 </div>
                                             </div>
                                         )}
