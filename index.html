@@ -170,24 +170,18 @@
             background-color: transparent !important;
         }
 
-        /* Анимация бегущей строки */
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            10% { transform: translateX(0); }
-            90% { transform: translateX(calc(-100% + 100px)); }
-            100% { transform: translateX(calc(-100% + 100px)); }
-        }
-
-        .marquee-active {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee 8s linear infinite alternate;
-        }
-
-        .file-name-wrapper {
+        /* Обновленные стили для имен файлов */
+        .file-name-container {
             width: 100%;
             overflow: hidden;
-            mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
+        }
+
+        .file-name-text {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: normal; /* Не разрывать слова */
+            line-height: 1.2;
+            display: block;
         }
     </style>
 </head>
@@ -264,33 +258,6 @@
                 if (!s.roles || s.roles.length === 0) return true;
                 return s.roles.every(role => s.rolePaid && s.rolePaid[role] === true);
             });
-        };
-
-        // Вспомогательный компонент для бегущей строки
-        const MarqueeFileName = ({ name }) => {
-            const containerRef = useRef(null);
-            const textRef = useRef(null);
-            const [isMarquee, setIsMarquee] = useState(false);
-
-            useEffect(() => {
-                const container = containerRef.current;
-                const text = textRef.current;
-                if (container && text) {
-                    setIsMarquee(text.offsetWidth > container.offsetWidth);
-                }
-            }, [name]);
-
-            return (
-                <div ref={containerRef} className="file-name-wrapper">
-                    <p 
-                        ref={textRef} 
-                        className={`text-sm font-bold ${isMarquee ? 'marquee-active' : 'truncate'}`}
-                        title={name}
-                    >
-                        {name}
-                    </p>
-                </div>
-            );
         };
 
         const Calendar = ({ events, onSelectDate, selectedDate, calendarRef }) => {
@@ -1180,9 +1147,11 @@
                                                                 {iconData.label}
                                                             </span>
                                                         </div>
-                                                        <div className="min-w-0 flex-1">
-                                                            <MarqueeFileName name={file.name} />
-                                                            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">
+                                                        <div className="file-name-container">
+                                                            <p className="file-name-text text-sm font-bold text-[#1F1713]">
+                                                                {file.name}
+                                                            </p>
+                                                            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter mt-1">
                                                                 {(file.size / 1024).toFixed(1)} KB • {new Date(file.uploadedAt).toLocaleDateString()}
                                                             </p>
                                                         </div>
