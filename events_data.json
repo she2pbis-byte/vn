@@ -896,5 +896,29 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1777385256191",
+    "name": "Худ.муз",
+    "date": "2026-04-29",
+    "start": "15:00",
+    "end": "",
+    "format": "Доставка",
+    "location": "",
+    "admin": "Михаил",
+    "guests": "6",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "29 апрель",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
