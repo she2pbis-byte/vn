@@ -170,10 +170,24 @@
             background-color: transparent !important;
         }
 
-        /* Предотвращение разрыва слов в списке файлов */
-        .file-name-container {
-            word-break: keep-all;
-            overflow-wrap: break-word;
+        /* Анимация бегущей строки */
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            10% { transform: translateX(0); }
+            90% { transform: translateX(calc(-100% + 100px)); }
+            100% { transform: translateX(calc(-100% + 100px)); }
+        }
+
+        .marquee-active {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 8s linear infinite alternate;
+        }
+
+        .file-name-wrapper {
+            width: 100%;
+            overflow: hidden;
+            mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
         }
     </style>
 </head>
@@ -250,6 +264,33 @@
                 if (!s.roles || s.roles.length === 0) return true;
                 return s.roles.every(role => s.rolePaid && s.rolePaid[role] === true);
             });
+        };
+
+        // Вспомогательный компонент для бегущей строки
+        const MarqueeFileName = ({ name }) => {
+            const containerRef = useRef(null);
+            const textRef = useRef(null);
+            const [isMarquee, setIsMarquee] = useState(false);
+
+            useEffect(() => {
+                const container = containerRef.current;
+                const text = textRef.current;
+                if (container && text) {
+                    setIsMarquee(text.offsetWidth > container.offsetWidth);
+                }
+            }, [name]);
+
+            return (
+                <div ref={containerRef} className="file-name-wrapper">
+                    <p 
+                        ref={textRef} 
+                        className={`text-sm font-bold ${isMarquee ? 'marquee-active' : 'truncate'}`}
+                        title={name}
+                    >
+                        {name}
+                    </p>
+                </div>
+            );
         };
 
         const Calendar = ({ events, onSelectDate, selectedDate, calendarRef }) => {
@@ -1130,7 +1171,7 @@
                                             const iconData = getFileIconData(file.name);
                                             return (
                                                 <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border-2 border-gray-100 hover:border-[#60453920] transition-all group">
-                                                    <div className="flex items-center gap-3 overflow-hidden">
+                                                    <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
                                                         <div 
                                                             className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border-2" 
                                                             style={{ backgroundColor: iconData.color + '10', borderColor: iconData.color + '20' }}
@@ -1139,14 +1180,14 @@
                                                                 {iconData.label}
                                                             </span>
                                                         </div>
-                                                        <div className="min-w-0 file-name-container">
-                                                            <p className="text-sm font-bold truncate" title={file.name}>{file.name}</p>
+                                                        <div className="min-w-0 flex-1">
+                                                            <MarqueeFileName name={file.name} />
                                                             <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">
                                                                 {(file.size / 1024).toFixed(1)} KB • {new Date(file.uploadedAt).toLocaleDateString()}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2 shrink-0">
+                                                    <div className="flex items-center gap-2 shrink-0 ml-2">
                                                         <button 
                                                             onClick={() => handleFileDownload(file)}
                                                             className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-gray-200 text-gray-500 hover:text-[#604539] hover:border-[#604539] transition-all"
