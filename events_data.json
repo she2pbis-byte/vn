@@ -292,7 +292,8 @@
         "rolesDisplay": "Официант",
         "rolePaid": {
           "Официант": false
-        }
+        },
+        "phone": "+79036468034"
       }
     ],
     "status": {
