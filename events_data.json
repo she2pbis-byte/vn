@@ -880,5 +880,29 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1777383063976",
+    "name": "ХУД МУЗ",
+    "date": "2026-04-29",
+    "start": "15:00",
+    "end": "",
+    "format": "Доставка",
+    "location": "Художественный музей",
+    "admin": "Михаил",
+    "guests": "6",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "29 апрель",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
