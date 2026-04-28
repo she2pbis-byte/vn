@@ -806,6 +806,15 @@
                 'пов': { icon: <Icons.Pot size={20} />, key: 'Повар' }
             };
 
+            const getFileIconData = (fileName) => {
+                const ext = fileName.split('.').pop().toLowerCase();
+                if (['pdf'].includes(ext)) return { label: 'pdf', color: '#ef4444' };
+                if (['doc', 'docx'].includes(ext)) return { label: 'doc', color: '#3b82f6' };
+                if (['xls', 'xlsx'].includes(ext)) return { label: 'exel', color: '#22c55e' };
+                if (['png', 'jpg', 'jpeg', 'svg', 'webp', 'gif'].includes(ext)) return { label: 'pic', color: '#94a3b8' };
+                return { label: 'file', color: '#64748b' };
+            };
+
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
                     <div className="flex items-center justify-between gap-4 mb-6 bg-white/60 p-2 rounded-2xl border border-[#60453915] backdrop-blur-sm shadow-sm">
@@ -1117,37 +1126,45 @@
 
                                 <div className="space-y-3">
                                     {currentEvent?.files?.length > 0 ? (
-                                        currentEvent.files.map((file, idx) => (
-                                            <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border-2 border-gray-100 hover:border-[#60453920] transition-all group">
-                                                <div className="flex items-center gap-3 overflow-hidden">
-                                                    <div className="w-10 h-10 bg-[#60453910] rounded-xl flex items-center justify-center text-[#604539] shrink-0">
-                                                        <Icons.FileText size={20} />
+                                        currentEvent.files.map((file, idx) => {
+                                            const iconData = getFileIconData(file.name);
+                                            return (
+                                                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border-2 border-gray-100 hover:border-[#60453920] transition-all group">
+                                                    <div className="flex items-center gap-3 overflow-hidden">
+                                                        <div 
+                                                            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border-2" 
+                                                            style={{ backgroundColor: iconData.color + '10', borderColor: iconData.color + '20' }}
+                                                        >
+                                                            <span className="text-[9px] font-black uppercase" style={{ color: iconData.color }}>
+                                                                {iconData.label}
+                                                            </span>
+                                                        </div>
+                                                        <div className="min-w-0 file-name-container">
+                                                            <p className="text-sm font-bold truncate" title={file.name}>{file.name}</p>
+                                                            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">
+                                                                {(file.size / 1024).toFixed(1)} KB • {new Date(file.uploadedAt).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div className="min-w-0 file-name-container">
-                                                        <p className="text-sm font-bold" title={file.name}>{file.name}</p>
-                                                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">
-                                                            {(file.size / 1024).toFixed(1)} KB • {new Date(file.uploadedAt).toLocaleDateString()}
-                                                        </p>
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        <button 
+                                                            onClick={() => handleFileDownload(file)}
+                                                            className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-gray-200 text-gray-500 hover:text-[#604539] hover:border-[#604539] transition-all"
+                                                            title="Скачать файл"
+                                                        >
+                                                            <Icons.ExternalLink size={16} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleFileDelete(file)}
+                                                            className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-gray-200 text-gray-300 hover:text-red-500 hover:border-red-500 transition-all"
+                                                            title="Удалить файл"
+                                                        >
+                                                            <Icons.Trash size={16} />
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                    <button 
-                                                        onClick={() => handleFileDownload(file)}
-                                                        className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-gray-200 text-gray-500 hover:text-[#604539] hover:border-[#604539] transition-all"
-                                                        title="Скачать файл"
-                                                    >
-                                                        <Icons.ExternalLink size={16} />
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => handleFileDelete(file)}
-                                                        className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-gray-200 text-gray-300 hover:text-red-500 hover:border-red-500 transition-all"
-                                                        title="Удалить файл"
-                                                    >
-                                                        <Icons.Trash size={16} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))
+                                            );
+                                        })
                                     ) : (
                                         <div className="py-8 text-center text-gray-300 border-2 border-dashed border-gray-100 rounded-2xl uppercase font-black text-[10px] tracking-widest">
                                             Файлов пока нет
