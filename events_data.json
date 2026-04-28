@@ -918,16 +918,7 @@
     },
     "displayDate": "29 апрель",
     "staff": [],
-    "files": [
-      {
-        "name": "29.04 Доставка музей заповедник.xlsx",
-        "path": "attachments/1777385256191/1777392596119_29.04 Доставка музей заповедник.xlsx",
-        "sha": "e2116f9cb0d31d91bc9e8e19dc9b08a50803d734",
-        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777385256191/1777392596119_29.04 Доставка музей заповедник.xlsx",
-        "size": 31100,
-        "uploadedAt": "2026-04-28T16:09:57.864Z"
-      }
-    ],
+    "files": [],
     "status": {
       "checked": true
     }
