@@ -941,8 +941,9 @@
 
                                     return (
                                         <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); setIsCalendarOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
+                                            {/* УВЕЛИЧЕННЫЙ ШРИФТ В ЗАГОЛОВКЕ (text-sm вместо text-[10px]) */}
                                             <div className={`py-1.5 px-4 text-center ${isPast ? 'bg-[#604539]' : (isComplete ? 'bg-green-600' : 'bg-red-500')}`}>
-                                                <span className="text-[10px] font-extrabold uppercase text-white tracking-widest">{ev.displayDate}</span>
+                                                <span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{ev.displayDate}</span>
                                             </div>
                                             <div className="flex gap-4 p-5">
                                                 {!isPast ? (
@@ -1003,7 +1004,8 @@
                                 </div>
                             </div>
                             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539] mb-8">
-                                <div className={`py-2 text-center ${(currentEvent?.date < todayStr) ? 'bg-[#604539]' : 'bg-[#C7886B]'}`}><span className="text-[11px] font-extrabold uppercase text-white tracking-widest">{currentEvent?.displayDate}</span></div>
+                                {/* УВЕЛИЧЕННЫЙ ШРИФТ В ДЕТАЛЯХ (text-sm вместо text-[11px]) */}
+                                <div className={`py-2 text-center ${(currentEvent?.date < todayStr) ? 'bg-[#604539]' : 'bg-[#C7886B]'}`}><span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{currentEvent?.displayDate}</span></div>
                                 <div className="p-8 bg-[#1F1713] text-white">
                                     <div className="flex justify-between items-start mb-4">
                                         <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
