@@ -294,7 +294,7 @@
           "Официант"
         ],
         "rolePaid": {
-          "Официант": true
+          "Официант": false
         }
       }
     ],
@@ -920,7 +920,7 @@
     "staff": [],
     "files": [],
     "status": {
-      "checked": true
+      "checked": false
     }
   }
 ]
