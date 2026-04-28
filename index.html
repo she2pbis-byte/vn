@@ -169,6 +169,12 @@
         .calendar-nav-btn:hover {
             background-color: transparent !important;
         }
+
+        /* Предотвращение разрыва слов в списке файлов */
+        .file-name-container {
+            word-break: keep-all;
+            overflow-wrap: break-word;
+        }
     </style>
 </head>
 <body>
@@ -632,7 +638,6 @@
                 setSyncStatus('loading');
                 
                 try {
-                    // Используем GitHub API для получения контента файла (с поддержкой CORS и авторизации)
                     const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${fileData.path}`, {
                         headers: { 'Authorization': `token ${githubToken}` }
                     });
@@ -640,7 +645,6 @@
                     if (!response.ok) throw new Error('Download failed');
                     const data = await response.json();
                     
-                    // Контент приходит в Base64. Нам нужно его декодировать в бинарный массив
                     const byteCharacters = atob(data.content.replace(/\s/g, ''));
                     const byteNumbers = new Array(byteCharacters.length);
                     for (let i = 0; i < byteCharacters.length; i++) {
@@ -649,7 +653,6 @@
                     const byteArray = new Uint8Array(byteNumbers);
                     const blob = new Blob([byteArray], { type: 'application/octet-stream' });
                     
-                    // Стандартный способ скачивания блоба в браузере
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
@@ -1120,8 +1123,8 @@
                                                     <div className="w-10 h-10 bg-[#60453910] rounded-xl flex items-center justify-center text-[#604539] shrink-0">
                                                         <Icons.FileText size={20} />
                                                     </div>
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-bold truncate pr-4" title={file.name}>{file.name}</p>
+                                                    <div className="min-w-0 file-name-container">
+                                                        <p className="text-sm font-bold" title={file.name}>{file.name}</p>
                                                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">
                                                             {(file.size / 1024).toFixed(1)} KB • {new Date(file.uploadedAt).toLocaleDateString()}
                                                         </p>
