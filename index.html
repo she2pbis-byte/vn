@@ -153,7 +153,6 @@
         .file-name-container { width: 100%; overflow: hidden; }
         .file-name-text { word-wrap: break-word; overflow-wrap: break-word; word-break: normal; line-height: 1.2; display: block; }
 
-        /* Стили для выпадающего списка автозаполнения */
         .autocomplete-list {
             position: absolute;
             top: 100%;
@@ -488,7 +487,7 @@
             }, [staffName, events, todayStr]);
 
             return (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1F1713]/80 backdrop-blur-sm animate-in">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1F1713]/80 backdrop-blur-sm">
                     <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-2 border-[#604539]">
                         <div className="p-4 border-b border-[#60453910] flex items-center justify-between">
                             <div>
@@ -511,10 +510,8 @@
                                                     <span className="text-lg font-black text-[#604539] leading-none">{new Date(ev.date).getDate()}</span>
                                                 </div>
                                                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                    {/* Название увеличено в 1.5 раза (с 10px до 15px) */}
                                                     <p className="text-[15px] font-bold uppercase truncate text-[#1F1713]">{ev.name}</p>
                                                     <div className="flex items-center gap-2 mt-1.5">
-                                                        {/* Время увеличено в 1.5 раза (с 9px до 13.5px) */}
                                                         <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-[#C7886B]">
                                                             <Icons.Clock size={14} />
                                                             <span>{staffEntry.time || '—'}{staffEntry.end ? ` — ${staffEntry.end}` : ''}</span>
