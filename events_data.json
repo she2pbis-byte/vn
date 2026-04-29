@@ -931,5 +931,29 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1777445638536",
+    "name": "ПЯО сопровождение",
+    "date": "2026-04-29",
+    "start": "15:30",
+    "end": "",
+    "format": "Банкет",
+    "location": "ПЯО",
+    "admin": "Илья",
+    "guests": "8",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "29 апрель",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
