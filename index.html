@@ -3,33 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление персоналом | StaffCloud</title>
+    <title>Управление персоналом</title>
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #FFECD2; scroll-behavior: smooth; }
         .animate-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Стилизация скроллбара */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #60453930; border-radius: 10px; }
+        select { appearance: none; -webkit-appearance: none; -moz-appearance: none; }
+        select.format-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23604539'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
 
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+        .sync-status { 
+            font-size: 10px; 
+            font-weight: 800; 
+            padding: 4px 12px; 
+            border-radius: 99px; 
+            min-width: 100px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            line-height: 1.4; 
+            letter-spacing: 0.05em; 
+            transition: all 0.3s ease;
+        }
+        .sync-idle { background: #e2e8f0; color: #64748b; }
+        .sync-loading { background: #fef9c3; color: #a16207; }
+        .sync-success { background: #dcfce7; color: #166534; }
+        .sync-error { background: #fee2e2; color: #991b1b; }
         
-        /* Кастомные тени и эффекты */
-        .status-error { box-shadow: inset 0 0 0 2px #ef4444; }
-        .status-complete { box-shadow: inset 0 0 0 2px #22c55e; }
-        .status-both { animation: flash-status 1.5s infinite; }
-        @keyframes flash-status { 0%, 100% { box-shadow: inset 0 0 0 2px #ef4444; } 50% { box-shadow: inset 0 0 0 2px #22c55e; } }
+        .spin-slow { animation: spin 2s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .staff-table { table-layout: fixed; width: 100%; }
+        .col-staff { width: 55%; }
+        .col-timing { width: 25%; }
+        .col-actions { width: 20%; }
+
+        .auto-textarea { resize: none; overflow: hidden; min-height: 60px; }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .weekday-header {
+            text-align: center;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 6px 0;
+            background-color: #FFEED2;
+            color: #1F1713;
+            border-radius: 6px;
+            margin-bottom: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
         
-        select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23604539'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1rem; }
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            width: 50%;
+            height: 2px;
+            background: #000;
+            border-radius: 1px;
+            transition: background 0.2s;
+        }
+
+        .calendar-day.is-today.has-event::after,
+        .calendar-day.has-unpaid-debt.has-event::after,
+        .calendar-day.selected.has-event::after {
+            background: #fff !important;
+        }
+
+        .calendar-day.is-today {
+            background-color: #604539 !important;
+            color: white !important;
+            font-weight: 800 !important;
+        }
+
+        .calendar-day.has-unpaid-debt {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+            font-weight: 700;
+        }
+
+        .calendar-day.past-date:not(.selected):not(.has-unpaid-debt):not(.is-today) {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .calendar-day.status-error { box-shadow: inset 0 0 0 2.5px #ef4444; }
+        .calendar-day.status-complete { box-shadow: inset 0 0 0 2.5px #22c55e; }
+        .calendar-day.status-both { animation: flash-status 1.2s step-end infinite; }
+
+        @keyframes flash-status {
+            0%, 100% { box-shadow: inset 0 0 0 2.5px #ef4444; }
+            50% { box-shadow: inset 0 0 0 2.5px #22c55e; }
+        }
+
+        .calendar-day.selected.status-error { box-shadow: 0 0 0 3px #ef4444; }
+        .calendar-day.selected.status-complete { box-shadow: 0 0 0 3px #22c55e; }
+        .calendar-day.selected.status-both { animation: flash-status-selected 1.2s step-end infinite; }
+
+        @keyframes flash-status-selected {
+            0%, 100% { box-shadow: 0 0 0 3px #ef4444; }
+            50% { box-shadow: 0 0 0 3px #22c55e; }
+        }
+
+        .hidden-date-input { position: absolute; opacity: 0; width: 1px; height: 1px; overflow: hidden; pointer-events: none; }
+        .calendar-nav-btn:hover { background-color: transparent !important; }
+        .file-name-container { width: 100%; overflow: hidden; }
+        .file-name-text { word-wrap: break-word; overflow-wrap: break-word; word-break: normal; line-height: 1.2; display: block; }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #60453920;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            z-index: 50;
+            max-height: 150px;
+            overflow-y: auto;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .autocomplete-item {
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .autocomplete-item:hover { background-color: #FFECD2; }
+        .autocomplete-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -38,233 +183,1232 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-        // --- КОНСТАНТЫ И УТИЛИТЫ ---
-        const GITHUB_CONFIG = { owner: 'she2pbis-byte', repo: 'vn', path: 'events_data.json', staffPath: 'staff_database.json' };
-        const ROLES = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
-        const ADMINS = ["Александр", "Илья", "Михаил", "Светлана", "ИВ"];
-        const FORMATS = ["Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
+        const GITHUB_CONFIG = {
+            owner: 'she2pbis-byte',
+            repo: 'vn',
+            path: 'events_data.json',
+            staffPath: 'staff_database.json'
+        };
 
+        const Icons = {
+            Plus: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>,
+            Trash: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14c0-1-1-2-2-2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>,
+            Edit: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
+            Check: ({size=20, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>,
+            DoubleCheck: ({size=20, color="currentColor"}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
+                    <path d="M7 12l2 2 5-5" /><path d="M13 12l2 2 5-5" opacity="0.6" />
+                </svg>
+            ),
+            Clock: ({size=18, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            ChevronLeft: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>,
+            ChevronRight: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6 6-6"/></svg>,
+            Calendar: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>,
+            Cloche: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 20h20" /><path d="M20 20a8 8 0 0 0-16 0" /><circle cx="12" cy="12" r="1" /><path d="M12 12V10" /><path d="M11 10h2" /></svg>,
+            Martini: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 22h8M12 11v11M19 2 12 11 5 2z"/></svg>,
+            Droplet: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" /></svg>,
+            Pot: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8h16" /><path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><path d="M10 8V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1-1v3" /><path d="M2 11h2" /><path d="M20 11h2" /></svg>,
+            Archive: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>,
+            Users: ({size=18, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+            Refresh: ({size=14, className=""}) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>,
+            X: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>,
+            MapPin: ({size=14, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+            Paperclip: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>,
+            FileText: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/></svg>,
+            ExternalLink: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
+            Phone: ({size=12, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        };
+
+        const keyToLabel = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
+        
         const getStaffCounts = (ev) => {
             const counts = { 'Официант': 0, 'Бармен': 0, 'Мойщица': 0, 'Повар': 0 };
-            ev?.staff?.forEach(s => s.roles.forEach(r => counts[r]++));
+            if (!ev || !ev.staff) return counts;
+            ev.staff.forEach(s => {
+                s.roles.forEach(role => { if (counts.hasOwnProperty(role)) counts[role]++; });
+            });
             return counts;
         };
 
         const checkEventCompleteness = (ev) => {
-            if (!ev || !ev.start || !ev.status?.checked) return false;
-            if (ev.staff?.some(s => !s.time)) return false;
+            if (!ev || !ev.start) return false;
+            if (ev.staff && ev.staff.length > 0) {
+                if (ev.staff.some(s => !s.time)) return false;
+            }
             const counts = getStaffCounts(ev);
-            return Object.entries(ROLES).every(([key, label]) => {
-                const target = parseInt(ev.neededStaff?.[key] || 0);
-                return target === 0 || counts[label] >= target;
+            const rolesComplete = ['оф', 'бар', 'мой', 'пов'].every(roleKey => {
+                const target = parseInt(ev.neededStaff?.[roleKey] || 0);
+                const actual = counts[keyToLabel[roleKey]];
+                return target === 0 || actual >= target;
+            });
+            if (!rolesComplete) return false;
+            if (!ev.status?.checked) return false;
+            return true;
+        };
+
+        const isEventFullyPaid = (ev) => {
+            if (!ev || !ev.staff || ev.staff.length === 0) return true;
+            return ev.staff.every(s => {
+                if (!s.roles || s.roles.length === 0) return true;
+                return s.roles.every(role => s.rolePaid && s.rolePaid[role] === true);
             });
         };
 
-        // --- ИКОНКИ (Оптимизированы в один объект) ---
-        const Icon = ({ name, size = 18, color = "currentColor", className = "" }) => {
-            const paths = {
-                Plus: <path d="M12 5v14M5 12h14"/>,
-                Trash: <path d="M3 6h18M19 6v14c0-1-1-2-2-2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>,
-                Clock: <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>,
-                Calendar: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>,
-                Users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></>,
-                CheckDouble: <><path d="M7 12l2 2 5-5" /><path d="M13 12l2 2 5-5" opacity="0.4" /></>
-            };
-            return (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    {paths[name]}
-                </svg>
-            );
-        };
-
-        // --- КОМПОНЕНТ КАЛЕНДАРЯ ---
-        const Calendar = ({ events, onSelectDate, selectedDate }) => {
+        const Calendar = ({ events, onSelectDate, selectedDate, calendarRef }) => {
             const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate || new Date()));
-            const today = new Date().setHours(0,0,0,0);
+            const dateInputRef = useRef(null);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             
+            const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+            const startDayOfMonth = (year, month) => {
+                let day = new Date(year, month, 1).getDay();
+                return day === 0 ? 6 : day - 1; 
+            };
+
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const startDay = (new Date(year, month, 1).getDay() + 6) % 7;
+            const days = daysInMonth(year, month);
+            const startDay = startDayOfMonth(year, month);
+            const monthName = currentMonth.toLocaleString('ru', { month: 'long' });
 
-            const calendarDays = useMemo(() => {
-                const arr = Array(startDay).fill(null);
-                for (let i = 1; i <= daysInMonth; i++) arr.push(i);
-                return arr;
-            }, [year, month]);
+            const prevMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month - 1, 1)); };
+            const nextMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month + 1, 1)); };
+
+            const handleJumpDate = (e) => {
+                const dateVal = e.target.value;
+                if (!dateVal) return;
+                const d = new Date(dateVal);
+                setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+                onSelectDate(dateVal);
+            };
+
+            const triggerJump = (e) => {
+                e.stopPropagation();
+                if (dateInputRef.current) {
+                    try {
+                        if (dateInputRef.current.showPicker) {
+                            dateInputRef.current.showPicker();
+                        } else {
+                            dateInputRef.current.focus();
+                            dateInputRef.current.click();
+                        }
+                    } catch (err) {
+                        dateInputRef.current.click();
+                    }
+                }
+            };
+
+            const calendarDays = [];
+            for (let i = 0; i < startDay; i++) calendarDays.push(null);
+            for (let i = 1; i <= days; i++) calendarDays.push(i);
+
+            const isSelected = (day) => {
+                if (!day || !selectedDate) return false;
+                const d = new Date(selectedDate);
+                return d.getDate() === day && d.getMonth() === month && d.getFullYear() === year;
+            };
+
+            const isToday = (day) => {
+                if (!day) return false;
+                return day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+            };
+
+            const isPast = (day) => {
+                if (!day) return false;
+                const d = new Date(year, month, day);
+                return d < today;
+            };
+
+            const getDayEvents = (day) => {
+                if (!day) return [];
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                return events.filter(e => e.date === dateStr);
+            };
+
+            const hasEvent = (day) => getDayEvents(day).length > 0;
+
+            const hasUnpaidDebt = (day) => {
+                if (!day || !isPast(day)) return false;
+                const daysEvents = getDayEvents(day);
+                if (daysEvents.length === 0) return false;
+                return daysEvents.some(ev => !isEventFullyPaid(ev));
+            };
+
+            const getDayStatusClasses = (day) => {
+                if (!day || isPast(day)) return "";
+                const daysEvents = getDayEvents(day);
+                if (daysEvents.length === 0) return "";
+                
+                const hasIncomplete = daysEvents.some(ev => !checkEventCompleteness(ev));
+                const hasComplete = daysEvents.some(ev => checkEventCompleteness(ev));
+
+                if (hasIncomplete && hasComplete) return "status-both";
+                if (hasIncomplete) return "status-error";
+                if (hasComplete) return "status-complete";
+                return "";
+            };
 
             return (
-                <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 font-bold text-[#604539]">«</button>
-                        <h3 className="font-black uppercase text-[#604539] text-sm tracking-widest">
-                            {currentMonth.toLocaleString('ru', { month: 'long', year: 'numeric' })}
-                        </h3>
-                        <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))} className="p-2 font-bold text-[#604539]">»</button>
+                <div ref={calendarRef} className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <button 
+                            onClick={prevMonth} 
+                            className="calendar-nav-btn w-10 h-10 flex items-center justify-center rounded-xl border-2 border-[#60453910] text-[#604539] hover:text-[#C7886B] transition-all duration-300 font-black text-xl"
+                        >
+                            «
+                        </button>
+                        <div className="text-center">
+                            <h3 className="font-black uppercase tracking-[0.2em] text-[#604539] text-sm leading-none">{monthName}</h3>
+                            <span className="text-[10px] font-bold opacity-30 tracking-widest">{year}</span>
+                        </div>
+                        <button 
+                            onClick={nextMonth} 
+                            className="calendar-nav-btn w-10 h-10 flex items-center justify-center rounded-xl border-2 border-[#60453910] text-[#604539] hover:text-[#C7886B] transition-all duration-300 font-black text-xl"
+                        >
+                            »
+                        </button>
                     </div>
-                    <div className="calendar-grid">
+                    <div className="calendar-grid mb-1">
                         {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
-                            <div key={d} className="text-center text-[9px] font-black opacity-40 py-2">{d}</div>
+                            <div key={d} className="weekday-header">{d}</div>
                         ))}
                         {calendarDays.map((day, idx) => {
-                            if (!day) return <div key={idx} />;
-                            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                            const isSelected = selectedDate === dateStr;
-                            const hasEv = events.some(e => e.date === dateStr);
-                            
+                            const past = isPast(day);
+                            const current = isToday(day);
+                            const selected = isSelected(day);
+                            const hasEv = hasEvent(day);
+                            const unpaid = hasUnpaidDebt(day);
+                            const statusClasses = getDayStatusClasses(day);
+
                             return (
                                 <div 
                                     key={idx} 
-                                    onClick={() => onSelectDate(dateStr)}
-                                    className={`calendar-day ${isSelected ? 'bg-[#604539] text-white font-bold' : 'hover:bg-[#FFECD2]'} ${hasEv ? 'underline decoration-2 underline-offset-4' : ''}`}
+                                    onClick={(e) => {
+                                        if (day) {
+                                            e.stopPropagation();
+                                            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                            onSelectDate(dateStr);
+                                        }
+                                    }}
+                                    className={`
+                                        calendar-day ${!day ? 'invisible' : ''} 
+                                        ${unpaid && !selected && !current ? 'has-unpaid-debt' : ''}
+                                        ${selected ? 'bg-[#C7886B] text-white font-black scale-110 z-10 selected' : ''}
+                                        ${current && !selected ? 'is-today shadow-lg scale-105' : ''}
+                                        ${!selected && !current && !unpaid && past ? 'past-date' : ''}
+                                        ${!selected && !current && !unpaid && !past ? 'hover:bg-[#FFECD2]' : ''}
+                                        ${hasEv ? 'has-event' : ''}
+                                        ${statusClasses}
+                                    `}
                                 >
                                     {day}
                                 </div>
                             );
                         })}
                     </div>
+                    <div className="mt-4 pt-4 border-t border-[#60453910]">
+                        <input 
+                            ref={dateInputRef}
+                            type="date" 
+                            className="hidden-date-input" 
+                            onChange={handleJumpDate}
+                        />
+                        <button 
+                            onClick={triggerJump}
+                            className="w-full py-2.5 px-4 bg-[#60453908] hover:bg-[#60453915] text-[#604539] rounded-xl flex items-center justify-center gap-2 transition-all border border-[#60453910]"
+                        >
+                            <Icons.Calendar size={14} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Перейти к дате</span>
+                        </button>
+                    </div>
                 </div>
             );
         };
 
-        // --- ГЛАВНОЕ ПРИЛОЖЕНИЕ ---
-        const App = () => {
-            const [state, setState] = useState({
-                view: 'list',
-                events: [],
-                staffDatabase: [],
-                selectedEventId: null,
-                filterDate: null,
-                syncStatus: 'idle',
-                isCalendarOpen: false,
-                showArchive: false
-            });
-
-            const [githubToken, setGithubToken] = useState(() => localStorage.getItem('gh_token') || '');
-
-            // Оптимизированный запрос к GitHub
-            const apiRequest = useCallback(async (method, path, body = null, sha = null) => {
-                const headers = { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' };
-                const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
-                
-                const config = { method, headers };
-                if (body) {
-                    config.body = JSON.stringify({
-                        message: 'Update from StaffCloud',
-                        content: btoa(unescape(encodeURIComponent(JSON.stringify(body, null, 2)))),
-                        sha
+        const StaffList = ({ staffDatabase, events, onClose }) => {
+            const getStaffDates = (name) => {
+                return events
+                    .filter(ev => ev.staff && ev.staff.some(s => s.name.toLowerCase() === name.toLowerCase()))
+                    .sort((a, b) => a.date.localeCompare(b.date))
+                    .map(ev => {
+                        const [y, m, d] = ev.date.split('-');
+                        return `${d}.${m}`;
                     });
-                }
-
-                const res = await fetch(url + (method === 'GET' ? `?nocache=${Date.now()}` : ''), config);
-                if (!res.ok) throw new Error('API Error');
-                return res.json();
-            }, [githubToken]);
-
-            const loadData = useCallback(async () => {
-                if (!githubToken) return;
-                setState(s => ({ ...s, syncStatus: 'loading' }));
-                try {
-                    const [evData, stData] = await Promise.all([
-                        apiRequest('GET', GITHUB_CONFIG.path),
-                        apiRequest('GET', GITHUB_CONFIG.staffPath).catch(() => ({ content: btoa('[]') }))
-                    ]);
-                    
-                    setState(s => ({
-                        ...s,
-                        events: JSON.parse(decodeURIComponent(escape(atob(evData.content)))),
-                        staffDatabase: JSON.parse(decodeURIComponent(escape(atob(stData.content)))),
-                        syncStatus: 'success'
-                    }));
-                    setTimeout(() => setState(s => ({ ...s, syncStatus: 'idle' })), 2000);
-                } catch (e) {
-                    setState(s => ({ ...s, syncStatus: 'error' }));
-                }
-            }, [githubToken, apiRequest]);
-
-            useEffect(() => { loadData(); }, [loadData]);
-
-            // Фильтрация событий (Memoized)
-            const filteredEvents = useMemo(() => {
-                const today = new Date().toISOString().split('T')[0];
-                return state.events
-                    .filter(ev => {
-                        if (state.filterDate) return ev.date === state.filterDate;
-                        return state.showArchive ? ev.date < today : ev.date >= today;
-                    })
-                    .sort((a, b) => state.showArchive ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
-            }, [state.events, state.filterDate, state.showArchive]);
+            };
 
             return (
-                <div className="max-w-2xl mx-auto p-4 md:p-6 pb-24">
-                    {/* Header */}
-                    <header className="mb-8 text-center space-y-4">
-                        <div className="flex justify-between items-center">
-                            <div className={`text-[10px] font-black px-3 py-1 rounded-full ${state.syncStatus === 'success' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
-                                {state.syncStatus.toUpperCase()}
+                <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
+                            <Icons.Users size={18} className="text-[#604539]" />
+                            <h3 className="font-black uppercase tracking-[0.2em] text-[#604539] text-sm leading-none">База сотрудников</h3>
+                        </div>
+                        <button onClick={onClose} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={20} /></button>
+                    </div>
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        {staffDatabase.sort((a,b) => a.name.localeCompare(b.name)).map((s, idx) => {
+                            const dates = getStaffDates(s.name);
+                            return (
+                                <div key={idx} className="p-3 bg-gray-50 rounded-xl border border-[#60453910] hover:border-[#C7886B50] transition-all">
+                                    <p className="font-bold text-[#604539] text-sm uppercase">{s.name}</p>
+                                    {s.phone && (
+                                        <a href={`tel:${s.phone}`} className="flex items-center gap-1.5 text-[10px] text-[#C7886B] font-bold mt-1 hover:underline">
+                                            <Icons.Phone size={10} />
+                                            <span>{s.phone}</span>
+                                        </a>
+                                    )}
+                                    {dates.length > 0 ? (
+                                        <div className="mt-2 pt-2 border-t border-dashed border-[#60453910]">
+                                            <p className="text-[12px] font-black uppercase text-gray-400 mb-1">Даты работы:</p>
+                                            <p className="text-[16px] font-medium text-gray-500">{dates.join(', ')}</p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-[8px] font-black uppercase text-gray-300 mt-2">Нет записей в графике</p>
+                                    )}
+                                </div>
+                            );
+                        })}
+                        {staffDatabase.length === 0 && (
+                            <div className="py-10 text-center opacity-30 italic text-xs uppercase tracking-widest font-black">База пуста</div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const AutoHeightTextarea = ({ value, onChange, placeholder, className }) => {
+            const textareaRef = useRef(null);
+            const adjustHeight = () => {
+                const textarea = textareaRef.current;
+                if (textarea) {
+                    textarea.style.height = 'auto';
+                    textarea.style.height = `${textarea.scrollHeight}px`;
+                }
+            };
+            useEffect(() => { adjustHeight(); }, [value]);
+            return (
+                <textarea
+                    ref={textareaRef}
+                    value={value}
+                    onChange={(e) => { onChange(e); adjustHeight(); }}
+                    placeholder={placeholder}
+                    className={`${className} auto-textarea`}
+                />
+            );
+        };
+
+        const SimpleTimePicker = ({ value, onChange, colors, label, disabled }) => {
+            const [h, m] = value ? value.split(':') : ['', ''];
+            const setHour = (newH) => onChange(newH === "" ? "" : `${newH.padStart(2, '0')}:${m || "00"}`);
+            const setMinute = (newM) => onChange(`${(h || "12").padStart(2, '0')}:${newM}`);
+            return (
+                <div className="flex-1">
+                    {label && <p className="text-[9px] uppercase font-bold mb-1 opacity-40 ml-1">{label}</p>}
+                    <div className="flex items-center gap-1">
+                        <select 
+                            value={h} 
+                            onChange={(e) => setHour(e.target.value)} 
+                            disabled={disabled}
+                            className="flex-1 py-2 px-1 rounded-lg border-2 bg-white text-center text-xs disabled:opacity-50 disabled:bg-gray-100" 
+                            style={{ borderColor: colors.accent + '20' }}>
+                            <option value="">—</option>
+                            {Array.from({ length: 24 }, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i} ч</option>)}
+                        </select>
+                        <span className="font-bold opacity-20 text-[10px]">:</span>
+                        <select 
+                            value={m} 
+                            onChange={(e) => setMinute(e.target.value)} 
+                            disabled={disabled || !h} 
+                            className="flex-1 py-2 px-1 rounded-lg border-2 bg-white text-center text-xs disabled:opacity-30 disabled:bg-gray-100" 
+                            style={{ borderColor: colors.accent + '20' }}>
+                            <option value="00">00</option>
+                            <option value="30">30</option>
+                        </select>
+                    </div>
+                </div>
+            );
+        };
+
+        const StaffScheduleModal = ({ staffName, events, onClose, onSelectEvent, todayStr }) => {
+            const staffFutureEvents = useMemo(() => {
+                return events
+                    .filter(ev => ev.date >= todayStr && ev.staff && ev.staff.some(s => s.name.toLowerCase() === staffName.toLowerCase()))
+                    .sort((a, b) => a.date.localeCompare(b.date));
+            }, [staffName, events, todayStr]);
+
+            return (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1F1713]/80 backdrop-blur-sm">
+                    <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-2 border-[#604539]">
+                        <div className="p-4 border-b border-[#60453910] flex items-center justify-between">
+                            <div>
+                                <h3 className="text-sm font-black uppercase text-[#604539] leading-tight">График работы</h3>
+                                <p className="text-[10px] font-bold text-[#C7886B] uppercase tracking-widest mt-0.5">{staffName}</p>
                             </div>
-                            {!githubToken && (
-                                <input 
-                                    type="password" 
-                                    placeholder="GitHub Token" 
-                                    onBlur={e => { setGithubToken(e.target.value); localStorage.setItem('gh_token', e.target.value); }}
-                                    className="text-xs p-1 border-b border-[#604539] bg-transparent outline-none"
-                                />
+                            <button onClick={onClose} className="p-1.5 bg-gray-50 rounded-lg text-gray-300 hover:text-red-500 transition-colors">
+                                <Icons.X size={18} />
+                            </button>
+                        </div>
+                        <div className="p-4 max-h-[50vh] overflow-y-auto">
+                            {staffFutureEvents.length > 0 ? (
+                                <div className="space-y-3">
+                                    {staffFutureEvents.map(ev => {
+                                        const staffEntry = ev.staff.find(s => s.name.toLowerCase() === staffName.toLowerCase());
+                                        return (
+                                            <div 
+                                                key={ev.id} 
+                                                onClick={() => onSelectEvent(ev.id)}
+                                                className="flex gap-3 p-3 bg-gray-50 rounded-xl border-2 border-transparent hover:border-[#FFECD2] transition-all cursor-pointer group active:scale-[0.98]"
+                                            >
+                                                <div className="w-10 shrink-0 flex flex-col items-center justify-center border-r-2 border-[#60453910] pr-3 group-hover:border-[#FFECD2]">
+                                                    <span className="text-[8px] font-black uppercase text-gray-400">{new Date(ev.date).toLocaleString('ru', { month: 'short' })}</span>
+                                                    <span className="text-lg font-black text-[#604539] leading-none">{new Date(ev.date).getDate()}</span>
+                                                </div>
+                                                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                    <p className="text-[15px] font-bold uppercase truncate text-[#1F1713] group-hover:text-[#C7886B]">{ev.name}</p>
+                                                    <div className="flex items-center gap-2 mt-1.5">
+                                                        <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-[#C7886B]">
+                                                            <Icons.Clock size={14} />
+                                                            <span>{staffEntry.time || '—'}{staffEntry.end ? ` — ${staffEntry.end}` : ''}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="py-8 text-center">
+                                    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-dashed border-gray-100">
+                                        <Icons.Calendar size={18} className="text-gray-200" />
+                                    </div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-gray-300">Мероприятий нет</p>
+                                </div>
                             )}
                         </div>
-                        <h1 className="text-3xl font-black text-[#604539] tracking-tighter uppercase">StaffCloud</h1>
-                    </header>
-
-                    {/* Navigation */}
-                    <div className="flex gap-4 mb-8">
-                        <button 
-                            onClick={() => setState(s => ({ ...s, isCalendarOpen: !s.isCalendarOpen, showArchive: false }))}
-                            className={`flex-1 py-3 rounded-2xl border-2 border-[#604539] font-bold text-xs uppercase flex items-center justify-center gap-2 transition-all ${state.isCalendarOpen ? 'bg-[#604539] text-white' : 'bg-white'}`}
-                        >
-                            <Icon name="Calendar" size={16} /> Календарь
-                        </button>
-                        <button 
-                            onClick={() => setState(s => ({ ...s, showArchive: !s.showArchive, filterDate: null, isCalendarOpen: false }))}
-                            className={`flex-1 py-3 rounded-2xl border-2 border-[#604539] font-bold text-xs uppercase flex items-center justify-center gap-2 transition-all ${state.showArchive ? 'bg-[#604539] text-white' : 'bg-white'}`}
-                        >
-                            Архив
-                        </button>
+                        <div className="p-3 bg-gray-50 border-t border-[#60453910]">
+                            <button onClick={onClose} className="w-full py-2.5 bg-[#604539] text-white rounded-xl text-[9px] font-black uppercase tracking-widest">Закрыть</button>
+                        </div>
                     </div>
+                </div>
+            );
+        };
 
-                    {state.isCalendarOpen && (
-                        <Calendar 
-                            events={state.events} 
-                            selectedDate={state.filterDate}
-                            onSelectDate={(d) => setState(s => ({ ...s, filterDate: d, isCalendarOpen: false }))}
+        const App = () => {
+            const [view, setView] = useState('list');
+            const [showArchive, setShowArchive] = useState(false);
+            const [isFormOpen, setIsFormOpen] = useState(false);
+            const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+            const [isStaffListOpen, setIsStaffListOpen] = useState(false);
+            const [isStaffFormOpen, setIsStaffFormOpen] = useState(false);
+            const [events, setEvents] = useState([]);
+            const [staffDatabase, setStaffDatabase] = useState([]); 
+            const [selectedEventId, setSelectedEventId] = useState(null);
+            const [filterDate, setFilterDate] = useState(null);
+            const [githubToken, setGithubToken] = useState(() => localStorage.getItem('gh_token') || '');
+            const [syncStatus, setSyncStatus] = useState('idle');
+            const [isTokenVerified, setIsTokenVerified] = useState(false);
+            const [isUploading, setIsUploading] = useState(false);
+            const [showSuggestions, setShowSuggestions] = useState(false);
+            const [activeStaffSchedule, setActiveStaffSchedule] = useState(null); 
+
+            const calendarRef = useRef(null);
+            const calendarButtonRef = useRef(null);
+            const fileInputRef = useRef(null);
+
+            const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
+            const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
+            const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
+
+            useEffect(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, [view, selectedEventId, isFormOpen, isCalendarOpen, isStaffListOpen]);
+
+            const fetchFromGithub = useCallback(async (token) => {
+                if (!token) { setIsTokenVerified(false); return; }
+                setSyncStatus('loading');
+                try {
+                    const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?nocache=${Date.now()}`, {
+                        headers: { 'Authorization': `token ${token}` }
+                    });
+                    
+                    const staffRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.staffPath}?nocache=${Date.now()}`, {
+                        headers: { 'Authorization': `token ${token}` }
+                    }).catch(() => null);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                        setEvents(content);
+                        
+                        if (staffRes && staffRes.ok) {
+                            const sData = await staffRes.json();
+                            const sContent = JSON.parse(decodeURIComponent(escape(atob(sData.content))));
+                            setStaffDatabase(sContent || []);
+                        }
+
+                        setSyncStatus('success');
+                        setIsTokenVerified(true);
+                        setTimeout(() => setSyncStatus('idle'), 3000);
+                    } else throw new Error();
+                } catch (err) { 
+                    setSyncStatus('error');
+                    setIsTokenVerified(false);
+                }
+            }, []);
+
+            const saveToGithub = useCallback(async (updatedEvents, updatedStaffBase = null) => {
+                if (!githubToken) return;
+                setSyncStatus('loading');
+                try {
+                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                        headers: { 'Authorization': `token ${githubToken}` }
+                    });
+                    const getData = await getRes.json();
+                    const content = btoa(unescape(encodeURIComponent(JSON.stringify(updatedEvents, null, 2))));
+                    await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: 'Update events via App', content: content, sha: getData.sha })
+                    });
+
+                    if (updatedStaffBase) {
+                        const getSRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.staffPath}`, {
+                            headers: { 'Authorization': `token ${githubToken}` }
+                        }).catch(() => null);
+                        
+                        let sha = null;
+                        if (getSRes && getSRes.ok) {
+                            const getSData = await getSRes.json();
+                            sha = getSData.sha;
+                        }
+
+                        const sContent = btoa(unescape(encodeURIComponent(JSON.stringify(updatedStaffBase, null, 2))));
+                        await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.staffPath}`, {
+                            method: 'PUT',
+                            headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ message: 'Update staff database via App', content: sContent, sha: sha })
+                        });
+                    }
+
+                    setSyncStatus('success');
+                    setTimeout(() => setSyncStatus('idle'), 3000);
+                } catch (err) { setSyncStatus('error'); }
+            }, [githubToken]);
+
+            const handleFileUpload = async (e) => {
+                const file = e.target.files[0];
+                if (!file || !selectedEventId || !githubToken) return;
+
+                setIsUploading(true);
+                setSyncStatus('loading');
+
+                try {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = async () => {
+                        const base64Content = reader.result.split(',')[1];
+                        const filePath = `attachments/${selectedEventId}/${Date.now()}_${file.name}`;
+                        
+                        const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filePath}`, {
+                            method: 'PUT',
+                            headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                message: `Upload file for event ${selectedEventId}`,
+                                content: base64Content
+                            })
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            const newFileData = {
+                                name: file.name,
+                                path: result.content.path,
+                                sha: result.content.sha,
+                                download_url: result.content.download_url,
+                                size: file.size,
+                                uploadedAt: new Date().toISOString()
+                            };
+
+                            const updatedEvents = events.map(ev => {
+                                if (ev.id === selectedEventId) {
+                                    const currentFiles = ev.files || [];
+                                    return { ...ev, files: [...currentFiles, newFileData] };
+                                }
+                                return ev;
+                            });
+
+                            setEvents(updatedEvents);
+                            await saveToGithub(updatedEvents);
+                            setSyncStatus('success');
+                        } else {
+                            throw new Error('Upload failed');
+                        }
+                    };
+                } catch (err) {
+                    setSyncStatus('error');
+                    console.error(err);
+                } finally {
+                    setIsUploading(false);
+                    e.target.value = '';
+                }
+            };
+
+            const handleFileDelete = async (fileData) => {
+                if (!confirm(`Удалить файл "${fileData.name}"?`) || !githubToken) return;
+
+                setSyncStatus('loading');
+                try {
+                    const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${fileData.path}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: `Delete file for event ${selectedEventId}`,
+                            sha: fileData.sha
+                        })
+                    });
+
+                    if (response.ok) {
+                        const updatedEvents = events.map(ev => {
+                            if (ev.id === selectedEventId) {
+                                return { ...ev, files: ev.files.filter(f => f.sha !== fileData.sha) };
+                            }
+                            return ev;
+                        });
+                        setEvents(updatedEvents);
+                        await saveToGithub(updatedEvents);
+                        setSyncStatus('success');
+                    }
+                } catch (err) {
+                    setSyncStatus('error');
+                }
+            };
+
+            const handleFileDownload = async (fileData) => {
+                if (!githubToken) return;
+                setSyncStatus('loading');
+                
+                try {
+                    const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${fileData.path}`, {
+                        headers: { 'Authorization': `token ${githubToken}` }
+                    });
+                    
+                    if (!response.ok) throw new Error('Download failed');
+                    const data = await response.json();
+                    
+                    const byteCharacters = atob(data.content.replace(/\s/g, ''));
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+                    
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = fileData.name; 
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    
+                    setSyncStatus('success');
+                    setTimeout(() => setSyncStatus('idle'), 2000);
+                } catch (err) {
+                    console.error("Download Error:", err);
+                    setSyncStatus('error');
+                }
+            };
+
+            useEffect(() => {
+                if (githubToken) fetchFromGithub(githubToken);
+            }, [fetchFromGithub, githubToken]);
+
+            const [newEvent, setNewEvent] = useState({ 
+                name: '', date: new Date().toISOString().split('T')[0], start: '', end: '', 
+                format: '', location: '', admin: '', guests: '', extraInfo: '', 
+                neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
+            });
+            const [editingEventId, setEditingEventId] = useState(null);
+            const [newStaff, setNewStaff] = useState({ name: '', phone: '', time: '', end: '', roles: [] });
+            const [editingStaffId, setEditingStaffId] = useState(null);
+
+            const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+            
+            const sortedEvents = useMemo(() => {
+                let filtered = events;
+                if (filterDate) {
+                    filtered = events.filter(ev => ev.date === filterDate);
+                } else {
+                    filtered = events.filter(ev => showArchive ? ev.date < todayStr : ev.date >= todayStr);
+                }
+                return filtered.sort((a, b) => showArchive ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
+            }, [events, showArchive, todayStr, filterDate]);
+
+            const currentEvent = events.find(e => e.id === selectedEventId);
+
+            const handleAddEvent = () => {
+                if (!newEvent.name || !newEvent.guests) return;
+                const d = new Date(newEvent.date);
+                const fmtDate = `${d.getDate()} ${d.toLocaleString('ru', { month: 'long' })}`;
+                const finalLocation = (newEvent.format === "Самовывоз" || newEvent.format === "Выберите формат") ? "" : newEvent.location;
+
+                let updated;
+                if (editingEventId) {
+                    updated = events.map(ev => ev.id === editingEventId ? { ...ev, ...newEvent, location: finalLocation, displayDate: fmtDate } : ev);
+                    setEditingEventId(null);
+                } else {
+                    updated = [...events, { id: Date.now().toString(), ...newEvent, location: finalLocation, displayDate: fmtDate, staff: [], files: [], status: { checked: false } }];
+                }
+                setEvents(updated);
+                saveToGithub(updated);
+                setNewEvent({ name: '', date: new Date().toISOString().split('T')[0], start: '', end: '', format: '', location: '', admin: '', guests: '', extraInfo: '', neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
+                setIsFormOpen(false);
+            };
+
+            const toggleEventChecked = (e, eventId) => {
+                e.stopPropagation();
+                const updated = events.map(ev => ev.id === eventId ? { ...ev, status: { ...ev.status, checked: !ev.status?.checked } } : ev);
+                setEvents(updated);
+                saveToGithub(updated);
+            };
+
+            const startEditEvent = (e, ev) => {
+                if (e) e.stopPropagation();
+                if (ev.date < todayStr && !showArchive) return;
+                setEditingEventId(ev.id);
+                setNewEvent({ ...ev, location: ev.location || '', neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
+                setIsFormOpen(true);
+                setIsCalendarOpen(false);
+                setIsStaffListOpen(false);
+                setView('list');
+            };
+
+            const fastDeleteEvent = (e, eventId) => {
+                if (e) e.stopPropagation();
+                if (confirm("Удалить мероприятие со всеми данными?")) {
+                    const updated = events.filter(x => x.id !== eventId);
+                    setEvents(updated);
+                    saveToGithub(updated);
+                    if (selectedEventId === eventId) setView('list');
+                }
+            };
+
+            const handleAddStaff = () => {
+                if (!newStaff.name || newStaff.roles.length === 0) return;
+                
+                let updatedStaffBase = [...staffDatabase];
+                if (newStaff.phone) {
+                    const index = updatedStaffBase.findIndex(s => s.name.toLowerCase() === newStaff.name.toLowerCase());
+                    if (index !== -1) {
+                        updatedStaffBase[index] = { name: newStaff.name, phone: newStaff.phone };
+                    } else {
+                        updatedStaffBase.push({ name: newStaff.name, phone: newStaff.phone });
+                    }
+                    setStaffDatabase(updatedStaffBase);
+                }
+
+                let updated;
+                if (editingStaffId) {
+                    updated = events.map(ev => ev.id === selectedEventId ? { ...ev, staff: ev.staff.map(s => s.id === editingStaffId ? { ...s, ...newStaff } : s) } : ev);
+                    setEditingStaffId(null);
+                } else {
+                    updated = events.map(ev => ev.id === selectedEventId ? { ...ev, staff: [...ev.staff, { id: Date.now().toString(), ...newStaff, rolePaid: {} }] } : ev);
+                }
+                setEvents(updated);
+                saveToGithub(updated, updatedStaffBase);
+                setNewStaff({ name: '', phone: '', time: '', end: '', roles: [] });
+                setIsStaffFormOpen(false);
+            };
+
+            const toggleStaffRolePaid = (staffId, role) => {
+                const updated = events.map(ev => {
+                    if (ev.id !== selectedEventId) return ev;
+                    return { ...ev, staff: ev.staff.map(s => s.id === staffId ? { ...s, rolePaid: { ...(s.rolePaid || {}), [role]: !s.rolePaid?.[role] } } : s) };
+                });
+                setEvents(updated);
+                saveToGithub(updated);
+            };
+
+            const handleBackToPrevState = () => {
+                setView('list');
+                setIsCalendarOpen(false);
+                setIsStaffListOpen(false);
+            };
+
+            const handleToggleCalendar = () => {
+                const nextState = !isCalendarOpen;
+                setIsCalendarOpen(nextState);
+                if (nextState) {
+                    setShowArchive(false);
+                    setFilterDate(null);
+                    setView('list');
+                    setIsFormOpen(false);
+                    setIsStaffListOpen(false);
+                }
+            };
+            const handleToggleStaffList = () => {
+                const nextState = !isStaffListOpen;
+                setIsStaffListOpen(nextState);
+                if (nextState) {
+                    // Сбрасываем архив, чтобы он закрывался при открытии списка сотрудников
+                    setShowArchive(false);
+                    
+                    setIsCalendarOpen(false);
+                    setIsFormOpen(false);
+                    setView('list');
+                }
+            };
+
+            const handleGoToCalendar = () => {
+                setFilterDate(null);
+                setIsCalendarOpen(true);
+                setIsStaffListOpen(false);
+                setView('list');
+                setShowArchive(false);
+            };
+
+            const roleIconMap = {
+                'Официант': { icon: <Icons.Cloche size={14} /> },
+                'Бармен': { icon: <Icons.Martini size={14} /> },
+                'Мойщица': { icon: <Icons.Droplet size={14} /> },
+                'Повар': { icon: <Icons.Pot size={14} /> }
+            };
+
+            const headerRoleMap = {
+                'оф': { icon: <Icons.Cloche size={20} />, key: 'Официант' },
+                'бар': { icon: <Icons.Martini size={20} />, key: 'Бармен' },
+                'мой': { icon: <Icons.Droplet size={20} />, key: 'Мойщица' },
+                'пов': { icon: <Icons.Pot size={20} />, key: 'Повар' }
+            };
+
+            const getFileIconData = (fileName) => {
+                const ext = fileName.split('.').pop().toLowerCase();
+                if (['pdf'].includes(ext)) return { label: 'pdf', color: '#ef4444' };
+                if (['doc', 'docx'].includes(ext)) return { label: 'doc', color: '#2563eb' };
+                if (['xls', 'xlsx'].includes(ext)) return { label: 'exel', color: '#16a34a' };
+                if (['png', 'jpg', 'jpeg', 'svg', 'webp', 'gif'].includes(ext)) return { label: 'pic', color: '#7c3aed' };
+                return { label: 'file', color: '#4b5563' };
+            };
+
+            const isPhoneValid = (phone) => {
+                if (!phone) return true;
+                const clean = phone.replace(/\D/g, '');
+                return clean.length === 11 || clean.length === 10;
+            };
+
+            const filteredStaffSuggestions = useMemo(() => {
+                if (!newStaff.name || newStaff.name.length < 2) return [];
+                return staffDatabase.filter(s => s.name.toLowerCase().includes(newStaff.name.toLowerCase()));
+            }, [newStaff.name, staffDatabase]);
+
+            const handleStaffNameChange = (val) => {
+                setNewStaff(p => ({ ...p, name: val }));
+                const found = staffDatabase.find(s => s.name.toLowerCase() === val.toLowerCase());
+                if (found) {
+                    setNewStaff(p => ({ ...p, phone: found.phone }));
+                    setShowSuggestions(false);
+                } else {
+                    setShowSuggestions(true);
+                }
+            };
+
+            const selectSuggestion = (s) => {
+                setNewStaff(p => ({ ...p, name: s.name, phone: s.phone }));
+                setShowSuggestions(false);
+            };
+
+            return (
+                <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
+                    {activeStaffSchedule && (
+                        <StaffScheduleModal 
+                            staffName={activeStaffSchedule} 
+                            events={events} 
+                            todayStr={todayStr} 
+                            onClose={() => setActiveStaffSchedule(null)} 
+                            onSelectEvent={(id) => {
+                                setSelectedEventId(id);
+                                setView('details');
+                                setActiveStaffSchedule(null);
+                                setIsCalendarOpen(false);
+                                setIsStaffListOpen(false);
+                            }}
                         />
                     )}
 
-                    {/* Events List */}
-                    <div className="space-y-4">
-                        {filteredEvents.map(ev => (
-                            <div 
-                                key={ev.id}
-                                onClick={() => setState(s => ({ ...s, view: 'details', selectedEventId: ev.id }))}
-                                className="bg-white p-5 rounded-2xl border-b-4 border-r-4 border-[#604539] hover:translate-y-[-2px] transition-all cursor-pointer active:scale-95"
-                            >
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className="text-[10px] font-black text-[#C7886B] uppercase tracking-widest">{ev.date.split('-').reverse().join('.')}</span>
-                                    {checkEventCompleteness(ev) && <Icon name="CheckDouble" color="#22c55e" size={20}/>}
-                                </div>
-                                <h3 className="text-lg font-bold text-[#1F1713] mb-1">{ev.name}</h3>
-                                <div className="flex gap-3 text-[11px] font-bold text-gray-400 uppercase">
-                                    <span>{ev.format}</span>
-                                    <span>•</span>
-                                    <span>{ev.guests} чел</span>
-                                </div>
+                    <div className="flex items-center justify-between gap-4 mb-6 bg-white/60 p-2 rounded-2xl border border-[#60453915] backdrop-blur-sm shadow-sm">
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => fetchFromGithub(githubToken)} className="p-2 hover:bg-white rounded-xl transition-all shadow-sm text-[#604539] flex items-center justify-center active:scale-95" title="Обновить вручную">
+                                <Icons.Refresh size={14} className={syncStatus === 'loading' ? 'spin-slow' : ''} />
+                            </button>
+                            <div className={`sync-status ${syncStatus === 'loading' ? 'sync-loading' : syncStatus === 'success' ? 'sync-success' : syncStatus === 'error' ? 'sync-error' : 'sync-idle'}`}>
+                                <span>{syncStatus === 'loading' ? 'ЗАГРУЗКА...' : syncStatus === 'success' ? 'ОБНОВЛЕНО' : syncStatus === 'error' ? 'ОШИБКА' : 'ГОТОВО'}</span>
                             </div>
-                        ))}
+                        </div>
+                        {!isTokenVerified || syncStatus === 'error' ? (
+                            <input type="password" placeholder="GitHub Token" value={githubToken} onChange={e => { setGithubToken(e.target.value); localStorage.setItem('gh_token', e.target.value); }} className="text-[10px] p-2 border rounded-xl w-32 focus:w-48 transition-all outline-none bg-white shadow-inner font-mono" />
+                        ) : (
+                            <div className="px-3 py-1.5 bg-[#10b98110] rounded-xl border border-[#10b98120] flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
+                                <span className="text-[9px] font-bold text-green-700 uppercase tracking-widest">ОНЛАЙН</span>
+                                <button onClick={() => { setIsTokenVerified(false); setSyncStatus('idle'); }} className="ml-1 text-[9px] font-black text-[#604539] opacity-20 hover:opacity-100 transition-opacity">ВЫХОД</button>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Кнопка добавления (Fixed) */}
-                    <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#604539] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-all">
-                        <Icon name="Plus" size={28} />
-                    </button>
+                    <header className="mb-8 border-b border-[#C7886B40] pb-6">
+                        <div className="text-center">
+                            <h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1>
+                            <p className="text-[10px] uppercase tracking-widest text-[#604539] font-medium">Кейтеринг Ванильного Неба</p>
+                        </div>
+                        
+                        <div className="flex justify-center gap-6 mt-6">
+                            <div className="flex flex-col items-center gap-1">
+                                <button 
+                                    ref={calendarButtonRef} 
+                                    onClick={(e) => { e.stopPropagation(); handleToggleCalendar(); }} 
+                                    className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 hover:scale-105 active:scale-95 transition-all ${isCalendarOpen ? 'bg-white border-[#604539] text-[#604539]' : 'bg-[#604539] border-[#604539] text-white'}`}
+                                >
+                                    <Icons.Calendar size={24} />
+                                </button>
+                                <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Календарь</span>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-1">
+                                <button 
+                                    onClick={handleToggleStaffList} 
+                                    className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 hover:scale-105 active:scale-95 transition-all ${isStaffListOpen ? 'bg-white border-[#604539] text-[#604539]' : 'bg-[#604539] border-[#604539] text-white'}`}
+                                >
+                                    <Icons.Users size={24} />
+                                </button>
+                                <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Сотрудники</span>
+                            </div>
+
+                            {view === 'list' && (
+                                <div className="flex flex-col items-center gap-1">
+                                    <button 
+                                        onClick={(e) => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); setIsStaffListOpen(false); }} 
+                                        className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all border-2 hover:scale-105 active:scale-95 ${showArchive ? 'bg-white border-[#604539] text-[#604539] shadow-sm' : 'bg-[#604539] border-[#604539] text-white shadow-lg'}`}
+                                    >
+                                        <Icons.Archive size={22} />
+                                    </button>
+                                    <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Архив</span>
+                                </div>
+                            )}
+                        </div>
+                    </header>
+
+                    {view === 'list' ? (
+                        <div className="space-y-6 animate-in">
+                            {isCalendarOpen && (
+                                <Calendar calendarRef={calendarRef} events={events} selectedDate={filterDate} onSelectDate={(date) => { setFilterDate(date); if(date) setIsCalendarOpen(false); }} />
+                            )}
+                            {isStaffListOpen && (
+                                <StaffList staffDatabase={staffDatabase} events={events} onClose={() => setIsStaffListOpen(false)} />
+                            )}
+                            {filterDate && (
+                                <div className="flex items-center justify-between bg-white/40 px-4 py-2 rounded-xl border border-[#60453920]">
+                                    <span className="text-[10px] font-black uppercase text-[#604539]">ДАТА: {filterDate.split('-').reverse().join('.')}</span>
+                                    <button onClick={handleGoToCalendar} className="text-[10px] font-black text-[#604539] hover:underline uppercase tracking-widest">К КАЛЕНДАРЮ</button>
+                                </div>
+                            )}
+                            {!showArchive && !filterDate && !isStaffListOpen && (
+                                <div className="space-y-4">
+                                    {!isFormOpen ? (
+                                        <button onClick={() => { setIsFormOpen(true); setIsCalendarOpen(false); setIsStaffListOpen(false); }} className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl">
+                                            <div className="p-2 bg-[#60453910] rounded-lg"><Icons.Plus size={18} /></div>
+                                            <span className="font-bold uppercase tracking-widest text-xs">Новое мероприятие</span>
+                                        </button>
+                                    ) : (
+                                        <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl relative animate-in">
+                                            <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="absolute right-4 top-4 p-2 text-gray-300 hover:text-red-500 transition-colors"><Icons.X /></button>
+                                            <h2 className="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-[#604539]">{editingEventId ? <Icons.Edit size={16} /> : <Icons.Plus size={16} />} {editingEventId ? 'Редактировать' : 'Создать мероприятие'}</h2>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                                <div className="space-y-3">
+                                                    <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                    <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                    <div className="space-y-2">
+                                                        <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{formats.map(f => <option key={f} value={f}>{f}</option>)}</select>
+                                                        {newEvent.format && newEvent.format !== "Выберите формат" && newEvent.format !== "Самовывоз" && (
+                                                            <div className="animate-in relative">
+                                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-40"><Icons.MapPin size={16} /></div>
+                                                                <input type="text" placeholder="Адрес / Локация" value={newEvent.location || ''} onChange={e=>setNewEvent({...newEvent, location: e.target.value})} className="w-full p-2.5 pl-10 rounded-xl border-2 border-[#604539] bg-white outline-none text-sm placeholder:text-gray-400" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <input type="number" placeholder="Гости (чел)" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <div className="flex gap-2">
+                                                        <SimpleTimePicker label="Начало" value={newEvent.start} onChange={v=>setNewEvent({...newEvent, start: v})} colors={colors} />
+                                                        <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
+                                                    </div>
+                                                    <div className="flex flex-col gap-3">
+                                                        <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{admins.map(a => <option key={a} value={a}>{a}</option>)}</select>
+                                                        <div className="flex gap-1.5">
+                                                            {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
+                                                                <div key={role} className="flex-1 relative">
+                                                                    <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-30">{icon}</div>
+                                                                    <input type="number" value={newEvent.neededStaff[role]} onChange={e => setNewEvent({...newEvent, neededStaff: { ...newEvent.neededStaff, [role]: e.target.value }})} placeholder="0" className="w-full p-2.5 pl-6 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold" />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="mb-4"><AutoHeightTextarea placeholder="Дополнительная информация..." value={newEvent.extraInfo} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" /></div>
+                                            <div className="flex gap-2">
+                                                <button onClick={handleAddEvent} className="flex-[3] bg-[#604539] text-white py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest shadow-lg active:scale-[0.98] transition-transform">{editingEventId ? 'Сохранить' : 'Добавить'}</button>
+                                                <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest hover:bg-gray-200 transition-colors">Отмена</button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {sortedEvents.map(ev => {
+                                    const isComplete = checkEventCompleteness(ev);
+                                    const isChecked = ev.status?.checked;
+                                    const isPast = ev.date < todayStr;
+                                    const allPaid = isEventFullyPaid(ev);
+                                    return (
+                                        <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); setIsCalendarOpen(false); setIsStaffListOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
+                                            <div className={`py-1.5 px-4 text-center ${isPast ? 'bg-[#604539]' : (isComplete ? 'bg-green-600' : 'bg-red-500')}`}>
+                                                <span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{ev.displayDate}</span>
+                                            </div>
+                                            <div className="flex gap-4 p-5">
+                                                {!isPast ? (
+                                                    <div className="flex flex-col gap-2 flex-shrink-0">
+                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${ev.start && (ev.staff?.every(s=>s.time) || true) ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}>
+                                                            <Icons.Clock size={20} color={(ev.start && (ev.staff?.every(s=>s.time) || true)) ? '#10b981' : '#ef4444'} />
+                                                        </div>
+                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${Object.entries(ev.neededStaff || {}).every(([k, v]) => parseInt(v||0) === 0 || getStaffCounts(ev)[keyToLabel[k]] >= parseInt(v)) ? 'bg-green-100' : 'bg-red-50'}`}>
+                                                            <Icons.Users size={22} color={Object.entries(ev.neededStaff || {}).every(([k, v]) => parseInt(v||0) === 0 || getStaffCounts(ev)[keyToLabel[k]] >= parseInt(v)) ? '#10b981' : '#ef4444'} />
+                                                        </div>
+                                                        <div onClick={(e) => toggleEventChecked(e, ev.id)} className={`w-11 h-11 flex items-center justify-center rounded-xl border transition-all ${isChecked ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-red-200 shadow-[0_0_5px_rgba(239,68,68,0.2)]'}`}>
+                                                            <Icons.DoubleCheck size={32} color={isChecked ? '#3b82f6' : '#ef4444'} />
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col gap-2 flex-shrink-0">
+                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${allPaid ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}><span className={`text-2xl font-black ${allPaid ? 'text-green-600' : 'text-red-500'}`}>₽</span></div>
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className={`font-bold text-lg leading-tight truncate mb-2 ${isPast ? 'text-gray-500' : ''}`}>{ev.name}</h3>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[11px] text-[#C7886B] font-bold uppercase tracking-tight">{ev.format || '—'}</p>
+                                                        {ev.location && <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium"><Icons.MapPin size={10} /><span className="truncate">{ev.location}</span></div>}
+                                                        <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Админ: {ev.admin || '—'}</p>
+                                                        <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Гости: {ev.guests || 0} чел</p>
+                                                        {ev.files?.length > 0 && <div className="flex items-center gap-1 text-[10px] text-blue-500 font-bold uppercase tracking-tighter mt-1"><Icons.Paperclip size={10} /><span>есть прикрепленные файлы</span></div>}
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    {(!isPast || showArchive) && <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>}
+                                                    <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500 p-1"><Icons.Trash size={16} /></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="animate-in">
+                            <div className="flex items-center justify-between mb-6">
+                                <button onClick={handleBackToPrevState} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад</button>
+                                <div className="flex items-center gap-3">
+                                    {(currentEvent?.date >= todayStr || showArchive) && <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>}
+                                    <button onClick={(e) => fastDeleteEvent(e, selectedEventId)} className="text-red-300 p-2"><Icons.Trash size={20} /></button>
+                                </div>
+                            </div>
+                            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539] mb-8">
+                                <div className={`py-2 text-center ${(currentEvent?.date < todayStr) ? 'bg-[#604539]' : 'bg-[#C7886B]'}`}><span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{currentEvent?.displayDate}</span></div>
+                                <div className="p-8 bg-[#1F1713] text-white">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
+                                        {currentEvent?.date >= todayStr && (
+                                            <div className="flex gap-2">
+                                                <div className={`w-10 h-10 flex items-center justify-center rounded-full ${checkEventCompleteness(currentEvent) ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`}><Icons.Clock size={24} color="white" /></div>
+                                                <div onClick={(e) => toggleEventChecked(e, currentEvent.id)} className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer transition-all ${currentEvent?.status?.checked ? 'bg-blue-500' : 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`}><Icons.DoubleCheck size={44} color="white" /></div>
+                                            </div>
+                                        )}
+                                        {currentEvent?.date < todayStr && (
+                                            <div className={`px-4 py-2 rounded-xl flex items-center gap-2 border ${isEventFullyPaid(currentEvent) ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-red-500/20 border-red-500 text-red-400'}`}>
+                                                <span className="text-xl font-black">₽</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">{isEventFullyPaid(currentEvent) ? 'Оплачено' : 'Есть долги'}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2 mb-6">
+                                        <div className="flex flex-col gap-1">
+                                            <p className="text-xs uppercase font-bold tracking-wider text-[#C7886B]">{currentEvent?.format || '—'}</p>
+                                            {currentEvent?.location && <div className="flex items-center gap-1.5 text-xs text-white/50"><Icons.MapPin size={12} /><span>{currentEvent.location}</span></div>}
+                                        </div>
+                                        <p className="text-xs uppercase font-bold tracking-wider opacity-60">Админ: {currentEvent?.admin || '—'}</p>
+                                        <p className="text-xs uppercase font-bold tracking-wider opacity-60">Тайминг: {currentEvent?.start || '—'} {currentEvent?.end ? `— ${currentEvent?.end}` : ''}</p>
+                                        <p className="text-xs uppercase font-bold tracking-wider opacity-60">Гости: {currentEvent?.guests || 0} чел</p>
+                                        {currentEvent?.extraInfo && <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10 text-sm italic opacity-80 whitespace-pre-wrap">{currentEvent.extraInfo}</div>}
+                                    </div>
+                                    <div className="flex gap-3 mt-6 overflow-x-auto pb-2">
+                                        {Object.entries(headerRoleMap).map(([key, data]) => {
+                                            const counts = getStaffCounts(currentEvent);
+                                            const target = parseInt(currentEvent?.neededStaff?.[key] || 0);
+                                            const actual = counts[data.key];
+                                            const ok = target === 0 || actual >= target;
+                                            return (
+                                                <div key={key} className="flex flex-col items-center gap-2">
+                                                    <div className={`p-4 rounded-2xl border-2 transition-all ${ok ? 'bg-[#FFECD2] border-[#FFECD2] text-[#604539]' : 'border-white/10 opacity-40'}`}>{data.icon}</div>
+                                                    <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ok ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white'}`}>{actual} {target > 0 ? `/ ${target}` : ''}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="p-6">
+                                    <table className="staff-table">
+                                        <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="col-staff pb-2 text-left pl-2">Персонал</th><th className="col-timing pb-2 text-center">Тайминг</th><th className="col-actions pb-2 text-right pr-2">Действия</th></tr></thead>
+                                        <tbody>
+                                            {currentEvent?.staff?.sort((a,b) => a.name.localeCompare(b.name)).map(s => (
+                                                <tr key={s.id} className="border-b border-gray-50 text-sm">
+                                                    <td className="col-staff py-4 pl-2 overflow-hidden">
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <div className="flex flex-col min-w-0">
+                                                                <span 
+                                                                    onClick={() => setActiveStaffSchedule(s.name)} 
+                                                                    className="font-bold truncate cursor-pointer hover:text-[#C7886B] active:scale-95 transition-all w-fit" 
+                                                                    title="Посмотреть график"
+                                                                >
+                                                                    {s.name}
+                                                                </span>
+                                                                {s.phone && <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-0.5"><Icons.Phone size={10} /><span>{s.phone}</span></div>}
+                                                                {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter mt-0.5">НЕТ ТАЙМИНГА</span>}
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-1.5 mt-1">
+                                                                {s.roles.map((role, idx) => (
+                                                                    <div key={idx} onClick={() => toggleStaffRolePaid(s.id, role)} className={`role-badge border ${s.rolePaid?.[role] ? 'bg-green-100 border-green-200 text-green-700' : 'bg-gray-50 border-gray-100 text-gray-500'}`}>
+                                                                        {roleIconMap[role]?.icon}<span className="leading-none">{role}</span>{s.rolePaid?.[role] && <span className="font-black text-xs">₽</span>}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="col-timing py-4 text-center"><div className="text-[11px] font-medium leading-tight"><div>{s.time || '—'}</div>{s.end && <div className="opacity-40">- {s.end}</div>}</div></td>
+                                                    <td className="col-actions py-4 text-right pr-2"><div className="flex justify-end gap-2"><button onClick={()=> { setEditingStaffId(s.id); setNewStaff({ name: s.name, phone: s.phone || '', time: s.time || '', end: s.end || '', roles: s.roles }); setIsStaffFormOpen(true); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16}/></button><button onClick={()=> { const upd = events.map(e=>e.id===selectedEventId?{...e,staff:e.staff.filter(x=>x.id!==s.id)}:e); setEvents(upd); saveToGithub(upd); }} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button></div></td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+
+                                    <div className="mt-6">
+                                        {!isStaffFormOpen ? (
+                                            <button onClick={() => setIsStaffFormOpen(true)} className="w-full bg-transparent py-4 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl border-2 border-dashed border-[#60453920] hover:bg-[#60453905] transition-all outline-none">
+                                                <div className="p-2 bg-[#60453910] rounded-lg"><Icons.Plus size={18} /></div>
+                                                <span className="font-bold uppercase tracking-widest text-xs">Добавить сотрудника</span>
+                                            </button>
+                                        ) : (
+                                            <div className="bg-[#FFECD240] p-4 rounded-2xl border-2 border-[#604539] border-l-8 animate-in relative">
+                                                <button onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); setNewStaff({ name: '', phone: '', time: '', end: '', roles: [] }); setShowSuggestions(false); }} className="absolute right-3 top-3 p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={16}/></button>
+                                                <h3 className="text-xs font-bold mb-4 flex items-center gap-2 text-[#604539] uppercase tracking-wide">{editingStaffId ? <Icons.Edit size={14}/> : <Icons.Plus size={14}/>} {editingStaffId ? 'Редактировать' : 'Новый сотрудник'}</h3>
+                                                
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                                    <div className="space-y-3 relative">
+                                                        <input 
+                                                            type="text" 
+                                                            placeholder="Имя сотрудника" 
+                                                            value={newStaff.name} 
+                                                            onChange={e => handleStaffNameChange(e.target.value)}
+                                                            onFocus={() => setShowSuggestions(true)}
+                                                            className="w-full p-2.5 rounded-lg border-2 border-[#60453910] bg-white outline-none text-sm placeholder:text-gray-300" 
+                                                        />
+                                                        {showSuggestions && filteredStaffSuggestions.length > 0 && (
+                                                            <div className="autocomplete-list">
+                                                                {filteredStaffSuggestions.map((s, idx) => (
+                                                                    <div key={idx} className="autocomplete-item flex justify-between" onClick={() => selectSuggestion(s)}>
+                                                                        <span className="font-bold">{s.name}</span>
+                                                                        <span className="text-gray-400">{s.phone}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        
+                                                        <div className="relative">
+                                                            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300"><Icons.Phone size={14} /></div>
+                                                            <input 
+                                                                type="tel" 
+                                                                placeholder="Телефон" 
+                                                                value={newStaff.phone} 
+                                                                onChange={e=>setNewStaff({...newStaff, phone: e.target.value})} 
+                                                                className={`w-full p-2.5 pl-8 rounded-lg border-2 bg-white outline-none text-sm placeholder:text-gray-300 transition-colors ${isPhoneValid(newStaff.phone) ? 'border-[#60453910]' : 'border-red-300 bg-red-50'}`} 
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="flex gap-2">
+                                                        <SimpleTimePicker label="Приход" value={newStaff.time} onChange={v=>setNewStaff({...newStaff, time: v})} colors={colors} />
+                                                        <SimpleTimePicker label="Уход" value={newStaff.end} onChange={v=>setNewStaff({...newStaff, end: v})} colors={colors} />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-1.5 mb-4">
+                                                    {['Официант', 'Бармен', 'Мойщица', 'Повар'].map(r => (
+                                                        <button key={r} onClick={()=>setNewStaff(p=>({...p, roles: p.roles.includes(r)?p.roles.filter(x=>x!==r):[...p.roles, r]}))} className={`py-2 rounded-lg text-[9px] font-bold uppercase border-2 transition-all ${newStaff.roles.includes(r)?'bg-[#604539] border-[#604539] text-white':'border-[#60453910] bg-white text-[#604539]'}`}>{r}</button>
+                                                    ))}
+                                                </div>
+                                                
+                                                <div className="flex gap-2">
+                                                    <button onClick={handleAddStaff} className="flex-[2] bg-[#604539] text-white py-2.5 rounded-lg uppercase font-bold text-[10px] tracking-widest shadow-sm active:scale-[0.98] transition-transform">{editingStaffId ? 'Сохранить' : 'Подтвердить'}</button>
+                                                    <button onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); setNewStaff({ name: '', phone: '', time: '', end: '', roles: [] }); setShowSuggestions(false); }} className="flex-1 bg-white border-2 border-[#60453915] text-[#604539] py-2.5 rounded-lg uppercase font-bold text-[10px] tracking-widest active:scale-[0.98] transition-transform">Отмена</button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-3xl shadow-xl border-t-8 border-[#604539] p-6 animate-in">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-[#604539] flex items-center gap-2"><Icons.Paperclip size={16} />Файлы</h3>
+                                    <div className="relative">
+                                        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" />
+                                        <button onClick={() => fileInputRef.current.click()} disabled={isUploading} className="px-4 py-2 bg-[#604539] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:bg-gray-400 flex items-center gap-2">
+                                            {isUploading ? <Icons.Refresh size={14} className="spin-slow" /> : <Icons.Plus size={14} />}Добавить
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    {currentEvent?.files?.length > 0 ? (
+                                        currentEvent.files.map((file, idx) => {
+                                            const iconData = getFileIconData(file.name);
+                                            return (
+                                                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border-2 border-gray-100 hover:border-[#60453920] transition-all group">
+                                                    <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
+                                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border-2" style={{ backgroundColor: iconData.color + '10', borderColor: iconData.color }}>
+                                                            <span className="text-[11px] font-black uppercase text-[#1F1713]" style={{ transform: 'scale(1.2)' }}>{iconData.label}</span>
+                                                        </div>
+                                                        <div className="file-name-container">
+                                                            <p className="file-name-text text-sm font-bold text-[#1F1713]">{file.name}</p>
+                                                            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter mt-1">{(file.size / 1024).toFixed(1)} KB • {new Date(file.uploadedAt).toLocaleDateString()}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 shrink-0 ml-2">
+                                                        <button onClick={() => handleFileDownload(file)} className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-gray-200 text-gray-500 hover:text-[#604539] hover:border-[#604539] transition-all" title="Скачать файл"><Icons.ExternalLink size={16} /></button>
+                                                        <button onClick={() => handleFileDelete(file)} className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-gray-200 text-gray-300 hover:text-red-500 hover:border-red-500 transition-all" title="Удалить файл"><Icons.Trash size={16} /></button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="py-8 text-center text-gray-300 border-2 border-dashed border-gray-100 rounded-2xl uppercase font-black text-[10px] tracking-widest">Файлов пока нет</div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
