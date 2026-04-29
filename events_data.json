@@ -951,7 +951,16 @@
     },
     "displayDate": "29 апрель",
     "staff": [],
-    "files": [],
+    "files": [
+      {
+        "name": "29.04 Обед.xlsx",
+        "path": "attachments/1777445638536/1777445659974_29.04 Обед.xlsx",
+        "sha": "bdeb1df305c659a9bb466111f7fabd7796c31e6c",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777445638536/1777445659974_29.04 Обед.xlsx",
+        "size": 30944,
+        "uploadedAt": "2026-04-29T06:54:21.210Z"
+      }
+    ],
     "status": {
       "checked": true
     }
