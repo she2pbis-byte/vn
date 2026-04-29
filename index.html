@@ -990,23 +990,35 @@
                     </div>
 
                     <header className="mb-8 border-b border-[#C7886B40] pb-6">
-                        <div className="flex items-center justify-between">
-                            <div className="w-12">
-                                <button ref={calendarButtonRef} onClick={(e) => { e.stopPropagation(); handleToggleCalendar(); }} className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 hover:scale-105 active:scale-95 transition-all ${isCalendarOpen ? 'bg-white border-[#604539] text-[#604539]' : 'bg-[#604539] border-[#604539] text-white'}`}>
+                        <div className="text-center">
+                            <h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1>
+                            <p className="text-[10px] uppercase tracking-widest text-[#604539] font-medium">Кейтеринг Ванильного Неба</p>
+                        </div>
+                        
+                        {/* Кнопки календаря и архива центрированы под заголовком */}
+                        <div className="flex justify-center gap-6 mt-6">
+                            <div className="flex flex-col items-center gap-1">
+                                <button 
+                                    ref={calendarButtonRef} 
+                                    onClick={(e) => { e.stopPropagation(); handleToggleCalendar(); }} 
+                                    className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 hover:scale-105 active:scale-95 transition-all ${isCalendarOpen ? 'bg-white border-[#604539] text-[#604539]' : 'bg-[#604539] border-[#604539] text-white'}`}
+                                >
                                     <Icons.Calendar size={24} />
                                 </button>
+                                <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Календарь</span>
                             </div>
-                            <div className="text-center flex-1">
-                                <h1 className="text-2xl font-bold uppercase tracking-tight">Мероприятия</h1>
-                                <p className="text-[10px] uppercase tracking-widest text-[#604539] font-medium">Кейтеринг Ванильного Неба</p>
-                            </div>
-                            <div className="w-12 flex justify-end">
-                                {view === 'list' && (
-                                    <button onClick={(e) => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); }} className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all border-2 ${showArchive ? 'bg-white border-[#604539] text-[#604539] shadow-sm' : 'bg-[#604539] border-[#604539] text-white shadow-lg'}`}>
+
+                            {view === 'list' && (
+                                <div className="flex flex-col items-center gap-1">
+                                    <button 
+                                        onClick={(e) => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); }} 
+                                        className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all border-2 hover:scale-105 active:scale-95 ${showArchive ? 'bg-white border-[#604539] text-[#604539] shadow-sm' : 'bg-[#604539] border-[#604539] text-white shadow-lg'}`}
+                                    >
                                         <Icons.Archive size={22} />
                                     </button>
-                                )}
-                            </div>
+                                    <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Архив</span>
+                                </div>
+                            )}
                         </div>
                     </header>
 
