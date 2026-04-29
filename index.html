@@ -479,7 +479,7 @@
             );
         };
 
-        const StaffScheduleModal = ({ staffName, events, onClose, todayStr }) => {
+        const StaffScheduleModal = ({ staffName, events, onClose, onSelectEvent, todayStr }) => {
             const staffFutureEvents = useMemo(() => {
                 return events
                     .filter(ev => ev.date >= todayStr && ev.staff && ev.staff.some(s => s.name.toLowerCase() === staffName.toLowerCase()))
@@ -504,13 +504,17 @@
                                     {staffFutureEvents.map(ev => {
                                         const staffEntry = ev.staff.find(s => s.name.toLowerCase() === staffName.toLowerCase());
                                         return (
-                                            <div key={ev.id} className="flex gap-3 p-3 bg-gray-50 rounded-xl border-2 border-transparent hover:border-[#FFECD2] transition-all">
-                                                <div className="w-10 shrink-0 flex flex-col items-center justify-center border-r-2 border-[#60453910] pr-3">
+                                            <div 
+                                                key={ev.id} 
+                                                onClick={() => onSelectEvent(ev.id)}
+                                                className="flex gap-3 p-3 bg-gray-50 rounded-xl border-2 border-transparent hover:border-[#FFECD2] transition-all cursor-pointer group active:scale-[0.98]"
+                                            >
+                                                <div className="w-10 shrink-0 flex flex-col items-center justify-center border-r-2 border-[#60453910] pr-3 group-hover:border-[#FFECD2]">
                                                     <span className="text-[8px] font-black uppercase text-gray-400">{new Date(ev.date).toLocaleString('ru', { month: 'short' })}</span>
                                                     <span className="text-lg font-black text-[#604539] leading-none">{new Date(ev.date).getDate()}</span>
                                                 </div>
                                                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                    <p className="text-[15px] font-bold uppercase truncate text-[#1F1713]">{ev.name}</p>
+                                                    <p className="text-[15px] font-bold uppercase truncate text-[#1F1713] group-hover:text-[#C7886B]">{ev.name}</p>
                                                     <div className="flex items-center gap-2 mt-1.5">
                                                         <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-[#C7886B]">
                                                             <Icons.Clock size={14} />
@@ -956,6 +960,12 @@
                             events={events} 
                             todayStr={todayStr} 
                             onClose={() => setActiveStaffSchedule(null)} 
+                            onSelectEvent={(id) => {
+                                setSelectedEventId(id);
+                                setView('details');
+                                setActiveStaffSchedule(null);
+                                setIsCalendarOpen(false);
+                            }}
                         />
                     )}
 
