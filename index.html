@@ -480,6 +480,72 @@
             );
         };
 
+        // Компонент модального окна расписания сотрудника
+        const StaffScheduleModal = ({ staffName, events, onClose, todayStr }) => {
+            const staffFutureEvents = useMemo(() => {
+                return events
+                    .filter(ev => ev.date >= todayStr && ev.staff && ev.staff.some(s => s.name.toLowerCase() === staffName.toLowerCase()))
+                    .sort((a, b) => a.date.localeCompare(b.date));
+            }, [staffName, events, todayStr]);
+
+            return (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1F1713]/80 backdrop-blur-sm animate-in">
+                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border-2 border-[#604539]">
+                        <div className="p-6 border-b border-[#60453910] flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-black uppercase text-[#604539] leading-tight">График работы</h3>
+                                <p className="text-xs font-bold text-[#C7886B] uppercase tracking-widest mt-1">{staffName}</p>
+                            </div>
+                            <button onClick={onClose} className="p-2 bg-gray-50 rounded-xl text-gray-300 hover:text-red-500 transition-colors">
+                                <Icons.X size={24} />
+                            </button>
+                        </div>
+                        <div className="p-6 max-h-[60vh] overflow-y-auto">
+                            {staffFutureEvents.length > 0 ? (
+                                <div className="space-y-4">
+                                    {staffFutureEvents.map(ev => {
+                                        const staffEntry = ev.staff.find(s => s.name.toLowerCase() === staffName.toLowerCase());
+                                        return (
+                                            <div key={ev.id} className="flex gap-4 p-4 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-[#FFECD2] transition-all">
+                                                <div className="w-12 shrink-0 flex flex-col items-center justify-center border-r-2 border-[#60453910] pr-4">
+                                                    <span className="text-[10px] font-black uppercase text-gray-400">{new Date(ev.date).toLocaleString('ru', { month: 'short' })}</span>
+                                                    <span className="text-xl font-black text-[#604539]">{new Date(ev.date).getDate()}</span>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs font-bold uppercase truncate text-[#1F1713]">{ev.name}</p>
+                                                    <div className="flex items-center gap-3 mt-2">
+                                                        <div className="flex items-center gap-1 text-[10px] font-bold text-[#C7886B]">
+                                                            <Icons.Clock size={12} />
+                                                            <span>ПРИХОД: {staffEntry.time || '—'}</span>
+                                                        </div>
+                                                        {staffEntry.end && (
+                                                            <div className="text-[10px] font-bold text-gray-400">
+                                                                <span>УХОД: {staffEntry.end}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="py-12 text-center">
+                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-gray-100">
+                                        <Icons.Calendar size={24} className="text-gray-200" />
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Мероприятий пока не запланировано</p>
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-4 bg-gray-50 border-t border-[#60453910]">
+                            <button onClick={onClose} className="w-full py-3 bg-[#604539] text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const App = () => {
             const [view, setView] = useState('list');
             const [showArchive, setShowArchive] = useState(false);
@@ -495,6 +561,7 @@
             const [isTokenVerified, setIsTokenVerified] = useState(false);
             const [isUploading, setIsUploading] = useState(false);
             const [showSuggestions, setShowSuggestions] = useState(false);
+            const [activeStaffSchedule, setActiveStaffSchedule] = useState(null); // Состояние для модалки графика
 
             const calendarRef = useRef(null);
             const calendarButtonRef = useRef(null);
@@ -897,6 +964,16 @@
 
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-[#1F1713]">
+                    {/* Модальное окно графика сотрудника */}
+                    {activeStaffSchedule && (
+                        <StaffScheduleModal 
+                            staffName={activeStaffSchedule} 
+                            events={events} 
+                            todayStr={todayStr} 
+                            onClose={() => setActiveStaffSchedule(null)} 
+                        />
+                    )}
+
                     <div className="flex items-center justify-between gap-4 mb-6 bg-white/60 p-2 rounded-2xl border border-[#60453915] backdrop-blur-sm shadow-sm">
                         <div className="flex items-center gap-2">
                             <button onClick={() => fetchFromGithub(githubToken)} className="p-2 hover:bg-white rounded-xl transition-all shadow-sm text-[#604539] flex items-center justify-center active:scale-95" title="Обновить вручную">
@@ -1113,7 +1190,14 @@
                                                     <td className="col-staff py-4 pl-2 overflow-hidden">
                                                         <div className="flex flex-col gap-1.5">
                                                             <div className="flex flex-col min-w-0">
-                                                                <span className="font-bold truncate" title={s.name}>{s.name}</span>
+                                                                {/* Клик по имени открывает график */}
+                                                                <span 
+                                                                    onClick={() => setActiveStaffSchedule(s.name)} 
+                                                                    className="font-bold truncate cursor-pointer hover:text-[#C7886B] active:scale-95 transition-all w-fit" 
+                                                                    title="Посмотреть график"
+                                                                >
+                                                                    {s.name}
+                                                                </span>
                                                                 {s.phone && <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-0.5"><Icons.Phone size={10} /><span>{s.phone}</span></div>}
                                                                 {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter mt-0.5">НЕТ ТАЙМИНГА</span>}
                                                             </div>
