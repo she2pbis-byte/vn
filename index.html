@@ -949,11 +949,13 @@
                     setIsStaffListOpen(false);
                 }
             };
-
             const handleToggleStaffList = () => {
                 const nextState = !isStaffListOpen;
                 setIsStaffListOpen(nextState);
                 if (nextState) {
+                    // Сбрасываем архив, чтобы он закрывался при открытии списка сотрудников
+                    setShowArchive(false);
+                    
                     setIsCalendarOpen(false);
                     setIsFormOpen(false);
                     setView('list');
