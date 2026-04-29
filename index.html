@@ -426,6 +426,57 @@
             );
         };
 
+        const StaffList = ({ staffDatabase, events, onClose }) => {
+            const getStaffDates = (name) => {
+                return events
+                    .filter(ev => ev.staff && ev.staff.some(s => s.name.toLowerCase() === name.toLowerCase()))
+                    .sort((a, b) => a.date.localeCompare(b.date))
+                    .map(ev => {
+                        const [y, m, d] = ev.date.split('-');
+                        return `${d}.${m}`;
+                    });
+            };
+
+            return (
+                <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
+                            <Icons.Users size={18} className="text-[#604539]" />
+                            <h3 className="font-black uppercase tracking-[0.2em] text-[#604539] text-sm leading-none">База сотрудников</h3>
+                        </div>
+                        <button onClick={onClose} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={20} /></button>
+                    </div>
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        {staffDatabase.sort((a,b) => a.name.localeCompare(b.name)).map((s, idx) => {
+                            const dates = getStaffDates(s.name);
+                            return (
+                                <div key={idx} className="p-3 bg-gray-50 rounded-xl border border-[#60453910] hover:border-[#C7886B50] transition-all">
+                                    <p className="font-bold text-[#604539] text-sm uppercase">{s.name}</p>
+                                    {s.phone && (
+                                        <a href={`tel:${s.phone}`} className="flex items-center gap-1.5 text-[10px] text-[#C7886B] font-bold mt-1 hover:underline">
+                                            <Icons.Phone size={10} />
+                                            <span>{s.phone}</span>
+                                        </a>
+                                    )}
+                                    {dates.length > 0 ? (
+                                        <div className="mt-2 pt-2 border-t border-dashed border-[#60453910]">
+                                            <p className="text-[8px] font-black uppercase text-gray-400 mb-1">Даты работы:</p>
+                                            <p className="text-[10px] font-medium text-gray-500">{dates.join(', ')}</p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-[8px] font-black uppercase text-gray-300 mt-2">Нет записей в графике</p>
+                                    )}
+                                </div>
+                            );
+                        })}
+                        {staffDatabase.length === 0 && (
+                            <div className="py-10 text-center opacity-30 italic text-xs uppercase tracking-widest font-black">База пуста</div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
         const AutoHeightTextarea = ({ value, onChange, placeholder, className }) => {
             const textareaRef = useRef(null);
             const adjustHeight = () => {
@@ -548,6 +599,7 @@
             const [showArchive, setShowArchive] = useState(false);
             const [isFormOpen, setIsFormOpen] = useState(false);
             const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+            const [isStaffListOpen, setIsStaffListOpen] = useState(false);
             const [isStaffFormOpen, setIsStaffFormOpen] = useState(false);
             const [events, setEvents] = useState([]);
             const [staffDatabase, setStaffDatabase] = useState([]); 
@@ -570,7 +622,7 @@
 
             useEffect(() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, [view, selectedEventId, isFormOpen, isCalendarOpen]);
+            }, [view, selectedEventId, isFormOpen, isCalendarOpen, isStaffListOpen]);
 
             const fetchFromGithub = useCallback(async (token) => {
                 if (!token) { setIsTokenVerified(false); return; }
@@ -830,6 +882,7 @@
                 setNewEvent({ ...ev, location: ev.location || '', neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
                 setIsFormOpen(true);
                 setIsCalendarOpen(false);
+                setIsStaffListOpen(false);
                 setView('list');
             };
 
@@ -882,6 +935,7 @@
             const handleBackToPrevState = () => {
                 setView('list');
                 setIsCalendarOpen(false);
+                setIsStaffListOpen(false);
             };
 
             const handleToggleCalendar = () => {
@@ -892,12 +946,24 @@
                     setFilterDate(null);
                     setView('list');
                     setIsFormOpen(false);
+                    setIsStaffListOpen(false);
+                }
+            };
+
+            const handleToggleStaffList = () => {
+                const nextState = !isStaffListOpen;
+                setIsStaffListOpen(nextState);
+                if (nextState) {
+                    setIsCalendarOpen(false);
+                    setIsFormOpen(false);
+                    setView('list');
                 }
             };
 
             const handleGoToCalendar = () => {
                 setFilterDate(null);
                 setIsCalendarOpen(true);
+                setIsStaffListOpen(false);
                 setView('list');
                 setShowArchive(false);
             };
@@ -965,6 +1031,7 @@
                                 setView('details');
                                 setActiveStaffSchedule(null);
                                 setIsCalendarOpen(false);
+                                setIsStaffListOpen(false);
                             }}
                         />
                     )}
@@ -995,7 +1062,6 @@
                             <p className="text-[10px] uppercase tracking-widest text-[#604539] font-medium">Кейтеринг Ванильного Неба</p>
                         </div>
                         
-                        {/* Кнопки календаря и архива центрированы под заголовком */}
                         <div className="flex justify-center gap-6 mt-6">
                             <div className="flex flex-col items-center gap-1">
                                 <button 
@@ -1008,10 +1074,20 @@
                                 <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Календарь</span>
                             </div>
 
+                            <div className="flex flex-col items-center gap-1">
+                                <button 
+                                    onClick={handleToggleStaffList} 
+                                    className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 hover:scale-105 active:scale-95 transition-all ${isStaffListOpen ? 'bg-white border-[#604539] text-[#604539]' : 'bg-[#604539] border-[#604539] text-white'}`}
+                                >
+                                    <Icons.Users size={24} />
+                                </button>
+                                <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Сотрудники</span>
+                            </div>
+
                             {view === 'list' && (
                                 <div className="flex flex-col items-center gap-1">
                                     <button 
-                                        onClick={(e) => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); }} 
+                                        onClick={(e) => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); setIsStaffListOpen(false); }} 
                                         className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all border-2 hover:scale-105 active:scale-95 ${showArchive ? 'bg-white border-[#604539] text-[#604539] shadow-sm' : 'bg-[#604539] border-[#604539] text-white shadow-lg'}`}
                                     >
                                         <Icons.Archive size={22} />
@@ -1027,16 +1103,19 @@
                             {isCalendarOpen && (
                                 <Calendar calendarRef={calendarRef} events={events} selectedDate={filterDate} onSelectDate={(date) => { setFilterDate(date); if(date) setIsCalendarOpen(false); }} />
                             )}
+                            {isStaffListOpen && (
+                                <StaffList staffDatabase={staffDatabase} events={events} onClose={() => setIsStaffListOpen(false)} />
+                            )}
                             {filterDate && (
                                 <div className="flex items-center justify-between bg-white/40 px-4 py-2 rounded-xl border border-[#60453920]">
                                     <span className="text-[10px] font-black uppercase text-[#604539]">ДАТА: {filterDate.split('-').reverse().join('.')}</span>
                                     <button onClick={handleGoToCalendar} className="text-[10px] font-black text-[#604539] hover:underline uppercase tracking-widest">К КАЛЕНДАРЮ</button>
                                 </div>
                             )}
-                            {!showArchive && !filterDate && (
+                            {!showArchive && !filterDate && !isStaffListOpen && (
                                 <div className="space-y-4">
                                     {!isFormOpen ? (
-                                        <button onClick={() => { setIsFormOpen(true); setIsCalendarOpen(false); }} className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl">
+                                        <button onClick={() => { setIsFormOpen(true); setIsCalendarOpen(false); setIsStaffListOpen(false); }} className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl">
                                             <div className="p-2 bg-[#60453910] rounded-lg"><Icons.Plus size={18} /></div>
                                             <span className="font-bold uppercase tracking-widest text-xs">Новое мероприятие</span>
                                         </button>
@@ -1094,7 +1173,7 @@
                                     const isPast = ev.date < todayStr;
                                     const allPaid = isEventFullyPaid(ev);
                                     return (
-                                        <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); setIsCalendarOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
+                                        <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); setIsCalendarOpen(false); setIsStaffListOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
                                             <div className={`py-1.5 px-4 text-center ${isPast ? 'bg-[#604539]' : (isComplete ? 'bg-green-600' : 'bg-red-500')}`}>
                                                 <span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{ev.displayDate}</span>
                                             </div>
