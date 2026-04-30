@@ -644,7 +644,19 @@
       "пов": "1"
     },
     "displayDate": "7 май",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1777561547134",
+        "name": "Коршунов",
+        "phone": "+79201431396",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
