@@ -126,7 +126,7 @@
           "Официант"
         ],
         "rolePaid": {
-          "Официант": false
+          "Официант": true
         }
       }
     ],
@@ -219,7 +219,7 @@
       }
     ],
     "status": {
-      "checked": true
+      "checked": false
     },
     "location": "ПЯО",
     "files": []
