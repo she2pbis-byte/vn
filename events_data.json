@@ -636,5 +636,29 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1777537309462",
+    "name": "Прокуратура",
+    "date": "2026-05-07",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "location": "Некрасова 5",
+    "admin": "Михаил",
+    "guests": "18",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": "1"
+    },
+    "displayDate": "7 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
