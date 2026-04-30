@@ -660,5 +660,29 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1777537523148",
+    "name": "Диво Свадьба",
+    "date": "2026-08-09",
+    "start": "14:00",
+    "end": "23:00",
+    "format": "Фуршет",
+    "location": "Диво Парк",
+    "admin": "Илья",
+    "guests": "55",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "2",
+      "мой": "",
+      "пов": "1"
+    },
+    "displayDate": "9 август",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
