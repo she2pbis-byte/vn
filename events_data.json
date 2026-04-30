@@ -679,7 +679,19 @@
       "пов": "1"
     },
     "displayDate": "9 август",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1777537550775",
+        "name": "Коршунов",
+        "phone": "+79201431396",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Бармен"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
