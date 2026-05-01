@@ -734,5 +734,29 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1777637646860",
+    "name": "ПЯО ЧС",
+    "date": "2026-05-01",
+    "start": "16:00",
+    "end": "16:30",
+    "format": "Чайный стол",
+    "location": "Муз-Зап",
+    "admin": "Илья",
+    "guests": "5",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "1 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
