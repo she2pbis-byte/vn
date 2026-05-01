@@ -476,7 +476,7 @@
                         <div key={idx} className={`p-3 rounded-xl border transition-all ${hasAnyDebt ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-[#60453910] hover:border-[#C7886B50]'}`}>
                             <div className="flex justify-between items-start">
                                 <p className={`font-bold text-sm uppercase ${hasAnyDebt ? 'text-red-700' : 'text-[#604539]'}`}>{s.name}</p>
-                                {hasAnyDebt && <span className="text-[8px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full animate-pulse">ЖДЕТ ОПЛАТУ</span>}
+                                {hasAnyDebt && <span className="text-[12px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full animate-pulse">ЖДЕТ ОПЛАТУ</span>}
                             </div>
                             
                             {s.phone && (
