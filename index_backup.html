@@ -634,7 +634,7 @@
         const App = () => {
             const [view, setView] = useState('list');
             const [showArchive, setShowArchive] = useState(false);
-            const [archiveFilter, setArchiveFilter] = useState('all'); 
+            const [archiveFilter, setArchiveFilter] = useState('all'); // 'all' или 'unpaid'
             const [isFormOpen, setIsFormOpen] = useState(false);
             const [isCalendarOpen, setIsCalendarOpen] = useState(false);
             const [isStaffListOpen, setIsStaffListOpen] = useState(false);
@@ -894,6 +894,8 @@
                     filtered = events.filter(ev => ev.date === filterDate);
                 } else {
                     filtered = events.filter(ev => showArchive ? ev.date < todayStr : ev.date >= todayStr);
+                    
+                    // Применяем фильтр долгов только в архиве
                     if (showArchive && archiveFilter === 'unpaid') {
                         filtered = filtered.filter(ev => !isEventFullyPaid(ev));
                     }
@@ -1024,7 +1026,7 @@
 
             const toggleArchive = () => {
                 setShowArchive(!showArchive);
-                setArchiveFilter('all'); 
+                setArchiveFilter('all'); // Сбрасываем фильтр при переключении
                 setFilterDate(null);
                 setIsCalendarOpen(false);
                 setIsStaffListOpen(false);
@@ -1165,138 +1167,135 @@
                             {isCalendarOpen && (
                                 <Calendar calendarRef={calendarRef} events={events} selectedDate={filterDate} onSelectDate={(date) => { setFilterDate(date); if(date) setIsCalendarOpen(false); }} />
                             )}
-                            
-                            {isStaffListOpen ? (
+                            {isStaffListOpen && (
                                 <StaffList staffDatabase={staffDatabase} events={events} onClose={() => setIsStaffListOpen(false)} />
-                            ) : (
-                                <>
-                                    {filterDate && (
-                                        <div className="flex items-center justify-between bg-white/40 px-4 py-2 rounded-xl border border-[#60453920]">
-                                            <span className="text-[10px] font-black uppercase text-[#604539]">ДАТА: {filterDate.split('-').reverse().join('.')}</span>
-                                            <button onClick={handleGoToCalendar} className="text-[10px] font-black text-[#604539] hover:underline uppercase tracking-widest">К КАЛЕНДАРЮ</button>
-                                        </div>
-                                    )}
+                            )}
+                            {filterDate && (
+                                <div className="flex items-center justify-between bg-white/40 px-4 py-2 rounded-xl border border-[#60453920]">
+                                    <span className="text-[10px] font-black uppercase text-[#604539]">ДАТА: {filterDate.split('-').reverse().join('.')}</span>
+                                    <button onClick={handleGoToCalendar} className="text-[10px] font-black text-[#604539] hover:underline uppercase tracking-widest">К КАЛЕНДАРЮ</button>
+                                </div>
+                            )}
 
-                                    {showArchive && !filterDate && (
-                                        <div className="flex bg-[#60453910] p-1 rounded-xl mb-4 animate-in">
-                                            <button 
-                                                onClick={() => setArchiveFilter('all')}
-                                                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${archiveFilter === 'all' ? 'bg-[#604539] text-white shadow-md' : 'text-[#604539]'}`}
-                                            >
-                                                Все
-                                            </button>
-                                            <button 
-                                                onClick={() => setArchiveFilter('unpaid')}
-                                                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${archiveFilter === 'unpaid' ? 'bg-red-500 text-white shadow-md' : 'text-[#604539]'}`}
-                                            >
-                                                Неоплаченные
-                                            </button>
-                                        </div>
-                                    )}
+                            {view === 'list' && showArchive && !filterDate && (
+                                <div className="flex bg-[#60453910] p-1 rounded-xl mb-4 animate-in">
+                                    <button 
+                                        onClick={() => setArchiveFilter('all')}
+                                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${archiveFilter === 'all' ? 'bg-[#604539] text-white shadow-md' : 'text-[#604539]'}`}
+                                    >
+                                        Все
+                                    </button>
+                                    <button 
+                                        onClick={() => setArchiveFilter('unpaid')}
+                                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${archiveFilter === 'unpaid' ? 'bg-red-500 text-white shadow-md' : 'text-[#604539]'}`}
+                                    >
+                                        Неоплаченные
+                                    </button>
+                                </div>
+                            )}
 
-                                    {!showArchive && !filterDate && (
-                                        <div className="space-y-4">
-                                            {!isFormOpen ? (
-                                                <button onClick={() => { setIsFormOpen(true); setIsCalendarOpen(false); setIsStaffListOpen(false); }} className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl">
-                                                    <div className="p-2 bg-[#60453910] rounded-lg"><Icons.Plus size={18} /></div>
-                                                    <span className="font-bold uppercase tracking-widest text-xs">Новое мероприятие</span>
-                                                </button>
-                                            ) : (
-                                                <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl relative animate-in">
-                                                    <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="absolute right-4 top-4 p-2 text-gray-300 hover:text-red-500 transition-colors"><Icons.X /></button>
-                                                    <h2 className="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-[#604539]">{editingEventId ? <Icons.Edit size={16} /> : <Icons.Plus size={16} />} {editingEventId ? 'Редактировать' : 'Создать мероприятие'}</h2>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                                                        <div className="space-y-3">
-                                                            <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
-                                                            <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
-                                                            <div className="space-y-2">
-                                                                <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{formats.map(f => <option key={f} value={f}>{f}</option>)}</select>
-                                                                {newEvent.format && newEvent.format !== "Выберите формат" && newEvent.format !== "Самовывоз" && (
-                                                                    <div className="animate-in relative">
-                                                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-40"><Icons.MapPin size={16} /></div>
-                                                                        <input type="text" placeholder="Адрес / Локация" value={newEvent.location || ''} onChange={e=>setNewEvent({...newEvent, location: e.target.value})} className="w-full p-2.5 pl-10 rounded-xl border-2 border-[#604539] bg-white outline-none text-sm placeholder:text-gray-400" />
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <input type="number" placeholder="Гости (чел)" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
-                                                        </div>
-                                                        <div className="space-y-3">
-                                                            <div className="flex gap-2">
-                                                                <SimpleTimePicker label="Начало" value={newEvent.start} onChange={v=>setNewEvent({...newEvent, start: v})} colors={colors} />
-                                                                <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
-                                                            </div>
-                                                            <div className="flex flex-col gap-3">
-                                                                <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{admins.map(a => <option key={a} value={a}>{a}</option>)}</select>
-                                                                <div className="flex gap-1.5">
-                                                                    {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
-                                                                        <div key={role} className="flex-1 relative">
-                                                                            <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-30">{icon}</div>
-                                                                            <input type="number" value={newEvent.neededStaff[role]} onChange={e => setNewEvent({...newEvent, neededStaff: { ...newEvent.neededStaff, [role]: e.target.value }})} placeholder="0" className="w-full p-2.5 pl-6 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold" />
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="mb-4"><AutoHeightTextarea placeholder="Дополнительная информация..." value={newEvent.extraInfo} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" /></div>
-                                                    <div className="flex gap-2">
-                                                        <button onClick={handleAddEvent} className="flex-[3] bg-[#604539] text-white py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest shadow-lg active:scale-[0.98] transition-transform">{editingEventId ? 'Сохранить' : 'Добавить'}</button>
-                                                        <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest hover:bg-gray-200 transition-colors">Отмена</button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {sortedEvents.map(ev => {
-                                            const isComplete = checkEventCompleteness(ev);
-                                            const isChecked = ev.status?.checked;
-                                            const isPast = ev.date < todayStr;
-                                            const allPaid = isEventFullyPaid(ev);
-                                            return (
-                                                <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); setIsCalendarOpen(false); setIsStaffListOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
-                                                    <div className={`py-1.5 px-4 text-center ${isPast ? 'bg-[#604539]' : (isComplete ? 'bg-green-600' : 'bg-red-500')}`}>
-                                                        <span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{ev.displayDate}</span>
-                                                    </div>
-                                                    <div className="flex gap-4 p-5">
-                                                        {!isPast ? (
-                                                            <div className="flex flex-col gap-2 flex-shrink-0">
-                                                                <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${ev.start && (ev.staff?.every(s=>s.time) || true) ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}>
-                                                                    <Icons.Clock size={20} color={(ev.start && (ev.staff?.every(s=>s.time) || true)) ? '#10b981' : '#ef4444'} />
-                                                                </div>
-                                                                <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${Object.entries(ev.neededStaff || {}).every(([k, v]) => parseInt(v||0) === 0 || getStaffCounts(ev)[keyToLabel[k]] >= parseInt(v)) ? 'bg-green-100' : 'bg-red-50'}`}>
-                                                                    <Icons.Users size={22} color={Object.entries(ev.neededStaff || {}).every(([k, v]) => parseInt(v||0) === 0 || getStaffCounts(ev)[keyToLabel[k]] >= parseInt(v)) ? '#10b981' : '#ef4444'} />
-                                                                </div>
-                                                                <div onClick={(e) => toggleEventChecked(e, ev.id)} className={`w-11 h-11 flex items-center justify-center rounded-xl border transition-all ${isChecked ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-red-200 shadow-[0_0_5px_rgba(239,68,68,0.2)]'}`}>
-                                                                    <Icons.DoubleCheck size={32} color={isChecked ? '#3b82f6' : '#ef4444'} />
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex flex-col gap-2 flex-shrink-0">
-                                                                <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${allPaid ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}><span className={`text-2xl font-black ${allPaid ? 'text-green-600' : 'text-red-500'}`}>₽</span></div>
+                            {!showArchive && !filterDate && !isStaffListOpen && (
+                                <div className="space-y-4">
+                                    {!isFormOpen ? (
+                                        <button onClick={() => { setIsFormOpen(true); setIsCalendarOpen(false); setIsStaffListOpen(false); }} className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl">
+                                            <div className="p-2 bg-[#60453910] rounded-lg"><Icons.Plus size={18} /></div>
+                                            <span className="font-bold uppercase tracking-widest text-xs">Новое мероприятие</span>
+                                        </button>
+                                    ) : (
+                                        <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl relative animate-in">
+                                            <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="absolute right-4 top-4 p-2 text-gray-300 hover:text-red-500 transition-colors"><Icons.X /></button>
+                                            <h2 className="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-[#604539]">{editingEventId ? <Icons.Edit size={16} /> : <Icons.Plus size={16} />} {editingEventId ? 'Редактировать' : 'Создать мероприятие'}</h2>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                                <div className="space-y-3">
+                                                    <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                    <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                    <div className="space-y-2">
+                                                        <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{formats.map(f => <option key={f} value={f}>{f}</option>)}</select>
+                                                        {newEvent.format && newEvent.format !== "Выберите формат" && newEvent.format !== "Самовывоз" && (
+                                                            <div className="animate-in relative">
+                                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-40"><Icons.MapPin size={16} /></div>
+                                                                <input type="text" placeholder="Адрес / Локация" value={newEvent.location || ''} onChange={e=>setNewEvent({...newEvent, location: e.target.value})} className="w-full p-2.5 pl-10 rounded-xl border-2 border-[#604539] bg-white outline-none text-sm placeholder:text-gray-400" />
                                                             </div>
                                                         )}
-                                                        <div className="flex-1 min-w-0">
-                                                            <h3 className={`font-bold text-lg leading-tight truncate mb-2 ${isPast ? 'text-gray-500' : ''}`}>{ev.name}</h3>
-                                                            <div className="space-y-1">
-                                                                <p className="text-[11px] text-[#C7886B] font-bold uppercase tracking-tight">{ev.format || '—'}</p>
-                                                                {ev.location && <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium"><Icons.MapPin size={10} /><span className="truncate">{ev.location}</span></div>}
-                                                                <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Админ: {ev.admin || '—'}</p>
-                                                                <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Гости: {ev.guests || 0} чел</p>
-                                                                {ev.files?.length > 0 && <div className="flex items-center gap-1 text-[10px] text-blue-500 font-bold uppercase tracking-tighter mt-1"><Icons.Paperclip size={10} /><span>есть прикрепленные файлы</span></div>}
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex flex-col gap-2">
-                                                            {(!isPast || showArchive) && <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>}
-                                                            <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500 p-1"><Icons.Trash size={16} /></button>
+                                                    </div>
+                                                    <input type="number" placeholder="Гости (чел)" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <div className="flex gap-2">
+                                                        <SimpleTimePicker label="Начало" value={newEvent.start} onChange={v=>setNewEvent({...newEvent, start: v})} colors={colors} />
+                                                        <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
+                                                    </div>
+                                                    <div className="flex flex-col gap-3">
+                                                        <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{admins.map(a => <option key={a} value={a}>{a}</option>)}</select>
+                                                        <div className="flex gap-1.5">
+                                                            {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
+                                                                <div key={role} className="flex-1 relative">
+                                                                    <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-30">{icon}</div>
+                                                                    <input type="number" value={newEvent.neededStaff[role]} onChange={e => setNewEvent({...newEvent, neededStaff: { ...newEvent.neededStaff, [role]: e.target.value }})} placeholder="0" className="w-full p-2.5 pl-6 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold" />
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     </div>
                                                 </div>
-                                            ))}
+                                            </div>
+                                            <div className="mb-4"><AutoHeightTextarea placeholder="Дополнительная информация..." value={newEvent.extraInfo} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" /></div>
+                                            <div className="flex gap-2">
+                                                <button onClick={handleAddEvent} className="flex-[3] bg-[#604539] text-white py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest shadow-lg active:scale-[0.98] transition-transform">{editingEventId ? 'Сохранить' : 'Добавить'}</button>
+                                                <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest hover:bg-gray-200 transition-colors">Отмена</button>
+                                            </div>
                                         </div>
-                                    </>
-                                )}
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {sortedEvents.map(ev => {
+                                    const isComplete = checkEventCompleteness(ev);
+                                    const isChecked = ev.status?.checked;
+                                    const isPast = ev.date < todayStr;
+                                    const allPaid = isEventFullyPaid(ev);
+                                    return (
+                                        <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); setIsCalendarOpen(false); setIsStaffListOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
+                                            <div className={`py-1.5 px-4 text-center ${isPast ? 'bg-[#604539]' : (isComplete ? 'bg-green-600' : 'bg-red-500')}`}>
+                                                <span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{ev.displayDate}</span>
+                                            </div>
+                                            <div className="flex gap-4 p-5">
+                                                {!isPast ? (
+                                                    <div className="flex flex-col gap-2 flex-shrink-0">
+                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${ev.start && (ev.staff?.every(s=>s.time) || true) ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}>
+                                                            <Icons.Clock size={20} color={(ev.start && (ev.staff?.every(s=>s.time) || true)) ? '#10b981' : '#ef4444'} />
+                                                        </div>
+                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${Object.entries(ev.neededStaff || {}).every(([k, v]) => parseInt(v||0) === 0 || getStaffCounts(ev)[keyToLabel[k]] >= parseInt(v)) ? 'bg-green-100' : 'bg-red-50'}`}>
+                                                            <Icons.Users size={22} color={Object.entries(ev.neededStaff || {}).every(([k, v]) => parseInt(v||0) === 0 || getStaffCounts(ev)[keyToLabel[k]] >= parseInt(v)) ? '#10b981' : '#ef4444'} />
+                                                        </div>
+                                                        <div onClick={(e) => toggleEventChecked(e, ev.id)} className={`w-11 h-11 flex items-center justify-center rounded-xl border transition-all ${isChecked ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-red-200 shadow-[0_0_5px_rgba(239,68,68,0.2)]'}`}>
+                                                            <Icons.DoubleCheck size={32} color={isChecked ? '#3b82f6' : '#ef4444'} />
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col gap-2 flex-shrink-0">
+                                                        <div className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${allPaid ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}><span className={`text-2xl font-black ${allPaid ? 'text-green-600' : 'text-red-500'}`}>₽</span></div>
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className={`font-bold text-lg leading-tight truncate mb-2 ${isPast ? 'text-gray-500' : ''}`}>{ev.name}</h3>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[11px] text-[#C7886B] font-bold uppercase tracking-tight">{ev.format || '—'}</p>
+                                                        {ev.location && <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium"><Icons.MapPin size={10} /><span className="truncate">{ev.location}</span></div>}
+                                                        <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Админ: {ev.admin || '—'}</p>
+                                                        <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Гости: {ev.guests || 0} чел</p>
+                                                        {ev.files?.length > 0 && <div className="flex items-center gap-1 text-[10px] text-blue-500 font-bold uppercase tracking-tighter mt-1"><Icons.Paperclip size={10} /><span>есть прикрепленные файлы</span></div>}
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    {(!isPast || showArchive) && <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>}
+                                                    <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500 p-1"><Icons.Trash size={16} /></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     ) : (
                         <div className="animate-in">
