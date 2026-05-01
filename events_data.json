@@ -753,7 +753,19 @@
       "пов": ""
     },
     "displayDate": "2 май",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1777644644525",
+        "name": "Илья",
+        "phone": "+79051365031",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": true
