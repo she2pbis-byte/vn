@@ -1,4 +1,4 @@
-<html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -934,7 +934,13 @@
 
             const startEditEvent = (e, ev) => {
                 if (e) e.stopPropagation();
-                if (ev.date < todayStr && !showArchive) return;
+                
+                // ЗАПРЕТ РЕДАКТИРОВАНИЯ ИЗ АРХИВА
+                if (ev.date < todayStr) {
+                    alert("Редактирование архивных мероприятий запрещено.");
+                    return;
+                }
+
                 setEditingEventId(ev.id);
                 setNewEvent({ ...ev, location: ev.location || '', neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
                 setIsFormOpen(true);
@@ -1297,7 +1303,8 @@
                                                             </div>
                                                         </div>
                                                         <div className="flex flex-col gap-2">
-                                                            {(!isPast || showArchive) && <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>}
+                                                            {/* ЗАПРЕТ РЕДАКТИРОВАНИЯ: Иконка появляется только для актуальных встреч */}
+                                                            {!isPast && <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>}
                                                             <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500 p-1"><Icons.Trash size={16} /></button>
                                                         </div>
                                                     </div>
@@ -1313,7 +1320,8 @@
                             <div className="flex items-center justify-between mb-6">
                                 <button onClick={handleBackToPrevState} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад</button>
                                 <div className="flex items-center gap-3">
-                                    {(currentEvent?.date >= todayStr || showArchive) && <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>}
+                                    {/* ЗАПРЕТ РЕДАКТИРОВАНИЯ: Кнопка только если дата не прошла */}
+                                    {currentEvent?.date >= todayStr && <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>}
                                     <button onClick={(e) => fastDeleteEvent(e, selectedEventId)} className="text-red-300 p-2"><Icons.Trash size={20} /></button>
                                 </div>
                             </div>
