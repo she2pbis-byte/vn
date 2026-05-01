@@ -428,89 +428,85 @@
         };
 
         const StaffList = ({ staffDatabase, events, onClose }) => {
-    // Функция для получения списка дат с фильтрацией по оплате
-    const getStaffPaymentStatus = (name) => {
-        const todayStr = new Date().toISOString().split('T')[0];
-        
-        return events
-            .filter(ev => 
-                ev.staff && 
-                ev.staff.some(s => s.name.toLowerCase() === name.toLowerCase())
-            )
-            .map(ev => {
-                const staffEntry = ev.staff.find(s => s.name.toLowerCase() === name.toLowerCase());
-                const isPast = ev.date < todayStr;
+            const getStaffPaymentStatus = (name) => {
+                const todayStr = new Date().toISOString().split('T')[0];
                 
-                // Проверяем наличие долга (хотя бы одна роль в смене не оплачена)
-                const hasUnpaidRole = staffEntry.roles.some(role => 
-                    !staffEntry.rolePaid || staffEntry.rolePaid[role] !== true
-                );
+                return events
+                    .filter(ev => 
+                        ev.staff && 
+                        ev.staff.some(s => s.name.toLowerCase() === name.toLowerCase())
+                    )
+                    .map(ev => {
+                        const staffEntry = ev.staff.find(s => s.name.toLowerCase() === name.toLowerCase());
+                        const isPast = ev.date < todayStr;
+                        
+                        const hasUnpaidRole = staffEntry.roles.some(role => 
+                            !staffEntry.rolePaid || staffEntry.rolePaid[role] !== true
+                        );
 
-                return {
-                    date: ev.date,
-                    display: ev.date.split('-').slice(1).reverse().join('.'), // формат ДД.ММ
-                    isUnpaid: hasUnpaidRole,
-                    isPast: isPast
-                };
-            })
-            // КРИТИЧЕСКИЙ ФИЛЬТР: 
-            // Оставляем если: это будущее мероприятие ИЛИ (это прошлое И есть долг)
-            .filter(status => !status.isPast || status.isUnpaid)
-            .sort((a, b) => a.date.localeCompare(b.date));
-    };
+                        return {
+                            date: ev.date,
+                            display: ev.date.split('-').slice(1).reverse().join('.'), 
+                            isUnpaid: hasUnpaidRole,
+                            isPast: isPast
+                        };
+                    })
+                    .filter(status => !status.isPast || status.isUnpaid)
+                    .sort((a, b) => a.date.localeCompare(b.date));
+            };
 
-    return (
-        <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                    <Icons.Users size={18} className="text-[#604539]" />
-                    <h3 className="font-black uppercase tracking-[0.2em] text-[#604539] text-sm leading-none">База сотрудников</h3>
-                </div>
-                <button onClick={onClose} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={20} /></button>
-            </div>
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {staffDatabase.sort((a,b) => a.name.localeCompare(b.name)).map((s, idx) => {
-                    const eventStatuses = getStaffPaymentStatus(s.name);
-                    const hasAnyDebt = eventStatuses.some(status => status.isPast && status.isUnpaid);
-
-                    return (
-                        <div key={idx} className={`p-3 rounded-xl border transition-all ${hasAnyDebt ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-[#60453910] hover:border-[#C7886B50]'}`}>
-                            <div className="flex justify-between items-start">
-                                <p className={`font-bold text-sm uppercase ${hasAnyDebt ? 'text-red-700' : 'text-[#604539]'}`}>{s.name}</p>
-                                {hasAnyDebt && <span className="text-[12px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full animate-pulse">ЖДЕТ ОПЛАТУ</span>}
-                            </div>
-                            
-                            {s.phone && (
-                                <a href={`tel:${s.phone}`} className="flex items-center gap-1.5 text-[10px] text-[#C7886B] font-bold mt-1 hover:underline">
-                                    <Icons.Phone size={10} />
-                                    <span>{s.phone}</span>
-                                </a>
-                            )}
-
-                            {eventStatuses.length > 0 ? (
-                                <div className="mt-2 pt-2 border-t border-dashed border-[#60453910]">
-                                    <p className="text-[12px] font-black uppercase text-gray-400 mb-1">Актуальные смены:</p>
-                                    <div className="flex flex-wrap gap-1">
-                                        {eventStatuses.map((status, sIdx) => (
-                                            <span 
-                                                key={sIdx} 
-                                                className={`text-[13px] font-bold px-1.5 py-0.5 rounded ${status.isPast && status.isUnpaid ? 'bg-red-500 text-white' : 'text-gray-500 bg-gray-200/50'}`}
-                                            >
-                                                {status.display}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : (
-                                <p className="text-[8px] font-black uppercase text-gray-300 mt-2">Нет записей</p>
-                            )}
+            return (
+                <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl animate-in mb-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
+                            <Icons.Users size={18} className="text-[#604539]" />
+                            <h3 className="font-black uppercase tracking-[0.2em] text-[#604539] text-sm leading-none">База сотрудников</h3>
                         </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-};
+                        <button onClick={onClose} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={20} /></button>
+                    </div>
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        {staffDatabase.sort((a,b) => a.name.localeCompare(b.name)).map((s, idx) => {
+                            const eventStatuses = getStaffPaymentStatus(s.name);
+                            const hasAnyDebt = eventStatuses.some(status => status.isPast && status.isUnpaid);
+
+                            return (
+                                <div key={idx} className={`p-3 rounded-xl border transition-all ${hasAnyDebt ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-[#60453910] hover:border-[#C7886B50]'}`}>
+                                    <div className="flex justify-between items-start">
+                                        <p className={`font-bold text-sm uppercase ${hasAnyDebt ? 'text-red-700' : 'text-[#604539]'}`}>{s.name}</p>
+                                        {hasAnyDebt && <span className="text-[12px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full animate-pulse">ЖДЕТ ОПЛАТУ</span>}
+                                    </div>
+                                    
+                                    {s.phone && (
+                                        <a href={`tel:${s.phone}`} className="flex items-center gap-1.5 text-[10px] text-[#C7886B] font-bold mt-1 hover:underline">
+                                            <Icons.Phone size={10} />
+                                            <span>{s.phone}</span>
+                                        </a>
+                                    )}
+
+                                    {eventStatuses.length > 0 ? (
+                                        <div className="mt-2 pt-2 border-t border-dashed border-[#60453910]">
+                                            <p className="text-[12px] font-black uppercase text-gray-400 mb-1">Актуальные смены:</p>
+                                            <div className="flex flex-wrap gap-1">
+                                                {eventStatuses.map((status, sIdx) => (
+                                                    <span 
+                                                        key={sIdx} 
+                                                        className={`text-[13px] font-bold px-1.5 py-0.5 rounded ${status.isPast && status.isUnpaid ? 'bg-red-500 text-white' : 'text-gray-500 bg-gray-200/50'}`}
+                                                    >
+                                                        {status.display}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p className="text-[8px] font-black uppercase text-gray-300 mt-2">Нет записей</p>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
 
         const AutoHeightTextarea = ({ value, onChange, placeholder, className }) => {
             const textareaRef = useRef(null);
@@ -731,6 +727,20 @@
                 } catch (err) { setSyncStatus('error'); }
             }, [githubToken]);
 
+            // Функция для генерации SMS ссылки
+            const generateSmsLink = (staffMember, event) => {
+                if (!staffMember.phone || !staffMember.time) return null;
+
+                const dateParts = event.date.split('-');
+                const formattedDate = `${dateParts[2]}.${dateParts[1]}`;
+                const cleanPhone = staffMember.phone.replace(/\D/g, '');
+                const locationPart = event.location ? `, ${event.location}` : '';
+                const message = `Привет. ${formattedDate} к ${staffMember.time}${locationPart}.`;
+                
+                const separator = navigator.userAgent.match(/iPhone/i) ? '&' : '?';
+                return `sms:+${cleanPhone}${separator}body=${encodeURIComponent(message)}`;
+            };
+
             const handleFileUpload = async (e) => {
                 const file = e.target.files[0];
                 if (!file || !selectedEventId || !githubToken) return;
@@ -825,7 +835,7 @@
                 
                 try {
                     const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${fileData.path}`, {
-                        headers: { 'Authorization': `token ${githubToken}` }
+                        headers: { 'Authorization': `token ${token}` }
                     });
                     
                     if (!response.ok) throw new Error('Download failed');
@@ -988,9 +998,7 @@
                 const nextState = !isStaffListOpen;
                 setIsStaffListOpen(nextState);
                 if (nextState) {
-                    // Сбрасываем архив, чтобы он закрывался при открытии списка сотрудников
                     setShowArchive(false);
-                    
                     setIsCalendarOpen(false);
                     setIsFormOpen(false);
                     setView('list');
@@ -1332,7 +1340,21 @@
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="col-timing py-4 text-center"><div className="text-[11px] font-medium leading-tight"><div>{s.time || '—'}</div>{s.end && <div className="opacity-40">- {s.end}</div>}</div></td>
+                                                    <td className="col-timing py-4 text-center">
+                                                        <div className="text-[11px] font-medium leading-tight">
+                                                            {s.time ? (
+                                                                <a 
+                                                                    href={generateSmsLink(s, currentEvent)} 
+                                                                    className="text-[#C7886B] font-black underline decoration-dotted underline-offset-4 hover:text-[#604539] transition-colors"
+                                                                >
+                                                                    {s.time}
+                                                                </a>
+                                                            ) : (
+                                                                <span>—</span>
+                                                            )}
+                                                            {s.end && <div className="opacity-40">- {s.end}</div>}
+                                                        </div>
+                                                    </td>
                                                     <td className="col-actions py-4 text-right pr-2"><div className="flex justify-end gap-2"><button onClick={()=> { setEditingStaffId(s.id); setNewStaff({ name: s.name, phone: s.phone || '', time: s.time || '', end: s.end || '', roles: s.roles }); setIsStaffFormOpen(true); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16}/></button><button onClick={()=> { const upd = events.map(e=>e.id===selectedEventId?{...e,staff:e.staff.filter(x=>x.id!==s.id)}:e); setEvents(upd); saveToGithub(upd); }} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button></div></td>
                                                 </tr>
                                             ))}
