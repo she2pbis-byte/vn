@@ -1,0 +1,6 @@
+{
+  "short_name": "App",
+  "name": "My Application",
+  "display": "standalone", 
+  "start_url": "/"
+}
