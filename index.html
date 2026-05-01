@@ -1,4 +1,4 @@
-<html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -468,7 +468,6 @@
                         </div>
                         <button onClick={onClose} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={20} /></button>
                     </div>
-                    {/* ИЗМЕНЕНИЕ: Убрана прокрутка и ограничение по высоте */}
                     <div className="space-y-4 h-auto pr-2">
                         {staffDatabase.sort((a,b) => a.name.localeCompare(b.name)).map((s, idx) => {
                             const eventStatuses = getStaffPaymentStatus(s.name);
@@ -635,6 +634,7 @@
         const App = () => {
             const [view, setView] = useState('list');
             const [showArchive, setShowArchive] = useState(false);
+            const [archiveFilter, setArchiveFilter] = useState('all'); // 'all' или 'unpaid'
             const [isFormOpen, setIsFormOpen] = useState(false);
             const [isCalendarOpen, setIsCalendarOpen] = useState(false);
             const [isStaffListOpen, setIsStaffListOpen] = useState(false);
@@ -894,9 +894,14 @@
                     filtered = events.filter(ev => ev.date === filterDate);
                 } else {
                     filtered = events.filter(ev => showArchive ? ev.date < todayStr : ev.date >= todayStr);
+                    
+                    // Применяем фильтр долгов только в архиве
+                    if (showArchive && archiveFilter === 'unpaid') {
+                        filtered = filtered.filter(ev => !isEventFullyPaid(ev));
+                    }
                 }
                 return filtered.sort((a, b) => showArchive ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
-            }, [events, showArchive, todayStr, filterDate]);
+            }, [events, showArchive, todayStr, filterDate, archiveFilter]);
 
             const currentEvent = events.find(e => e.id === selectedEventId);
 
@@ -1019,6 +1024,14 @@
                 setShowArchive(false);
             };
 
+            const toggleArchive = () => {
+                setShowArchive(!showArchive);
+                setArchiveFilter('all'); // Сбрасываем фильтр при переключении
+                setFilterDate(null);
+                setIsCalendarOpen(false);
+                setIsStaffListOpen(false);
+            };
+
             const roleIconMap = {
                 'Официант': { icon: <Icons.Cloche size={14} /> },
                 'Бармен': { icon: <Icons.Martini size={14} /> },
@@ -1138,7 +1151,7 @@
                             {view === 'list' && (
                                 <div className="flex flex-col items-center gap-1">
                                     <button 
-                                        onClick={(e) => { setShowArchive(!showArchive); setFilterDate(null); setIsCalendarOpen(false); setIsStaffListOpen(false); }} 
+                                        onClick={toggleArchive} 
                                         className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all border-2 hover:scale-105 active:scale-95 ${showArchive ? 'bg-white border-[#604539] text-[#604539] shadow-sm' : 'bg-[#604539] border-[#604539] text-white shadow-lg'}`}
                                     >
                                         <Icons.Archive size={22} />
@@ -1163,6 +1176,24 @@
                                     <button onClick={handleGoToCalendar} className="text-[10px] font-black text-[#604539] hover:underline uppercase tracking-widest">К КАЛЕНДАРЮ</button>
                                 </div>
                             )}
+
+                            {view === 'list' && showArchive && !filterDate && (
+                                <div className="flex bg-[#60453910] p-1 rounded-xl mb-4 animate-in">
+                                    <button 
+                                        onClick={() => setArchiveFilter('all')}
+                                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${archiveFilter === 'all' ? 'bg-[#604539] text-white shadow-md' : 'text-[#604539]'}`}
+                                    >
+                                        Все
+                                    </button>
+                                    <button 
+                                        onClick={() => setArchiveFilter('unpaid')}
+                                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${archiveFilter === 'unpaid' ? 'bg-red-500 text-white shadow-md' : 'text-[#604539]'}`}
+                                    >
+                                        Неоплаченные
+                                    </button>
+                                </div>
+                            )}
+
                             {!showArchive && !filterDate && !isStaffListOpen && (
                                 <div className="space-y-4">
                                     {!isFormOpen ? (
