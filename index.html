@@ -653,6 +653,7 @@
             const calendarRef = useRef(null);
             const calendarButtonRef = useRef(null);
             const fileInputRef = useRef(null);
+            const staffFormRef = useRef(null); // РЕФ ДЛЯ ФОРМЫ СОТРУДНИКА
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
@@ -664,6 +665,18 @@
             useEffect(() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, [view, selectedEventId, isFormOpen, isCalendarOpen, isStaffListOpen]);
+
+            // ЭФФЕКТ ДЛЯ СКРОЛЛА К ФОРМЕ СОТРУДНИКА
+            useEffect(() => {
+                if (isStaffFormOpen && staffFormRef.current) {
+                    setTimeout(() => {
+                        staffFormRef.current.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }, 100);
+                }
+            }, [isStaffFormOpen]);
 
             const fetchFromGithub = useCallback(async (token) => {
                 if (!token) { setIsTokenVerified(false); return; }
@@ -935,7 +948,6 @@
             const startEditEvent = (e, ev) => {
                 if (e) e.stopPropagation();
                 
-                // ЗАПРЕТ РЕДАКТИРОВАНИЯ ИЗ АРХИВА
                 if (ev.date < todayStr) {
                     alert("Редактирование архивных мероприятий запрещено.");
                     return;
@@ -1172,7 +1184,6 @@
 
                     {view === 'list' ? (
                         <div className="space-y-6 animate-in">
-                            {/* БЛОК ПЕРЕКЛЮЧЕНИЯ: БАЗА ИЛИ МЕРОПРИЯТИЯ */}
                             {isStaffListOpen ? (
                                 <StaffList 
                                     staffDatabase={staffDatabase} 
@@ -1303,7 +1314,6 @@
                                                             </div>
                                                         </div>
                                                         <div className="flex flex-col gap-2">
-                                                            {/* ЗАПРЕТ РЕДАКТИРОВАНИЯ: Иконка появляется только для актуальных встреч */}
                                                             {!isPast && <button onClick={(e) => startEditEvent(e, ev)} className="text-gray-400 hover:text-[#604539] p-1"><Icons.Edit size={16} /></button>}
                                                             <button onClick={(e) => fastDeleteEvent(e, ev.id)} className="text-gray-300 hover:text-red-500 p-1"><Icons.Trash size={16} /></button>
                                                         </div>
@@ -1320,7 +1330,6 @@
                             <div className="flex items-center justify-between mb-6">
                                 <button onClick={handleBackToPrevState} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад</button>
                                 <div className="flex items-center gap-3">
-                                    {/* ЗАПРЕТ РЕДАКТИРОВАНИЯ: Кнопка только если дата не прошла */}
                                     {currentEvent?.date >= todayStr && <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>}
                                     <button onClick={(e) => fastDeleteEvent(e, selectedEventId)} className="text-red-300 p-2"><Icons.Trash size={20} /></button>
                                 </div>
@@ -1423,7 +1432,10 @@
                                                 <span className="font-bold uppercase tracking-widest text-xs">Добавить сотрудника</span>
                                             </button>
                                         ) : (
-                                            <div className="bg-[#FFECD240] p-4 rounded-2xl border-2 border-[#604539] border-l-8 animate-in relative">
+                                            <div 
+                                                ref={staffFormRef}
+                                                className="bg-[#FFECD240] p-4 rounded-2xl border-2 border-[#604539] border-l-8 animate-in relative"
+                                            >
                                                 <button onClick={() => { setIsStaffFormOpen(false); setEditingStaffId(null); setNewStaff({ name: '', phone: '', time: '', end: '', roles: [] }); setShowSuggestions(false); }} className="absolute right-3 top-3 p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={16}/></button>
                                                 <h3 className="text-xs font-bold mb-4 flex items-center gap-2 text-[#604539] uppercase tracking-wide">{editingStaffId ? <Icons.Edit size={14}/> : <Icons.Plus size={14}/>} {editingStaffId ? 'Редактировать' : 'Новый сотрудник'}</h3>
                                                 
