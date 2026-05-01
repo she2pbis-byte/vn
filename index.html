@@ -150,7 +150,7 @@
         }
 
         .hidden-date-input { position: absolute; opacity: 0; width: 1px; height: 1px; overflow: hidden; pointer-events: none; }
-        .calendar-nav-btn:hover { background-color: transparent !important; }
+        .calendar-nav-btn:hover { border-color: #60453950; }
         .file-name-container { width: 100%; overflow: hidden; }
         .file-name-text { word-wrap: break-word; overflow-wrap: break-word; word-break: normal; line-height: 1.2; display: block; }
 
@@ -264,6 +264,7 @@
             const dateInputRef = useRef(null);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+            const todayStr = today.toISOString().split('T')[0];
             
             const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
             const startDayOfMonth = (year, month) => {
@@ -276,6 +277,15 @@
             const days = daysInMonth(year, month);
             const startDay = startDayOfMonth(year, month);
             const monthName = currentMonth.toLocaleString('ru', { month: 'long' });
+
+            // Функция проверки наличия долгов в ЛЮБОМ месяце ДО текущего окна просмотра
+            const hasDebtInHistory = useMemo(() => {
+                const firstDayOfCurrentView = new Date(year, month, 1);
+                return events.some(ev => {
+                    const evDate = new Date(ev.date);
+                    return evDate < firstDayOfCurrentView && ev.date < todayStr && !isEventFullyPaid(ev);
+                });
+            }, [events, year, month, todayStr]);
 
             const prevMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month - 1, 1)); };
             const nextMonth = (e) => { e.stopPropagation(); setCurrentMonth(new Date(year, month + 1, 1)); };
@@ -359,7 +369,7 @@
                     <div className="flex items-center justify-between mb-6">
                         <button 
                             onClick={prevMonth} 
-                            className="calendar-nav-btn w-10 h-10 flex items-center justify-center rounded-xl border-2 border-[#60453910] text-[#604539] hover:text-[#C7886B] transition-all duration-300 font-black text-xl"
+                            className={`calendar-nav-btn w-10 h-10 flex items-center justify-center rounded-xl border-2 transition-all duration-300 font-black text-xl ${hasDebtInHistory ? 'bg-[#fee2e2] border-red-200 text-red-600 animate-pulse' : 'bg-white border-[#60453910] text-[#604539] hover:text-[#C7886B]'}`}
                         >
                             «
                         </button>
@@ -653,20 +663,18 @@
             const calendarRef = useRef(null);
             const calendarButtonRef = useRef(null);
             const fileInputRef = useRef(null);
-            const staffFormRef = useRef(null); // РЕФ ДЛЯ ФОРМЫ СОТРУДНИКА
+            const staffFormRef = useRef(null);
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
             const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
-            // Глобальный обработчик для списка
             window.setActiveStaffScheduleFromList = (name) => setActiveStaffSchedule(name);
 
             useEffect(() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, [view, selectedEventId, isFormOpen, isCalendarOpen, isStaffListOpen]);
 
-            // ЭФФЕКТ ДЛЯ СКРОЛЛА К ФОРМЕ СОТРУДНИКА
             useEffect(() => {
                 if (isStaffFormOpen && staffFormRef.current) {
                     setTimeout(() => {
