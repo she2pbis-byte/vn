@@ -176,6 +176,10 @@
         }
         .autocomplete-item:hover { background-color: #FFECD2; }
         .autocomplete-item:last-child { border-bottom: none; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #60453920; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -472,25 +476,27 @@
                             return (
                                 <div key={idx} className={`p-3 rounded-xl border transition-all ${hasAnyDebt ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-[#60453910] hover:border-[#C7886B50]'}`}>
                                     <div className="flex justify-between items-start">
-                                        <p className={`font-bold text-sm uppercase ${hasAnyDebt ? 'text-red-700' : 'text-[#604539]'}`}>{s.name}</p>
-                                        {hasAnyDebt && <span className="text-[12px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full animate-pulse">ЖДЕТ ОПЛАТУ</span>}
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            {s.phone && (
+                                                <a href={`tel:${s.phone}`} className="shrink-0 p-1.5 bg-[#C7886B20] text-[#C7886B] rounded-lg hover:bg-[#C7886B] hover:text-white transition-all" title={s.phone}>
+                                                    <Icons.Phone size={14} />
+                                                </a>
+                                            )}
+                                            <p className={`font-bold text-sm uppercase truncate ${hasAnyDebt ? 'text-red-700' : 'text-[#604539]'}`}>
+                                                {s.name}
+                                            </p>
+                                        </div>
+                                        {hasAnyDebt && <span className="text-[10px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full animate-pulse shrink-0 ml-2">ДОЛГ</span>}
                                     </div>
-                                    
-                                    {s.phone && (
-                                        <a href={`tel:${s.phone}`} className="flex items-center gap-1.5 text-[10px] text-[#C7886B] font-bold mt-1 hover:underline">
-                                            <Icons.Phone size={10} />
-                                            <span>{s.phone}</span>
-                                        </a>
-                                    )}
 
                                     {eventStatuses.length > 0 ? (
                                         <div className="mt-2 pt-2 border-t border-dashed border-[#60453910]">
-                                            <p className="text-[12px] font-black uppercase text-gray-400 mb-1">Актуальные смены:</p>
+                                            <p className="text-[10px] font-black uppercase text-gray-400 mb-1">Актуальные смены:</p>
                                             <div className="flex flex-wrap gap-1">
                                                 {eventStatuses.map((status, sIdx) => (
                                                     <span 
                                                         key={sIdx} 
-                                                        className={`text-[13px] font-bold px-1.5 py-0.5 rounded ${status.isPast && status.isUnpaid ? 'bg-red-500 text-white' : 'text-gray-500 bg-gray-200/50'}`}
+                                                        className={`text-[12px] font-bold px-1.5 py-0.5 rounded ${status.isPast && status.isUnpaid ? 'bg-red-500 text-white' : 'text-gray-500 bg-gray-200/50'}`}
                                                     >
                                                         {status.display}
                                                     </span>
@@ -580,7 +586,7 @@
                                 <Icons.X size={18} />
                             </button>
                         </div>
-                        <div className="p-4 max-h-[50vh] overflow-y-auto">
+                        <div className="p-4 max-h-[50vh] overflow-y-auto custom-scrollbar">
                             {staffFutureEvents.length > 0 ? (
                                 <div className="space-y-3">
                                     {staffFutureEvents.map(ev => {
@@ -727,7 +733,6 @@
                 } catch (err) { setSyncStatus('error'); }
             }, [githubToken]);
 
-            // Функция для генерации SMS ссылки
             const generateSmsLink = (staffMember, event) => {
                 if (!staffMember.phone || !staffMember.time) return null;
 
@@ -835,7 +840,7 @@
                 
                 try {
                     const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${fileData.path}`, {
-                        headers: { 'Authorization': `token ${token}` }
+                        headers: { 'Authorization': `token ${githubToken}` }
                     });
                     
                     if (!response.ok) throw new Error('Download failed');
@@ -1297,7 +1302,7 @@
                                         <p className="text-xs uppercase font-bold tracking-wider opacity-60">Гости: {currentEvent?.guests || 0} чел</p>
                                         {currentEvent?.extraInfo && <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10 text-sm italic opacity-80 whitespace-pre-wrap">{currentEvent.extraInfo}</div>}
                                     </div>
-                                    <div className="flex gap-3 mt-6 overflow-x-auto pb-2">
+                                    <div className="flex gap-3 mt-6 overflow-x-auto pb-2 custom-scrollbar">
                                         {Object.entries(headerRoleMap).map(([key, data]) => {
                                             const counts = getStaffCounts(currentEvent);
                                             const target = parseInt(currentEvent?.neededStaff?.[key] || 0);
@@ -1328,7 +1333,6 @@
                                                                 >
                                                                     {s.name}
                                                                 </span>
-                                                                {s.phone && <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-0.5"><Icons.Phone size={10} /><span>{s.phone}</span></div>}
                                                                 {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter mt-0.5">НЕТ ТАЙМИНГА</span>}
                                                             </div>
                                                             <div className="flex flex-wrap gap-1.5 mt-1">
