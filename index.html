@@ -1280,7 +1280,7 @@
                                                                 <div className="flex gap-1.5">
                                                                     {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
                                                                         <div key={role} className="flex-1 relative">
-                                                                            <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-30">{icon}</div>
+                                                                            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-30">{icon}</div>
                                                                             <input type="number" value={newEvent.neededStaff[role]} onChange={e => setNewEvent({...newEvent, neededStaff: { ...newEvent.neededStaff, [role]: e.target.value }})} placeholder="0" className="w-full p-2.5 pl-6 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold" />
                                                                         </div>
                                                                     ))}
@@ -1387,17 +1387,15 @@
                                         <div className="flex-1 min-w-0">
                                             <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
                                             {(currentEvent?.contactName || currentEvent?.contactPhone) && (
-                                                <div className="flex items-center gap-3 mt-3">
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-[#C7886B]">
-                                                        <Icons.User size={12} />
-                                                        <span>{currentEvent.contactName || '—'}</span>
-                                                    </div>
+                                                <div className="flex items-center gap-3 mt-4">
                                                     {currentEvent.contactPhone && (
-                                                        <a href={`tel:${currentEvent.contactPhone}`} className="flex items-center gap-1.5 text-[10px] font-black uppercase bg-white/10 px-2 py-1 rounded-lg hover:bg-white/20 transition-all">
-                                                            <Icons.Phone size={12} />
-                                                            <span>{currentEvent.contactPhone}</span>
+                                                        <a href={`tel:${currentEvent.contactPhone}`} className="flex items-center justify-center w-8 h-8 rounded-full bg-[#C7886B] text-white shadow-[0_0_10px_rgba(199,136,107,0.4)] hover:scale-110 active:scale-95 transition-all">
+                                                            <Icons.Phone size={14} />
                                                         </a>
                                                     )}
+                                                    <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-[#C7886B] tracking-wider">
+                                                        <span>{currentEvent.contactName || 'Заказчик'}</span>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
