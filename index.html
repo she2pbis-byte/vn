@@ -954,20 +954,37 @@
             };
 
             const startEditEvent = (e, ev) => {
-                if (e) e.stopPropagation();
-                
-                if (ev.date < todayStr) {
-                    alert("Редактирование архивных мероприятий запрещено.");
-                    return;
-                }
+    if (e) e.stopPropagation();
+    
+    if (ev.date < todayStr) {
+        alert("Редактирование архивных мероприятий запрещено.");
+        return;
+    }
 
-                setEditingEventId(ev.id);
-                setNewEvent({ ...ev, location: ev.location || '', neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
-                setIsFormOpen(true);
-                setIsCalendarOpen(false);
-                setIsStaffListOpen(false);
-                setView('list');
-            };
+    // Устанавливаем данные
+    setEditingEventId(ev.id);
+    setNewEvent({ 
+        ...ev, 
+        location: ev.location || '', 
+        neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
+    });
+
+    // Переключаем видимость
+    setView('list');           // Возвращаемся на главный экран
+    setIsFormOpen(true);       // Открываем форму
+    setIsCalendarOpen(false);
+    setIsStaffListOpen(false);
+
+    // Скролл к форме после рендера
+    setTimeout(() => {
+        if (eventFormRef.current) {
+            eventFormRef.current.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+        }
+    }, 100);
+};
 
             const fastDeleteEvent = (e, eventId) => {
                 if (e) e.stopPropagation();
