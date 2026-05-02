@@ -663,6 +663,7 @@
             const calendarButtonRef = useRef(null);
             const fileInputRef = useRef(null);
             const staffFormRef = useRef(null);
+            const eventFormRef = useRef(null);
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Несколько накрытий"];
@@ -671,8 +672,15 @@
             window.setActiveStaffScheduleFromList = (name) => setActiveStaffSchedule(name);
 
             useEffect(() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, [view, selectedEventId, isFormOpen, isCalendarOpen, isStaffListOpen]);
+                if (view === 'list' && isFormOpen && eventFormRef.current) {
+                    setTimeout(() => {
+                        eventFormRef.current.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }, 150);
+                }
+            }, [isFormOpen, view]);
 
             useEffect(() => {
                 if (isStaffFormOpen && staffFormRef.current) {
@@ -962,10 +970,13 @@
 
                 setEditingEventId(ev.id);
                 setNewEvent({ ...ev, location: ev.location || '', neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
+                
+                setView('list');
                 setIsFormOpen(true);
                 setIsCalendarOpen(false);
                 setIsStaffListOpen(false);
-                setView('list');
+                setShowArchive(false);
+                setFilterDate(null);
             };
 
             const fastDeleteEvent = (e, eventId) => {
@@ -1235,7 +1246,10 @@
                                                     <span className="font-bold uppercase tracking-widest text-xs">Новое мероприятие</span>
                                                 </button>
                                             ) : (
-                                                <div className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl relative animate-in">
+                                                <div 
+                                                    ref={eventFormRef}
+                                                    className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl relative animate-in"
+                                                >
                                                     <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="absolute right-4 top-4 p-2 text-gray-300 hover:text-red-500 transition-colors"><Icons.X /></button>
                                                     <h2 className="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-[#604539]">{editingEventId ? <Icons.Edit size={16} /> : <Icons.Plus size={16} />} {editingEventId ? 'Редактировать' : 'Создать мероприятие'}</h2>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
