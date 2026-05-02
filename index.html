@@ -11,7 +11,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #FFECD2; scroll-behavior: smooth; }
         .animate-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -659,7 +659,6 @@
             const [showSuggestions, setShowSuggestions] = useState(false);
             const [activeStaffSchedule, setActiveStaffSchedule] = useState(null); 
 
-            const eventFormRef = useRef(null);
             const calendarRef = useRef(null);
             const calendarButtonRef = useRef(null);
             const fileInputRef = useRef(null);
@@ -954,37 +953,20 @@
             };
 
             const startEditEvent = (e, ev) => {
-    if (e) e.stopPropagation();
-    
-    if (ev.date < todayStr) {
-        alert("Редактирование архивных мероприятий запрещено.");
-        return;
-    }
+                if (e) e.stopPropagation();
+                
+                if (ev.date < todayStr) {
+                    alert("Редактирование архивных мероприятий запрещено.");
+                    return;
+                }
 
-    // Устанавливаем данные
-    setEditingEventId(ev.id);
-    setNewEvent({ 
-        ...ev, 
-        location: ev.location || '', 
-        neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
-    });
-
-    // Переключаем видимость
-    setView('list');           // Возвращаемся на главный экран
-    setIsFormOpen(true);       // Открываем форму
-    setIsCalendarOpen(false);
-    setIsStaffListOpen(false);
-
-    // Скролл к форме после рендера
-    setTimeout(() => {
-        if (eventFormRef.current) {
-            eventFormRef.current.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
-            });
-        }
-    }, 100);
-};
+                setEditingEventId(ev.id);
+                setNewEvent({ ...ev, location: ev.location || '', neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
+                setIsFormOpen(true);
+                setIsCalendarOpen(false);
+                setIsStaffListOpen(false);
+                setView('list');
+            };
 
             const fastDeleteEvent = (e, eventId) => {
                 if (e) e.stopPropagation();
