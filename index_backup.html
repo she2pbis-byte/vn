@@ -1,4 +1,4 @@
-<html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -278,7 +278,6 @@
             const startDay = startDayOfMonth(year, month);
             const monthName = currentMonth.toLocaleString('ru', { month: 'long' });
 
-            // Функция проверки наличия долгов в ЛЮБОМ месяце ДО текущего окна просмотра
             const hasDebtInHistory = useMemo(() => {
                 const firstDayOfCurrentView = new Date(year, month, 1);
                 return events.some(ev => {
