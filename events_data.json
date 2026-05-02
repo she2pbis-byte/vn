@@ -758,31 +758,5 @@
     "status": {
       "checked": true
     }
-  },
-  {
-    "id": "1777716962885",
-    "name": "проба",
-    "date": "2026-05-15",
-    "start": "",
-    "end": "",
-    "format": "Банкет",
-    "location": "диво",
-    "admin": "",
-    "guests": "50",
-    "extraInfo": "",
-    "contactName": "сергей",
-    "contactPhone": "89051365031",
-    "neededStaff": {
-      "оф": "",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "15 май",
-    "staff": [],
-    "files": [],
-    "status": {
-      "checked": false
-    }
   }
 ]
