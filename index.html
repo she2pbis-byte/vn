@@ -221,7 +221,8 @@
             Paperclip: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>,
             FileText: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/></svg>,
             ExternalLink: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
-            Phone: ({size=12, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Phone: ({size=12, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+            User: ({size=14, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         };
 
         const keyToLabel = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
@@ -911,6 +912,7 @@
             const [newEvent, setNewEvent] = useState({ 
                 name: '', date: new Date().toISOString().split('T')[0], start: '', end: '', 
                 format: '', location: '', admin: '', guests: '', extraInfo: '', 
+                contactName: '', contactPhone: '',
                 neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }
             });
             const [editingEventId, setEditingEventId] = useState(null);
@@ -949,7 +951,7 @@
                 }
                 setEvents(updated);
                 saveToGithub(updated);
-                setNewEvent({ name: '', date: new Date().toISOString().split('T')[0], start: '', end: '', format: '', location: '', admin: '', guests: '', extraInfo: '', neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
+                setNewEvent({ name: '', date: new Date().toISOString().split('T')[0], start: '', end: '', format: '', location: '', admin: '', guests: '', extraInfo: '', contactName: '', contactPhone: '', neededStaff: { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
                 setIsFormOpen(false);
             };
 
@@ -969,7 +971,7 @@
                 }
 
                 setEditingEventId(ev.id);
-                setNewEvent({ ...ev, location: ev.location || '', neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
+                setNewEvent({ ...ev, location: ev.location || '', contactName: ev.contactName || '', contactPhone: ev.contactPhone || '', neededStaff: ev.neededStaff || { 'оф': '', 'бар': '', 'мой': '', 'пов': '' }});
                 
                 setView('list');
                 setIsFormOpen(true);
@@ -1252,7 +1254,8 @@
                                                 >
                                                     <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="absolute right-4 top-4 p-2 text-gray-300 hover:text-red-500 transition-colors"><Icons.X /></button>
                                                     <h2 className="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-[#604539]">{editingEventId ? <Icons.Edit size={16} /> : <Icons.Plus size={16} />} {editingEventId ? 'Редактировать' : 'Создать мероприятие'}</h2>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                                    
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                                                         <div className="space-y-3">
                                                             <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
                                                             <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
@@ -1285,7 +1288,23 @@
                                                             </div>
                                                         </div>
                                                     </div>
+
+                                                    <div className="bg-[#60453905] p-4 rounded-2xl border-2 border-dashed border-[#60453910] mb-4">
+                                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-[#604539] opacity-40 mb-3 ml-1">Контактное лицо</h3>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                            <div className="relative">
+                                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-30"><Icons.User size={14} /></div>
+                                                                <input type="text" placeholder="Имя" value={newEvent.contactName} onChange={e=>setNewEvent({...newEvent, contactName: e.target.value})} className="w-full p-2.5 pl-9 rounded-xl border-2 border-[#60453910] bg-white outline-none text-sm" />
+                                                            </div>
+                                                            <div className="relative">
+                                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-30"><Icons.Phone size={14} /></div>
+                                                                <input type="tel" placeholder="Телефон" value={newEvent.contactPhone} onChange={e=>setNewEvent({...newEvent, contactPhone: e.target.value})} className="w-full p-2.5 pl-9 rounded-xl border-2 border-[#60453910] bg-white outline-none text-sm" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
                                                     <div className="mb-4"><AutoHeightTextarea placeholder="Дополнительная информация..." value={newEvent.extraInfo} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" /></div>
+                                                    
                                                     <div className="flex gap-2">
                                                         <button onClick={handleAddEvent} className="flex-[3] bg-[#604539] text-white py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest shadow-lg active:scale-[0.98] transition-transform">{editingEventId ? 'Сохранить' : 'Добавить'}</button>
                                                         <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest hover:bg-gray-200 transition-colors">Отмена</button>
@@ -1329,6 +1348,12 @@
                                                             <div className="space-y-1">
                                                                 <p className="text-[11px] text-[#C7886B] font-bold uppercase tracking-tight">{ev.format || '—'}</p>
                                                                 {ev.location && <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium"><Icons.MapPin size={10} /><span className="truncate">{ev.location}</span></div>}
+                                                                {(ev.contactName || ev.contactPhone) && (
+                                                                    <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase tracking-tight">
+                                                                        <Icons.User size={10} />
+                                                                        <span className="truncate">{ev.contactName || 'Заказчик'}</span>
+                                                                    </div>
+                                                                )}
                                                                 <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Админ: {ev.admin || '—'}</p>
                                                                 <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Гости: {ev.guests || 0} чел</p>
                                                                 {ev.files?.length > 0 && <div className="flex items-center gap-1 text-[10px] text-blue-500 font-bold uppercase tracking-tighter mt-1"><Icons.Paperclip size={10} /><span>есть прикрепленные файлы</span></div>}
@@ -1359,17 +1384,27 @@
                                 <div className={`py-2 text-center ${(currentEvent?.date < todayStr) ? 'bg-[#604539]' : 'bg-[#C7886B]'}`}><span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{currentEvent?.displayDate}</span></div>
                                 <div className="p-8 bg-[#1F1713] text-white">
                                     <div className="flex justify-between items-start mb-4">
-                                        <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
+                                        <div className="flex-1 min-w-0">
+                                            <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
+                                            {(currentEvent?.contactName || currentEvent?.contactPhone) && (
+                                                <div className="flex items-center gap-3 mt-3">
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-[#C7886B]">
+                                                        <Icons.User size={12} />
+                                                        <span>{currentEvent.contactName || '—'}</span>
+                                                    </div>
+                                                    {currentEvent.contactPhone && (
+                                                        <a href={`tel:${currentEvent.contactPhone}`} className="flex items-center gap-1.5 text-[10px] font-black uppercase bg-white/10 px-2 py-1 rounded-lg hover:bg-white/20 transition-all">
+                                                            <Icons.Phone size={12} />
+                                                            <span>{currentEvent.contactPhone}</span>
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                         {currentEvent?.date >= todayStr && (
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2 shrink-0 ml-4">
                                                 <div className={`w-10 h-10 flex items-center justify-center rounded-full ${checkEventCompleteness(currentEvent) ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`}><Icons.Clock size={24} color="white" /></div>
                                                 <div onClick={(e) => toggleEventChecked(e, currentEvent.id)} className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer transition-all ${currentEvent?.status?.checked ? 'bg-blue-500' : 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`}><Icons.DoubleCheck size={44} color="white" /></div>
-                                            </div>
-                                        )}
-                                        {currentEvent?.date < todayStr && (
-                                            <div className={`px-4 py-2 rounded-xl flex items-center gap-2 border ${isEventFullyPaid(currentEvent) ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-red-500/20 border-red-500 text-red-400'}`}>
-                                                <span className="text-xl font-black">₽</span>
-                                                <span className="text-[10px] font-bold uppercase tracking-widest">{isEventFullyPaid(currentEvent) ? 'Оплачено' : 'Есть долги'}</span>
                                             </div>
                                         )}
                                     </div>
