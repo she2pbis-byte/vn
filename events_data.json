@@ -923,5 +923,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1777889177428",
+    "name": "Школа 21Сбер",
+    "date": "2026-05-20",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Школа 21Сбер",
+    "admin": "",
+    "guests": "0",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "1",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "20 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
