@@ -663,6 +663,7 @@
             const [isUploading, setIsUploading] = useState(false);
             const [showSuggestions, setShowSuggestions] = useState(false);
             const [showFormatSuggestions, setShowFormatSuggestions] = useState(false);
+            const [showAdminSuggestions, setShowAdminSuggestions] = useState(false);
             const [activeStaffSchedule, setActiveStaffSchedule] = useState(null); 
 
             const calendarRef = useRef(null);
@@ -673,7 +674,7 @@
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
             const formats = ["Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Буфет", "Несколько накрытий"];
-            const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
+            const admins = ["Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
             window.setActiveStaffScheduleFromList = (name) => setActiveStaffSchedule(name);
 
@@ -1116,6 +1117,11 @@
                 return formats.filter(f => f.toLowerCase().includes(newEvent.format.toLowerCase()));
             }, [newEvent.format]);
 
+            const filteredAdminSuggestions = useMemo(() => {
+                if (!newEvent.admin) return admins;
+                return admins.filter(a => a.toLowerCase().includes(newEvent.admin.toLowerCase()));
+            }, [newEvent.admin]);
+
             const handleStaffNameChange = (val) => {
                 setNewStaff(p => ({ ...p, name: val }));
                 const found = staffDatabase.find(s => s.name.toLowerCase() === val.toLowerCase());
@@ -1305,7 +1311,28 @@
                                                                 <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
                                                             </div>
                                                             <div className="flex flex-col gap-3">
-                                                                <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{admins.map(a => <option key={a} value={a}>{a}</option>)}</select>
+                                                                {/* Combo Box для выбора администратора */}
+                                                                <div className="relative">
+                                                                    <input 
+                                                                        type="text" 
+                                                                        placeholder="Администратор" 
+                                                                        value={newEvent.admin} 
+                                                                        onChange={e => setNewEvent({...newEvent, admin: e.target.value})}
+                                                                        onFocus={() => setShowAdminSuggestions(true)}
+                                                                        onBlur={() => setTimeout(() => setShowAdminSuggestions(false), 200)}
+                                                                        className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" 
+                                                                    />
+                                                                    {showAdminSuggestions && filteredAdminSuggestions.length > 0 && (
+                                                                        <div className="autocomplete-list">
+                                                                            {filteredAdminSuggestions.map((a, idx) => (
+                                                                                <div key={idx} className="autocomplete-item font-bold uppercase text-[11px]" onClick={() => { setNewEvent({...newEvent, admin: a}); setShowAdminSuggestions(false); }}>
+                                                                                    {a}
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
                                                                 <div className="flex gap-1.5">
                                                                     {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
                                                                         <div key={role} className="flex-1 relative">
