@@ -755,5 +755,31 @@
     },
     "contactName": "Ирина Адольфовна",
     "contactPhone": "+79807410220"
+  },
+  {
+    "id": "1777877185368",
+    "name": "Ночь в музее",
+    "date": "2026-05-16",
+    "start": "",
+    "end": "",
+    "format": "Буфет",
+    "location": "Худ.муз.",
+    "admin": "",
+    "guests": "100",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "16 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
