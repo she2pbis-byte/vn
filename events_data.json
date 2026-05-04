@@ -1243,7 +1243,19 @@
       "пов": ""
     },
     "displayDate": "19 май",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1777893307961",
+        "name": "Телов",
+        "phone": "+79969265172",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
