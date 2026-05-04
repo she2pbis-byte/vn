@@ -224,74 +224,9 @@
             MapPin: ({size=14, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
             Paperclip: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>,
             FileText: ({size=18}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/></svg>,
-            ExternalLink: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" i y2="3"/></svg>,
+            ExternalLink: ({size=14}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
             Phone: ({size=12, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
             User: ({size=14, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        };
-
-        const InlineDatePicker = ({ selectedDate, onChange }) => {
-            const [viewMonth, setViewMonth] = useState(new Date(selectedDate || new Date()));
-            const today = new Date().toISOString().split('T')[0];
-
-            const year = viewMonth.getFullYear();
-            const month = viewMonth.getMonth();
-            
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const startDay = (new Date(year, month, 1).getDay() + 6) % 7;
-
-            const days = [];
-            for (let i = 0; i < startDay; i++) days.push(null);
-            for (let i = 1; i <= daysInMonth; i++) days.push(i);
-
-            const handleMonthChange = (offset) => {
-                setViewMonth(new Date(year, month + offset, 1));
-            };
-
-            const isSelected = (day) => {
-                if (!day) return false;
-                const d = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                return d === selectedDate;
-            };
-
-            return (
-                <div className="bg-[#60453905] border-2 border-[#60453910] rounded-2xl p-3 mb-3">
-                    <div className="flex justify-between items-center mb-3 px-1">
-                        <div className="text-[10px] font-black uppercase text-[#604539] opacity-60 tracking-widest">
-                            {viewMonth.toLocaleString('ru', { month: 'long', year: 'numeric' })}
-                        </div>
-                        <div className="flex gap-4">
-                            <button onClick={() => handleMonthChange(-1)} className="text-[#604539] font-black">«</button>
-                            <button onClick={() => handleMonthChange(1)} className="text-[#604539] font-black">»</button>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-7 gap-1 text-center">
-                        {['п', 'в', 'с', 'ч', 'п', 'с', 'в'].map(d => (
-                            <div key={d} className="text-[8px] font-black uppercase opacity-20 mb-1">{d}</div>
-                        ))}
-                        {days.map((day, idx) => {
-                            const dateStr = day ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : null;
-                            const selected = isSelected(day);
-                            const current = dateStr === today;
-
-                            return (
-                                <div
-                                    key={idx}
-                                    onClick={() => day && onChange(dateStr)}
-                                    className={`
-                                        h-8 w-8 flex items-center justify-center text-[11px] rounded-full cursor-pointer transition-all
-                                        ${!day ? 'invisible' : ''}
-                                        ${selected ? 'bg-[#604539] text-white font-black scale-110 shadow-md' : 'text-[#604539]'}
-                                        ${current && !selected ? 'border border-[#60453950] font-black' : ''}
-                                        ${!selected ? 'hover:bg-[#FFECD2]' : ''}
-                                    `}
-                                >
-                                    {day}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            );
         };
 
         const keyToLabel = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
@@ -561,7 +496,7 @@
                                                     <Icons.Phone size={14} />
                                                 </a>
                                             )}
-                                            <p className={`font-bold text-sm uppercase truncate cursor-pointer ${hasAnyDebt ? 'text-red-700' : 'text-[#604539]'}`} onClick={() => window.setActiveStaffScheduleFromList && window.setActiveStaffScheduleFromList(s.name)}>
+                                            <p className={`font-bold text-sm uppercase truncate ${hasAnyDebt ? 'text-red-700' : 'text-[#604539]'}`} onClick={() => window.setActiveStaffScheduleFromList && window.setActiveStaffScheduleFromList(s.name)} style={{cursor:'pointer'}}>
                                                 {s.name}
                                             </p>
                                         </div>
@@ -654,37 +589,39 @@
             }, [staffName, events, todayStr]);
 
             return (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#1F1713]/80 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-[320px] rounded-3xl shadow-2xl overflow-hidden border-2 border-[#604539] animate-in">
-                        <div className="p-4 border-b border-[#60453910] flex items-center justify-between bg-gray-50/50">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1F1713]/80 backdrop-blur-sm">
+                    <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-2 border-[#604539]">
+                        <div className="p-4 border-b border-[#60453910] flex items-center justify-between">
                             <div>
-                                <h3 className="text-[11px] font-black uppercase text-[#604539] leading-tight tracking-wider">График работы</h3>
-                                <p className="text-[13px] font-bold text-[#C7886B] uppercase mt-0.5">{staffName}</p>
+                                <h3 className="text-sm font-black uppercase text-[#604539] leading-tight">График работы</h3>
+                                <p className="text-[10px] font-bold text-[#C7886B] uppercase tracking-widest mt-0.5">{staffName}</p>
                             </div>
-                            <button onClick={onClose} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors">
+                            <button onClick={onClose} className="p-1.5 bg-gray-50 rounded-lg text-gray-300 hover:text-red-500 transition-colors">
                                 <Icons.X size={18} />
                             </button>
                         </div>
-                        <div className="p-3 max-h-[40vh] overflow-y-auto custom-scrollbar">
+                        <div className="p-4 max-h-[50vh] overflow-y-auto custom-scrollbar">
                             {staffFutureEvents.length > 0 ? (
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     {staffFutureEvents.map(ev => {
                                         const staffEntry = ev.staff.find(s => s.name.toLowerCase() === staffName.toLowerCase());
                                         return (
                                             <div 
                                                 key={ev.id} 
                                                 onClick={() => onSelectEvent(ev.id)}
-                                                className="flex gap-3 p-2.5 bg-gray-50 rounded-2xl border border-transparent active:bg-[#FFECD2] transition-all cursor-pointer group"
+                                                className="flex gap-3 p-3 bg-gray-50 rounded-xl border-2 border-transparent hover:border-[#FFECD2] transition-all cursor-pointer group active:scale-[0.98]"
                                             >
-                                                <div className="w-9 shrink-0 flex flex-col items-center justify-center border-r border-[#60453910] pr-2">
-                                                    <span className="text-[7px] font-black uppercase text-gray-400 leading-none mb-1">{new Date(ev.date).toLocaleString('ru', { month: 'short' })}</span>
-                                                    <span className="text-sm font-black text-[#604539] leading-none">{new Date(ev.date).getDate()}</span>
+                                                <div className="w-10 shrink-0 flex flex-col items-center justify-center border-r-2 border-[#60453910] pr-3 group-hover:border-[#FFECD2]">
+                                                    <span className="text-[8px] font-black uppercase text-gray-400">{new Date(ev.date).toLocaleString('ru', { month: 'short' })}</span>
+                                                    <span className="text-lg font-black text-[#604539] leading-none">{new Date(ev.date).getDate()}</span>
                                                 </div>
                                                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                    <p className="text-xs font-bold uppercase truncate text-[#1F1713]">{ev.name}</p>
-                                                    <div className="flex items-center gap-1.5 mt-0.5 text-[11px] font-bold text-[#C7886B]">
-                                                        <Icons.Clock size={12} />
-                                                        <span>{staffEntry.time || '—'}{staffEntry.end ? `–${staffEntry.end}` : ''}</span>
+                                                    <p className="text-[15px] font-bold uppercase truncate text-[#1F1713] group-hover:text-[#C7886B]">{ev.name}</p>
+                                                    <div className="flex items-center gap-2 mt-1.5">
+                                                        <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-[#C7886B]">
+                                                            <Icons.Clock size={14} />
+                                                            <span>{staffEntry.time || '—'}{staffEntry.end ? ` — ${staffEntry.end}` : ''}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -692,15 +629,16 @@
                                     })}
                                 </div>
                             ) : (
-                                <div className="py-6 text-center">
+                                <div className="py-8 text-center">
+                                    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-dashed border-gray-100">
+                                        <Icons.Calendar size={18} className="text-gray-200" />
+                                    </div>
                                     <p className="text-[9px] font-black uppercase tracking-widest text-gray-300">Мероприятий нет</p>
                                 </div>
                             )}
                         </div>
                         <div className="p-3 bg-gray-50 border-t border-[#60453910]">
-                            <button onClick={onClose} className="w-full py-2 bg-[#604539] text-white rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-transform">
-                                Закрыть
-                            </button>
+                            <button onClick={onClose} className="w-full py-2.5 bg-[#604539] text-white rounded-xl text-[9px] font-black uppercase tracking-widest">Закрыть</button>
                         </div>
                     </div>
                 </div>
@@ -1006,13 +944,14 @@
                 if (!newEvent.name || !newEvent.guests) return;
                 const d = new Date(newEvent.date);
                 const fmtDate = `${d.getDate()} ${d.toLocaleString('ru', { month: 'long' })}`;
-                
+                const finalLocation = (newEvent.format === "Самовывоз" || newEvent.format === "Выберите формат") ? "" : newEvent.location;
+
                 let updated;
                 if (editingEventId) {
-                    updated = events.map(ev => ev.id === editingEventId ? { ...ev, ...newEvent, displayDate: fmtDate } : ev);
+                    updated = events.map(ev => ev.id === editingEventId ? { ...ev, ...newEvent, location: finalLocation, displayDate: fmtDate } : ev);
                     setEditingEventId(null);
                 } else {
-                    updated = [...events, { id: Date.now().toString(), ...newEvent, displayDate: fmtDate, staff: [], files: [], status: { checked: false } }];
+                    updated = [...events, { id: Date.now().toString(), ...newEvent, location: finalLocation, displayDate: fmtDate, staff: [], files: [], status: { checked: false } }];
                 }
                 setEvents(updated);
                 saveToGithub(updated);
@@ -1322,23 +1261,17 @@
                                                     
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                                                         <div className="space-y-3">
-                                                            <input 
-                                                                type="text" 
-                                                                placeholder="Название мероприятия" 
-                                                                value={newEvent.name} 
-                                                                onChange={e=>setNewEvent({...newEvent, name: e.target.value})} 
-                                                                className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm font-bold" 
-                                                            />
-                                                            
-                                                            <InlineDatePicker 
-                                                                selectedDate={newEvent.date} 
-                                                                onChange={(date) => setNewEvent({...newEvent, date})} 
-                                                            />
-
-                                                            <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">
-                                                                {formats.map(f => <option key={f} value={f}>{f}</option>)}
-                                                            </select>
-                                                            <input type="text" placeholder="Адрес / Локация" value={newEvent.location || ''} onChange={e=>setNewEvent({...newEvent, location: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                            <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                            <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                            <div className="space-y-2">
+                                                                <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{formats.map(f => <option key={f} value={f}>{f}</option>)}</select>
+                                                                {newEvent.format && newEvent.format !== "Выберите формат" && newEvent.format !== "Самовывоз" && (
+                                                                    <div className="animate-in relative">
+                                                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-40"><Icons.MapPin size={16} /></div>
+                                                                        <input type="text" placeholder="Адрес / Локация" value={newEvent.location || ''} onChange={e=>setNewEvent({...newEvent, location: e.target.value})} className="w-full p-2.5 pl-10 rounded-xl border-2 border-[#604539] bg-white outline-none text-sm placeholder:text-gray-400" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                             <input type="number" placeholder="Гости (чел)" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
                                                         </div>
                                                         <div className="space-y-3">
@@ -1347,9 +1280,7 @@
                                                                 <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
                                                             </div>
                                                             <div className="flex flex-col gap-3">
-                                                                <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">
-                                                                    {admins.map(a => <option key={a} value={a}>{a}</option>)}
-                                                                </select>
+                                                                <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{admins.map(a => <option key={a} value={a}>{a}</option>)}</select>
                                                                 <div className="flex gap-1.5">
                                                                     {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
                                                                         <div key={role} className="flex-1 relative">
