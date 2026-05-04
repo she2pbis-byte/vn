@@ -1031,7 +1031,19 @@
       "пов": ""
     },
     "displayDate": "23 май",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1777889346078",
+        "name": "Телов",
+        "phone": "+79969265172",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
