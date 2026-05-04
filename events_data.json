@@ -696,7 +696,7 @@
     ],
     "files": [],
     "status": {
-      "checked": false
+      "checked": true
     },
     "contactName": "В.В.",
     "contactPhone": ""
@@ -933,29 +933,18 @@
     "format": "Кофе-брейк",
     "location": "Школа 21Сбер",
     "admin": "",
-    "guests": "100",
+    "guests": "28",
     "extraInfo": "",
     "contactName": "",
     "contactPhone": "",
     "neededStaff": {
-      "оф": "2",
+      "оф": "1",
       "бар": "",
       "мой": "",
       "пов": ""
     },
     "displayDate": "20 май",
     "staff": [
-      {
-        "id": "1777893326022",
-        "name": "Козлова",
-        "phone": "+79244025699",
-        "time": "",
-        "end": "",
-        "roles": [
-          "Официант"
-        ],
-        "rolePaid": {}
-      },
       {
         "id": "1777889187661",
         "name": "Телов",
@@ -1169,17 +1158,6 @@
     "displayDate": "21 май",
     "staff": [
       {
-        "id": "1777893365291",
-        "name": "Козлова",
-        "phone": "+79244025699",
-        "time": "",
-        "end": "",
-        "roles": [
-          "Официант"
-        ],
-        "rolePaid": {}
-      },
-      {
         "id": "1777890891181",
         "name": "Телов",
         "phone": "+79969265172",
@@ -1232,44 +1210,6 @@
         "id": "1777890947235",
         "name": "Коршунов",
         "phone": "+79201431396",
-        "time": "",
-        "end": "",
-        "roles": [
-          "Официант"
-        ],
-        "rolePaid": {}
-      }
-    ],
-    "files": [],
-    "status": {
-      "checked": false
-    }
-  },
-  {
-    "id": "1777893284560",
-    "name": "Школа 21Сбер",
-    "date": "2026-05-19",
-    "start": "",
-    "end": "",
-    "format": "Кофе-брейк",
-    "location": "Школа 21Сбер",
-    "admin": "Михаил",
-    "guests": "28",
-    "extraInfo": "",
-    "contactName": "",
-    "contactPhone": "",
-    "neededStaff": {
-      "оф": "1",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "19 май",
-    "staff": [
-      {
-        "id": "1777893307961",
-        "name": "Телов",
-        "phone": "+79969265172",
         "time": "",
         "end": "",
         "roles": [
