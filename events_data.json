@@ -1118,7 +1118,19 @@
       "пов": ""
     },
     "displayDate": "20 май",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1777890812260",
+        "name": "Коршунов",
+        "phone": "+79201431396",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
