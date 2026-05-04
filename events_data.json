@@ -1097,5 +1097,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1777890794176",
+    "name": "Сбер",
+    "date": "2026-05-20",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Сбер",
+    "admin": "Михаил",
+    "guests": "0",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "20 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
