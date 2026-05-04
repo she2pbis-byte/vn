@@ -961,5 +961,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1777889232148",
+    "name": "Белояр",
+    "date": "2026-05-22",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "location": "",
+    "admin": "",
+    "guests": "40",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "22 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
