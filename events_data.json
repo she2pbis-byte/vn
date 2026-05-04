@@ -1010,5 +1010,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1777889332128",
+    "name": "Стрелка ПСБ",
+    "date": "2026-05-23",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "location": "",
+    "admin": "",
+    "guests": "0",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "23 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
