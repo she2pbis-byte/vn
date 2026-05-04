@@ -564,34 +564,52 @@
             );
         };
 
+        /**
+         * УПРОЩЕННЫЙ TIME PICKER С МАСКОЙ ВВОДА
+         */
         const SimpleTimePicker = ({ value, onChange, colors, label, disabled }) => {
-            const [h, m] = value ? value.split(':') : ['', ''];
-            const setHour = (newH) => onChange(newH === "" ? "" : `${newH.padStart(2, '0')}:${m || "00"}`);
-            const setMinute = (newM) => onChange(`${(h || "12").padStart(2, '0')}:${newM}`);
+            const handleChange = (e) => {
+                let val = e.target.value.replace(/[^\d]/g, '');
+                if (val.length > 4) val = val.slice(0, 4);
+
+                let formatted = val;
+                if (val.length >= 2) {
+                    let hh = parseInt(val.slice(0, 2));
+                    if (hh > 23) hh = 23;
+                    formatted = hh.toString().padStart(2, '0');
+                    if (val.length > 2) {
+                        let mm = parseInt(val.slice(2, 4));
+                        if (mm > 59) mm = 59;
+                        formatted += ':' + mm.toString().padStart(2, '0');
+                    } else if (val.length === 2 && e.nativeEvent.inputType !== 'deleteContentBackward') {
+                        formatted += ':';
+                    }
+                }
+                onChange(formatted);
+            };
+
+            const handleBlur = () => {
+                if (!value) return;
+                let [h, m] = value.split(':');
+                if (!h) { onChange(''); return; }
+                if (!m) m = '00';
+                onChange(`${h.padStart(2, '0')}:${m.padEnd(2, '0')}`);
+            };
+
             return (
                 <div className="flex-1">
                     {label && <p className="text-[9px] uppercase font-bold mb-1 opacity-40 ml-1">{label}</p>}
-                    <div className="flex items-center gap-1">
-                        <select 
-                            value={h} 
-                            onChange={(e) => setHour(e.target.value)} 
-                            disabled={disabled}
-                            className="flex-1 py-2 px-1 rounded-lg border-2 bg-white text-center text-xs disabled:opacity-50 disabled:bg-gray-100" 
-                            style={{ borderColor: colors.accent + '20' }}>
-                            <option value="">—</option>
-                            {Array.from({ length: 24 }, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i} ч</option>)}
-                        </select>
-                        <span className="font-bold opacity-20 text-[10px]">:</span>
-                        <select 
-                            value={m} 
-                            onChange={(e) => setMinute(e.target.value)} 
-                            disabled={disabled || !h} 
-                            className="flex-1 py-2 px-1 rounded-lg border-2 bg-white text-center text-xs disabled:opacity-30 disabled:bg-gray-100" 
-                            style={{ borderColor: colors.accent + '20' }}>
-                            <option value="00">00</option>
-                            <option value="30">30</option>
-                        </select>
-                    </div>
+                    <input 
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="00:00"
+                        value={value || ''}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        disabled={disabled}
+                        className="w-full py-2.5 px-2 rounded-xl border-2 bg-white text-center text-sm font-bold outline-none focus:border-[#C7886B] transition-colors disabled:opacity-50 disabled:bg-gray-100"
+                        style={{ borderColor: colors.accent + '20' }}
+                    />
                 </div>
             );
         };
