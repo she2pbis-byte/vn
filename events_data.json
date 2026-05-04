@@ -824,7 +824,19 @@
       "пов": ""
     },
     "displayDate": "9 июнь",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1777884067219",
+        "name": "Борисова",
+        "phone": "+79108196460",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
