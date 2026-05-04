@@ -885,5 +885,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1777886866511",
+    "name": "Стрелка СБЕР",
+    "date": "2026-05-30",
+    "start": "",
+    "end": "",
+    "format": "Несколько накрытий",
+    "location": "",
+    "admin": "",
+    "guests": "1",
+    "extraInfo": "БУФЕТ: \n1. Петрусенко\n2. ",
+    "contactName": "Петрусенко",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "30 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
