@@ -943,15 +943,15 @@
             const handleAddEvent = () => {
                 if (!newEvent.name || !newEvent.guests) return;
                 const d = new Date(newEvent.date);
+                // Первоначальный вариант отображения даты: "ДД Месяц"
                 const fmtDate = `${d.getDate()} ${d.toLocaleString('ru', { month: 'long' })}`;
-                const finalLocation = (newEvent.format === "Самовывоз" || newEvent.format === "Выберите формат") ? "" : newEvent.location;
-
+                
                 let updated;
                 if (editingEventId) {
-                    updated = events.map(ev => ev.id === editingEventId ? { ...ev, ...newEvent, location: finalLocation, displayDate: fmtDate } : ev);
+                    updated = events.map(ev => ev.id === editingEventId ? { ...ev, ...newEvent, displayDate: fmtDate } : ev);
                     setEditingEventId(null);
                 } else {
-                    updated = [...events, { id: Date.now().toString(), ...newEvent, location: finalLocation, displayDate: fmtDate, staff: [], files: [], status: { checked: false } }];
+                    updated = [...events, { id: Date.now().toString(), ...newEvent, displayDate: fmtDate, staff: [], files: [], status: { checked: false } }];
                 }
                 setEvents(updated);
                 saveToGithub(updated);
@@ -1262,16 +1262,16 @@
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                                                         <div className="space-y-3">
                                                             <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                            
+                                                            {/* ОТКАТ: Первоначальный выбор даты */}
                                                             <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
-                                                            <div className="space-y-2">
-                                                                <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{formats.map(f => <option key={f} value={f}>{f}</option>)}</select>
-                                                                {newEvent.format && newEvent.format !== "Выберите формат" && newEvent.format !== "Самовывоз" && (
-                                                                    <div className="animate-in relative">
-                                                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-40"><Icons.MapPin size={16} /></div>
-                                                                        <input type="text" placeholder="Адрес / Локация" value={newEvent.location || ''} onChange={e=>setNewEvent({...newEvent, location: e.target.value})} className="w-full p-2.5 pl-10 rounded-xl border-2 border-[#604539] bg-white outline-none text-sm placeholder:text-gray-400" />
-                                                                    </div>
-                                                                )}
-                                                            </div>
+                                                            
+                                                            {/* ОТКАТ: Первоначальный выбор формата */}
+                                                            <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">
+                                                                {formats.map(f => <option key={f} value={f}>{f}</option>)}
+                                                            </select>
+
+                                                            <input type="text" placeholder="Адрес / Локация" value={newEvent.location || ''} onChange={e=>setNewEvent({...newEvent, location: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
                                                             <input type="number" placeholder="Гости (чел)" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
                                                         </div>
                                                         <div className="space-y-3">
@@ -1280,7 +1280,11 @@
                                                                 <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
                                                             </div>
                                                             <div className="flex flex-col gap-3">
-                                                                <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{admins.map(a => <option key={a} value={a}>{a}</option>)}</select>
+                                                                {/* ОТКАТ: Первоначальный выбор админа */}
+                                                                <select value={newEvent.admin} onChange={e=>setNewEvent({...newEvent, admin: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">
+                                                                    {admins.map(a => <option key={a} value={a}>{a}</option>)}
+                                                                </select>
+                                                                
                                                                 <div className="flex gap-1.5">
                                                                     {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
                                                                         <div key={role} className="flex-1 relative">
