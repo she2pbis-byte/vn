@@ -906,7 +906,19 @@
       "пов": ""
     },
     "displayDate": "30 май",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1777889067424",
+        "name": "Капралов",
+        "phone": "+79201188128",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
