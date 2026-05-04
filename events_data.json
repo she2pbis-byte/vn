@@ -1222,5 +1222,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1777897668779",
+    "name": "Сбер (самообслуживание)",
+    "date": "2026-05-06",
+    "start": "17:30",
+    "end": "18:00",
+    "format": "",
+    "location": "",
+    "admin": "",
+    "guests": "70",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "6 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
