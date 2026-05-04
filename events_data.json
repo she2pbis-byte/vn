@@ -222,7 +222,16 @@
       "checked": false
     },
     "location": "ПЯО",
-    "files": [],
+    "files": [
+      {
+        "name": "09.05 КБ-80.xlsx",
+        "path": "attachments/1776111416416/1777900962653_09.05 КБ-80.xlsx",
+        "sha": "d8119744eab82765320f16c4e8136f04dbc013f2",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1776111416416/1777900962653_09.05 КБ-80.xlsx",
+        "size": 35022,
+        "uploadedAt": "2026-05-04T13:22:44.061Z"
+      }
+    ],
     "contactName": "Ирина Адольфовна",
     "contactPhone": "+79807410220"
   },
