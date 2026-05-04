@@ -229,6 +229,21 @@
             User: ({size=14, color="currentColor"}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         };
 
+        /** * HELPERS FOR INPUT MASKS 
+         */
+        const formatPhoneNumber = (value) => {
+            if (!value) return value;
+            const phoneNumber = value.replace(/[^\d]/g, '');
+            const phoneNumberLength = phoneNumber.length;
+            if (phoneNumberLength < 2) return `+7`;
+            if (phoneNumberLength < 5) return `+7 (${phoneNumber.slice(1, 4)}`;
+            if (phoneNumberLength < 8) return `+7 (${phoneNumber.slice(1, 4)}) ${phoneNumber.slice(4, 7)}`;
+            if (phoneNumberLength < 10) return `+7 (${phoneNumber.slice(1, 4)}) ${phoneNumber.slice(4, 7)}-${phoneNumber.slice(7, 9)}`;
+            return `+7 (${phoneNumber.slice(1, 4)}) ${phoneNumber.slice(4, 7)}-${phoneNumber.slice(7, 9)}-${phoneNumber.slice(9, 11)}`;
+        };
+
+        const formatOnlyNumbers = (value) => value.replace(/[^\d]/g, '');
+
         const keyToLabel = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
         
         const getStaffCounts = (ev) => {
@@ -1126,7 +1141,7 @@
                 setNewStaff(p => ({ ...p, name: val }));
                 const found = staffDatabase.find(s => s.name.toLowerCase() === val.toLowerCase());
                 if (found) {
-                    setNewStaff(p => ({ ...p, phone: found.phone }));
+                    setNewStaff(p => ({ ...p, phone: formatPhoneNumber(found.phone) }));
                     setShowSuggestions(false);
                 } else {
                     setShowSuggestions(true);
@@ -1134,7 +1149,7 @@
             };
 
             const selectSuggestion = (s) => {
-                setNewStaff(p => ({ ...p, name: s.name, phone: s.phone }));
+                setNewStaff(p => ({ ...p, name: s.name, phone: formatPhoneNumber(s.phone) }));
                 setShowSuggestions(false);
             };
 
@@ -1303,7 +1318,13 @@
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            <input type="number" placeholder="Гости (чел)" value={newEvent.guests} onChange={e=>setNewEvent({...newEvent, guests: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
+                                                            <input 
+                                                                type="text" 
+                                                                placeholder="Гости (чел)" 
+                                                                value={newEvent.guests} 
+                                                                onChange={e=>setNewEvent({...newEvent, guests: formatOnlyNumbers(e.target.value)})} 
+                                                                className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" 
+                                                            />
                                                         </div>
                                                         <div className="space-y-3">
                                                             <div className="flex gap-2">
@@ -1311,7 +1332,6 @@
                                                                 <SimpleTimePicker label="Конец" value={newEvent.end} onChange={v=>setNewEvent({...newEvent, end: v})} colors={colors} />
                                                             </div>
                                                             <div className="flex flex-col gap-3">
-                                                                {/* Combo Box для выбора администратора */}
                                                                 <div className="relative">
                                                                     <input 
                                                                         type="text" 
@@ -1337,7 +1357,13 @@
                                                                     {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
                                                                         <div key={role} className="flex-1 relative">
                                                                             <div className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-30">{icon}</div>
-                                                                            <input type="number" value={newEvent.neededStaff[role]} onChange={e => setNewEvent({...newEvent, neededStaff: { ...newEvent.neededStaff, [role]: e.target.value }})} placeholder="0" className="w-full p-2.5 pl-6 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold" />
+                                                                            <input 
+                                                                                type="text" 
+                                                                                value={newEvent.neededStaff[role]} 
+                                                                                onChange={e => setNewEvent({...newEvent, neededStaff: { ...newEvent.neededStaff, [role]: formatOnlyNumbers(e.target.value) }})} 
+                                                                                placeholder="0" 
+                                                                                className="w-full p-2.5 pl-6 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold" 
+                                                                            />
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -1354,7 +1380,13 @@
                                                             </div>
                                                             <div className="relative">
                                                                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-30"><Icons.Phone size={14} /></div>
-                                                                <input type="tel" placeholder="Телефон" value={newEvent.contactPhone} onChange={e=>setNewEvent({...newEvent, contactPhone: e.target.value})} className="w-full p-2.5 pl-9 rounded-xl border-2 border-[#60453910] bg-white outline-none text-sm" />
+                                                                <input 
+                                                                    type="tel" 
+                                                                    placeholder="Телефон" 
+                                                                    value={newEvent.contactPhone} 
+                                                                    onChange={e=>setNewEvent({...newEvent, contactPhone: formatPhoneNumber(e.target.value)})} 
+                                                                    className="w-full p-2.5 pl-9 rounded-xl border-2 border-[#60453910] bg-white outline-none text-sm" 
+                                                                />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1576,7 +1608,7 @@
                                                                 type="tel" 
                                                                 placeholder="Телефон" 
                                                                 value={newStaff.phone} 
-                                                                onChange={e=>setNewStaff({...newStaff, phone: e.target.value})} 
+                                                                onChange={e=>setNewStaff({...newStaff, phone: formatPhoneNumber(e.target.value)})} 
                                                                 className={`w-full p-2.5 pl-8 rounded-lg border-2 bg-white outline-none text-sm placeholder:text-gray-300 transition-colors ${isPhoneValid(newStaff.phone) ? 'border-[#60453910]' : 'border-red-300 bg-red-50'}`} 
                                                             />
                                                         </div>
