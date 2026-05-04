@@ -803,5 +803,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1777884055273",
+    "name": "ПСМ",
+    "date": "2026-06-09",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "location": "КЗЦ",
+    "admin": "Александр",
+    "guests": "150",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "9 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
