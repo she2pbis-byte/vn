@@ -662,6 +662,7 @@
             const [isTokenVerified, setIsTokenVerified] = useState(false);
             const [isUploading, setIsUploading] = useState(false);
             const [showSuggestions, setShowSuggestions] = useState(false);
+            const [showFormatSuggestions, setShowFormatSuggestions] = useState(false);
             const [activeStaffSchedule, setActiveStaffSchedule] = useState(null); 
 
             const calendarRef = useRef(null);
@@ -671,7 +672,7 @@
             const eventFormRef = useRef(null);
 
             const colors = { bg: '#FFECD2', dark: '#1F1713', primary: '#604539', accent: '#C7886B' };
-            const formats = ["Выберите формат", "Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Буфет", "Несколько накрытий"];
+            const formats = ["Фуршет", "Кофе-брейк", "Банкет", "Чайный стол", "Туристы", "Доставка", "Самовывоз", "Дегустация", "Буфет", "Несколько накрытий"];
             const admins = ["Выберите админа", "Александр", "Илья", "Михаил", "Светлана", "ИВ"];
 
             window.setActiveStaffScheduleFromList = (name) => setActiveStaffSchedule(name);
@@ -944,7 +945,7 @@
                 if (!newEvent.name || !newEvent.guests) return;
                 const d = new Date(newEvent.date);
                 const fmtDate = `${d.getDate()} ${d.toLocaleString('ru', { month: 'long' })}`;
-                const finalLocation = (newEvent.format === "Самовывоз" || newEvent.format === "Выберите формат") ? "" : newEvent.location;
+                const finalLocation = (newEvent.format === "Самовывоз" || !newEvent.format) ? "" : newEvent.location;
 
                 let updated;
                 if (editingEventId) {
@@ -1110,6 +1111,11 @@
                 return staffDatabase.filter(s => s.name.toLowerCase().includes(newStaff.name.toLowerCase()));
             }, [newStaff.name, staffDatabase]);
 
+            const filteredFormatSuggestions = useMemo(() => {
+                if (!newEvent.format) return formats;
+                return formats.filter(f => f.toLowerCase().includes(newEvent.format.toLowerCase()));
+            }, [newEvent.format]);
+
             const handleStaffNameChange = (val) => {
                 setNewStaff(p => ({ ...p, name: val }));
                 const found = staffDatabase.find(s => s.name.toLowerCase() === val.toLowerCase());
@@ -1263,9 +1269,28 @@
                                                         <div className="space-y-3">
                                                             <input type="text" placeholder="Название" value={newEvent.name} onChange={e=>setNewEvent({...newEvent, name: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
                                                             <input type="date" value={newEvent.date} onChange={e=>setNewEvent({...newEvent, date: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" />
-                                                            <div className="space-y-2">
-                                                                <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="format-select w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm">{formats.map(f => <option key={f} value={f}>{f}</option>)}</select>
-                                                                {newEvent.format && newEvent.format !== "Выберите формат" && newEvent.format !== "Самовывоз" && (
+                                                            
+                                                            <div className="space-y-2 relative">
+                                                                <input 
+                                                                    type="text" 
+                                                                    placeholder="Формат мероприятия" 
+                                                                    value={newEvent.format} 
+                                                                    onChange={e => setNewEvent({...newEvent, format: e.target.value})}
+                                                                    onFocus={() => setShowFormatSuggestions(true)}
+                                                                    onBlur={() => setTimeout(() => setShowFormatSuggestions(false), 200)}
+                                                                    className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" 
+                                                                />
+                                                                {showFormatSuggestions && filteredFormatSuggestions.length > 0 && (
+                                                                    <div className="autocomplete-list">
+                                                                        {filteredFormatSuggestions.map((f, idx) => (
+                                                                            <div key={idx} className="autocomplete-item font-bold uppercase text-[11px]" onClick={() => { setNewEvent({...newEvent, format: f}); setShowFormatSuggestions(false); }}>
+                                                                                {f}
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                                
+                                                                {newEvent.format && newEvent.format !== "Самовывоз" && (
                                                                     <div className="animate-in relative">
                                                                         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-40"><Icons.MapPin size={16} /></div>
                                                                         <input type="text" placeholder="Адрес / Локация" value={newEvent.location || ''} onChange={e=>setNewEvent({...newEvent, location: e.target.value})} className="w-full p-2.5 pl-10 rounded-xl border-2 border-[#604539] bg-white outline-none text-sm placeholder:text-gray-400" />
