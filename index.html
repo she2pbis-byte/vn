@@ -269,9 +269,6 @@
             });
         };
 
-        /**
-         * ОБНОВЛЕННЫЙ КОМПОНЕНТ ВВОДА ВРЕМЕНИ
-         */
         const SimpleTimePicker = ({ value, onChange, colors, label, disabled }) => {
             const [inputValue, setInputValue] = useState(value || '');
 
@@ -1276,7 +1273,16 @@
                             ) : (
                                 <>
                                     {isCalendarOpen && (
-                                        <Calendar calendarRef={calendarRef} events={events} selectedDate={filterDate} onSelectDate={(date) => { setFilterDate(date); if(date) setIsCalendarOpen(false); }} />
+                                        <div className="flex justify-center w-full mb-6">
+                                            <div className="w-full max-w-[360px]">
+                                                <Calendar 
+                                                    calendarRef={calendarRef} 
+                                                    events={events} 
+                                                    selectedDate={filterDate} 
+                                                    onSelectDate={(date) => { setFilterDate(date); if(date) setIsCalendarOpen(false); }} 
+                                                />
+                                            </div>
+                                        </div>
                                     )}
                                     
                                     {filterDate && (
