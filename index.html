@@ -809,7 +809,6 @@
                         body: JSON.stringify({ message: 'Update events via App', content: content, sha: getData.sha })
                     });
 
-                    // Update Staff Base if provided
                     if (updatedStaffBase) {
                         const getSRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.staffPath}`, {
                             headers: { 'Authorization': `token ${githubToken}` }
@@ -829,7 +828,6 @@
                         });
                     }
 
-                    // Update Common Files list if provided
                     if (updatedCommonFiles) {
                         const getCRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.commonFilesPath}`, {
                             headers: { 'Authorization': `token ${githubToken}` }
