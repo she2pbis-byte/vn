@@ -1389,37 +1389,21 @@
                                                                 <div className="relative">
                                                                     <input 
                                                                         type="text" 
-                                                                        placeholder="Выберите администратора" 
+                                                                        placeholder="Администратор" 
                                                                         value={newEvent.admin} 
-                                                                        readOnly 
-                                                                        onClick={() => setShowAdminSuggestions(!showAdminSuggestions)}
+                                                                        onChange={e => setNewEvent({...newEvent, admin: e.target.value})}
                                                                         onFocus={() => setShowAdminSuggestions(true)}
-                                                                        className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm cursor-pointer" 
+                                                                        onBlur={() => setTimeout(() => setShowAdminSuggestions(false), 200)}
+                                                                        className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" 
                                                                     />
-                                                                    {showAdminSuggestions && (
+                                                                    {showAdminSuggestions && filteredAdminSuggestions.length > 0 && (
                                                                         <div className="autocomplete-list">
-                                                                            {admins.map((a, idx) => (
-                                                                                <div 
-                                                                                    key={idx} 
-                                                                                    className="autocomplete-item font-bold uppercase text-[11px]" 
-                                                                                    onClick={() => { 
-                                                                                        setNewEvent({...newEvent, admin: a}); 
-                                                                                        setShowAdminSuggestions(false); 
-                                                                                    }}
-                                                                                >
+                                                                            {filteredAdminSuggestions.map((a, idx) => (
+                                                                                <div key={idx} className="autocomplete-item font-bold uppercase text-[11px]" onClick={() => { setNewEvent({...newEvent, admin: a}); setShowAdminSuggestions(false); }}>
                                                                                     {a}
                                                                                 </div>
                                                                             ))}
                                                                         </div>
-                                                                    )}
-                                                                    
-                                                                    {newEvent.admin && (
-                                                                        <button 
-                                                                            onClick={(e) => { e.stopPropagation(); setNewEvent({...newEvent, admin: ''}); }}
-                                                                            className="absolute right-3 top-2.5 text-gray-400 text-[10px] font-bold uppercase"
-                                                                        >
-                                                                            Очистить
-                                                                        </button>
                                                                     )}
                                                                 </div>
 
