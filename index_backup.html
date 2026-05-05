@@ -1332,23 +1332,39 @@
                                                             <div className="space-y-2 relative">
                                                                 <input 
                                                                     type="text" 
-                                                                    placeholder="Формат мероприятия" 
+                                                                    placeholder="Выберите формат мероприятия" 
                                                                     value={newEvent.format} 
-                                                                    onChange={e => setNewEvent({...newEvent, format: e.target.value})}
+                                                                    readOnly 
+                                                                    onClick={() => setShowFormatSuggestions(!showFormatSuggestions)}
                                                                     onFocus={() => setShowFormatSuggestions(true)}
-                                                                    onBlur={() => setTimeout(() => setShowFormatSuggestions(false), 200)}
-                                                                    className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" 
+                                                                    className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm cursor-pointer" 
                                                                 />
-                                                                {showFormatSuggestions && filteredFormatSuggestions.length > 0 && (
+                                                                {showFormatSuggestions && (
                                                                     <div className="autocomplete-list">
-                                                                        {filteredFormatSuggestions.map((f, idx) => (
-                                                                            <div key={idx} className="autocomplete-item font-bold uppercase text-[11px]" onClick={() => { setNewEvent({...newEvent, format: f}); setShowFormatSuggestions(false); }}>
+                                                                        {formats.map((f, idx) => (
+                                                                            <div 
+                                                                                key={idx} 
+                                                                                className="autocomplete-item font-bold uppercase text-[11px]" 
+                                                                                onClick={() => { 
+                                                                                    setNewEvent({...newEvent, format: f}); 
+                                                                                    setShowFormatSuggestions(false); 
+                                                                                }}
+                                                                            >
                                                                                 {f}
                                                                             </div>
                                                                         ))}
                                                                     </div>
                                                                 )}
                                                                 
+                                                                {newEvent.format && (
+                                                                    <button 
+                                                                        onClick={() => setNewEvent({...newEvent, format: ''})}
+                                                                        className="absolute right-3 top-2.5 text-gray-400 text-[10px] font-bold uppercase"
+                                                                    >
+                                                                        Очистить
+                                                                    </button>
+                                                                )}
+
                                                                 {newEvent.format && newEvent.format !== "Самовывоз" && (
                                                                     <div className="animate-in relative">
                                                                         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-40"><Icons.MapPin size={16} /></div>
@@ -1373,21 +1389,37 @@
                                                                 <div className="relative">
                                                                     <input 
                                                                         type="text" 
-                                                                        placeholder="Администратор" 
+                                                                        placeholder="Выберите администратора" 
                                                                         value={newEvent.admin} 
-                                                                        onChange={e => setNewEvent({...newEvent, admin: e.target.value})}
+                                                                        readOnly 
+                                                                        onClick={() => setShowAdminSuggestions(!showAdminSuggestions)}
                                                                         onFocus={() => setShowAdminSuggestions(true)}
-                                                                        onBlur={() => setTimeout(() => setShowAdminSuggestions(false), 200)}
-                                                                        className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" 
+                                                                        className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm cursor-pointer" 
                                                                     />
-                                                                    {showAdminSuggestions && filteredAdminSuggestions.length > 0 && (
+                                                                    {showAdminSuggestions && (
                                                                         <div className="autocomplete-list">
-                                                                            {filteredAdminSuggestions.map((a, idx) => (
-                                                                                <div key={idx} className="autocomplete-item font-bold uppercase text-[11px]" onClick={() => { setNewEvent({...newEvent, admin: a}); setShowAdminSuggestions(false); }}>
+                                                                            {admins.map((a, idx) => (
+                                                                                <div 
+                                                                                    key={idx} 
+                                                                                    className="autocomplete-item font-bold uppercase text-[11px]" 
+                                                                                    onClick={() => { 
+                                                                                        setNewEvent({...newEvent, admin: a}); 
+                                                                                        setShowAdminSuggestions(false); 
+                                                                                    }}
+                                                                                >
                                                                                     {a}
                                                                                 </div>
                                                                             ))}
                                                                         </div>
+                                                                    )}
+                                                                    
+                                                                    {newEvent.admin && (
+                                                                        <button 
+                                                                            onClick={(e) => { e.stopPropagation(); setNewEvent({...newEvent, admin: ''}); }}
+                                                                            className="absolute right-3 top-2.5 text-gray-400 text-[10px] font-bold uppercase"
+                                                                        >
+                                                                            Очистить
+                                                                        </button>
                                                                     )}
                                                                 </div>
 
