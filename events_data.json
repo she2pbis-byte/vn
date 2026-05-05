@@ -1,1 +1,1296 @@
-
+[
+  {
+    "id": "1776088130144",
+    "name": "Диво",
+    "date": "2026-07-24",
+    "start": "",
+    "end": "",
+    "format": "Банкет",
+    "admin": "Михаил",
+    "guests": "50",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "",
+      "мой": "",
+      "пов": "1"
+    },
+    "displayDate": "24 июль",
+    "staff": [
+      {
+        "id": "1776088165393",
+        "name": "Коршунов",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79201431396"
+      },
+      {
+        "id": "1776088184970",
+        "name": "Орехина",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79012749063"
+      },
+      {
+        "id": "1776088171996",
+        "name": "Прохоров",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79807046058"
+      },
+      {
+        "id": "1776088178114",
+        "name": "Салина",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "79038241807"
+      }
+    ],
+    "status": {
+      "бар": true,
+      "мой": true,
+      "оф": true,
+      "checked": false
+    }
+  },
+  {
+    "id": "1776111285429",
+    "name": "МЧС",
+    "date": "2026-04-30",
+    "start": "10:00",
+    "end": "13:00",
+    "format": "Фуршет",
+    "admin": "Михаил",
+    "guests": "60",
+    "extraInfo": "КЗЦ:\n10:00 Велком-10\n12:00 Фуршет-60",
+    "neededStaff": {
+      "оф": "3",
+      "бар": "",
+      "мой": "",
+      "пов": "0"
+    },
+    "displayDate": "30 апрель",
+    "staff": [
+      {
+        "id": "1776111329621",
+        "name": "Коршунов",
+        "time": "09:00",
+        "end": "18:00",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {
+          "Официант": false
+        },
+        "phone": "+79201431396"
+      },
+      {
+        "id": "1777382876346",
+        "name": "Салина",
+        "phone": "79038241807",
+        "time": "09:00",
+        "end": "16:00",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      },
+      {
+        "id": "1777382858786",
+        "name": "Сухановская",
+        "phone": "+79036468034",
+        "time": "09:00",
+        "end": "16:00",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {
+          "Официант": true
+        }
+      }
+    ],
+    "status": {
+      "checked": true
+    },
+    "location": "КЗЦ",
+    "files": [
+      {
+        "name": "1)30.04 КБ Велком.pdf",
+        "path": "attachments/1776111285429/1777359168568_1)30.04 КБ Велком.pdf",
+        "sha": "ffd1af64f86d27206395dadb25cfbb50962bbaff",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1776111285429/1777359168568_1)30.04 КБ Велком.pdf",
+        "size": 115181,
+        "uploadedAt": "2026-04-28T06:52:50.270Z"
+      },
+      {
+        "name": "2)30.04 Ф-60 КЗЦ.pdf",
+        "path": "attachments/1776111285429/1777359177864_2)30.04 Ф-60 КЗЦ.pdf",
+        "sha": "fdc91f50b8d05b816a7db31af4811823ffb07834",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1776111285429/1777359177864_2)30.04 Ф-60 КЗЦ.pdf",
+        "size": 124630,
+        "uploadedAt": "2026-04-28T06:52:59.319Z"
+      }
+    ]
+  },
+  {
+    "id": "1776111416416",
+    "name": "ПЯО",
+    "date": "2026-05-09",
+    "start": "08:00",
+    "end": "16:00",
+    "format": "Кофе-брейк",
+    "admin": "Илья",
+    "guests": "80",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "9 май",
+    "staff": [
+      {
+        "id": "1777637075566",
+        "name": "Борисова",
+        "phone": "+79108196460",
+        "time": "06:00",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      },
+      {
+        "id": "1776111447155",
+        "name": "Козлова",
+        "time": "06:00",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79244025699"
+      },
+      {
+        "id": "1777884619985",
+        "name": "Пастухова",
+        "phone": "+79159662151",
+        "time": "06:00",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      },
+      {
+        "id": "1776111438526",
+        "name": "Телов",
+        "time": "06:00",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79969265172"
+      }
+    ],
+    "status": {
+      "checked": false
+    },
+    "location": "Правительство ЯО",
+    "files": [
+      {
+        "name": "09.05 КБ-80.xlsx",
+        "path": "attachments/1776111416416/1777900962653_09.05 КБ-80.xlsx",
+        "sha": "d8119744eab82765320f16c4e8136f04dbc013f2",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1776111416416/1777900962653_09.05 КБ-80.xlsx",
+        "size": 35022,
+        "uploadedAt": "2026-05-04T13:22:44.061Z"
+      }
+    ],
+    "contactName": "Ирина Адольфовна",
+    "contactPhone": "+79807410220"
+  },
+  {
+    "id": "1776111545652",
+    "name": "Мэрия",
+    "date": "2026-05-30",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "admin": "Илья",
+    "guests": "150",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "30 май",
+    "staff": [
+      {
+        "id": "1776111590170",
+        "name": "Козлова",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79244025699"
+      },
+      {
+        "id": "1776111601717",
+        "name": "Коршунов",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79201431396"
+      },
+      {
+        "id": "1776111581663",
+        "name": "Телов",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79969265172"
+      }
+    ],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1776111678750",
+    "name": "Квартирник",
+    "date": "2026-05-29",
+    "start": "",
+    "end": "",
+    "format": "Банкет",
+    "admin": "",
+    "guests": "200",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "5",
+      "бар": "1",
+      "мой": "1",
+      "пов": "1"
+    },
+    "displayDate": "29 май",
+    "staff": [
+      {
+        "id": "1776111747146",
+        "name": "Белокуров",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Повар"
+        ],
+        "rolesDisplay": "Повар",
+        "rolePaid": {},
+        "phone": ""
+      },
+      {
+        "id": "1776111701915",
+        "name": "Козлова",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79244025699"
+      },
+      {
+        "id": "1776111717614",
+        "name": "Коршунов",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Бармен"
+        ],
+        "rolesDisplay": "Бармен",
+        "rolePaid": {},
+        "phone": "+79201431396"
+      },
+      {
+        "id": "1776111693329",
+        "name": "Телов",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79969265172"
+      }
+    ],
+    "status": {
+      "checked": false
+    },
+    "location": "КЗЦ"
+  },
+  {
+    "id": "1776111860018",
+    "name": "Космопикник",
+    "date": "2026-06-16",
+    "start": "",
+    "end": "",
+    "format": "Несколько накрытий",
+    "admin": "",
+    "guests": "80",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "8",
+      "бар": "",
+      "мой": "",
+      "пов": "1"
+    },
+    "displayDate": "16 июнь",
+    "staff": [
+      {
+        "id": "1776111920371",
+        "name": "Гайсина",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79641361800"
+      },
+      {
+        "id": "1776111898553",
+        "name": "Козлова",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79244025699"
+      },
+      {
+        "id": "1776111907924",
+        "name": "Коршунов",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79201431396"
+      },
+      {
+        "id": "1776111891435",
+        "name": "Телов",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {},
+        "phone": "+79969265172"
+      }
+    ],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1776659609473",
+    "name": "Сбер",
+    "date": "2026-04-23",
+    "start": "12:00",
+    "end": "12:30",
+    "format": "Кофе-брейк",
+    "admin": "Михаил",
+    "guests": "28",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "23 апрель",
+    "staff": [
+      {
+        "id": "1777019755601",
+        "name": "Коршунов",
+        "time": "10:00",
+        "end": "16:00",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {
+          "Официант": true
+        }
+      }
+    ],
+    "status": {
+      "checked": true
+    }
+  },
+  {
+    "id": "1776797201139",
+    "name": "АПК в ПЯО",
+    "date": "2026-04-23",
+    "start": "15:00",
+    "end": "16:00",
+    "format": "Кофе-брейк",
+    "admin": "Александр",
+    "guests": "250",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "23 апрель",
+    "staff": [
+      {
+        "id": "1776797235903",
+        "name": "Борисова",
+        "time": "10:00",
+        "end": "18:00",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {
+          "Официант": true
+        }
+      },
+      {
+        "id": "1776797219339",
+        "name": "Прохоров",
+        "time": "10:00",
+        "end": "18:00",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {
+          "Официант": true
+        }
+      },
+      {
+        "id": "1776797211554",
+        "name": "Салина",
+        "time": "10:00",
+        "end": "18:00",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {
+          "Официант": true
+        }
+      },
+      {
+        "id": "1776797228386",
+        "name": "Телов",
+        "time": "10:00",
+        "end": "18:00",
+        "roles": [
+          "Официант"
+        ],
+        "rolesDisplay": "Официант",
+        "rolePaid": {
+          "Официант": true
+        }
+      }
+    ],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777042627430",
+    "name": "Белояр",
+    "date": "2026-04-25",
+    "start": "15:00",
+    "end": "16:00",
+    "format": "Банкет",
+    "admin": "Илья",
+    "guests": "8",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "1",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "25 апрель",
+    "staff": [
+      {
+        "id": "1777042650205",
+        "name": "Коршунов",
+        "time": "12:00",
+        "end": "18:00",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {
+          "Официант": true
+        }
+      }
+    ],
+    "status": {
+      "checked": true
+    }
+  },
+  {
+    "id": "1777385256191",
+    "name": "Муз-Зап",
+    "date": "2026-04-29",
+    "start": "15:00",
+    "end": "",
+    "format": "Доставка",
+    "location": "",
+    "admin": "Михаил",
+    "guests": "6",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "29 апрель",
+    "staff": [],
+    "files": [
+      {
+        "name": "29.04 МузЗап доставка.xlsx",
+        "path": "attachments/1777385256191/1777397207493_29.04 МузЗап доставка.xlsx",
+        "sha": "e2116f9cb0d31d91bc9e8e19dc9b08a50803d734",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777385256191/1777397207493_29.04 МузЗап доставка.xlsx",
+        "size": 31100,
+        "uploadedAt": "2026-04-28T17:26:49.352Z"
+      }
+    ],
+    "status": {
+      "checked": true
+    }
+  },
+  {
+    "id": "1777445638536",
+    "name": "ПЯО Обед",
+    "date": "2026-04-29",
+    "start": "15:30",
+    "end": "",
+    "format": "Банкет",
+    "location": "ПЯО",
+    "admin": "Илья",
+    "guests": "8",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "29 апрель",
+    "staff": [],
+    "files": [
+      {
+        "name": "29.04 Обед.xlsx",
+        "path": "attachments/1777445638536/1777445659974_29.04 Обед.xlsx",
+        "sha": "bdeb1df305c659a9bb466111f7fabd7796c31e6c",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777445638536/1777445659974_29.04 Обед.xlsx",
+        "size": 30944,
+        "uploadedAt": "2026-04-29T06:54:21.210Z"
+      }
+    ],
+    "status": {
+      "checked": true
+    }
+  },
+  {
+    "id": "1777537309462",
+    "name": "Прокуратура",
+    "date": "2026-05-07",
+    "start": "10:30",
+    "end": "",
+    "format": "Несколько накрытий",
+    "location": "Некрасова 5",
+    "admin": "Михаил",
+    "guests": "18",
+    "extraInfo": "10:30 Банкет - 18\n17:00 Фуршет - 30",
+    "neededStaff": {
+      "оф": "3",
+      "бар": "",
+      "мой": "",
+      "пов": "0"
+    },
+    "displayDate": "7 май",
+    "staff": [
+      {
+        "id": "1777881280206",
+        "name": "Козлова",
+        "phone": "+79244025699",
+        "time": "08:00",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      },
+      {
+        "id": "1777561547134",
+        "name": "Коршунов",
+        "phone": "+79201431396",
+        "time": "15:00",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {
+          "Официант": false
+        }
+      },
+      {
+        "id": "1777877314161",
+        "name": "Прохоров",
+        "phone": "+79807046058",
+        "time": "08:00",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    },
+    "contactName": "В.В.",
+    "contactPhone": ""
+  },
+  {
+    "id": "1777537523148",
+    "name": "Диво (Роман)",
+    "date": "2026-08-09",
+    "start": "14:00",
+    "end": "23:00",
+    "format": "Фуршет",
+    "location": "Диво Парк",
+    "admin": "Илья",
+    "guests": "55",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "2",
+      "мой": "",
+      "пов": "1"
+    },
+    "displayDate": "9 август",
+    "staff": [
+      {
+        "id": "1777537550775",
+        "name": "Коршунов",
+        "phone": "+79201431396",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Бармен"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    },
+    "contactName": "Роман",
+    "contactPhone": "+79806511563"
+  },
+  {
+    "id": "1777637504524",
+    "name": "ПЯО ЧС",
+    "date": "2026-05-01",
+    "start": "11:30",
+    "end": "16:30",
+    "format": "Чайный стол",
+    "location": "Муз-Зап",
+    "admin": "Михаил",
+    "guests": "5",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "1 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": true
+    }
+  },
+  {
+    "id": "1777637646860",
+    "name": "ПЯО ЧС",
+    "date": "2026-05-02",
+    "start": "16:00",
+    "end": "16:30",
+    "format": "Чайный стол",
+    "location": "Музей-заповедник",
+    "admin": "Илья",
+    "guests": "5",
+    "extraInfo": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "2 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": true
+    },
+    "contactName": "Ирина Адольфовна",
+    "contactPhone": "+79807410220"
+  },
+  {
+    "id": "1777877185368",
+    "name": "Ночь в музее",
+    "date": "2026-05-16",
+    "start": "",
+    "end": "",
+    "format": "Буфет",
+    "location": "Худ.муз.",
+    "admin": "",
+    "guests": "100",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "16 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777884055273",
+    "name": "ПСМ",
+    "date": "2026-06-09",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "location": "КЗЦ",
+    "admin": "Александр",
+    "guests": "150",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "9 июнь",
+    "staff": [
+      {
+        "id": "1777884067219",
+        "name": "Борисова",
+        "phone": "+79108196460",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      },
+      {
+        "id": "1777884075250",
+        "name": "Коршунов",
+        "phone": "+79201431396",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      },
+      {
+        "id": "1777884082855",
+        "name": "Прохоров",
+        "phone": "+79807046058",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      },
+      {
+        "id": "1777884089368",
+        "name": "Салина",
+        "phone": "79038241807",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777886866511",
+    "name": "Забег СБЕР",
+    "date": "2026-05-30",
+    "start": "",
+    "end": "",
+    "format": "Несколько накрытий",
+    "location": "",
+    "admin": "",
+    "guests": "1",
+    "extraInfo": "БУФЕТ: \n1. Петрусенко\n2. Цапова",
+    "contactName": "Петрусенко",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "1",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "30 май",
+    "staff": [
+      {
+        "id": "1777889067424",
+        "name": "Капралов",
+        "phone": "+79201188128",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777889177428",
+    "name": "Школа 21Сбер",
+    "date": "2026-05-20",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Школа 21 Сбер (ул. Победы, 14)",
+    "admin": "",
+    "guests": "28",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "1",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "20 май",
+    "staff": [
+      {
+        "id": "1777889187661",
+        "name": "Телов",
+        "phone": "+79969265172",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777889232148",
+    "name": "Белояр",
+    "date": "2026-05-22",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "location": "",
+    "admin": "",
+    "guests": "40",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "22 май",
+    "staff": [
+      {
+        "id": "1777889249950",
+        "name": "Козлова",
+        "phone": "+79244025699",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      },
+      {
+        "id": "1777889243196",
+        "name": "Телов",
+        "phone": "+79969265172",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777889332128",
+    "name": "Забег ПСБ",
+    "date": "2026-05-23",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "location": "",
+    "admin": "",
+    "guests": "0",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "23 май",
+    "staff": [
+      {
+        "id": "1777889354266",
+        "name": "Козлова",
+        "phone": "+79244025699",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      },
+      {
+        "id": "1777889346078",
+        "name": "Телов",
+        "phone": "+79969265172",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777890729728",
+    "name": "Сбер",
+    "date": "2026-05-19",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Сбер (ул. Советская, 34)",
+    "admin": "Михаил",
+    "guests": "130",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "19 май",
+    "staff": [
+      {
+        "id": "1777890751880",
+        "name": "Коршунов",
+        "phone": "+79201431396",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777890794176",
+    "name": "Сбер",
+    "date": "2026-05-20",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Сбер (ул. Советская, 34)",
+    "admin": "Михаил",
+    "guests": "130",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "20 май",
+    "staff": [
+      {
+        "id": "1777890812260",
+        "name": "Коршунов",
+        "phone": "+79201431396",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777890876158",
+    "name": "Сбер",
+    "date": "2026-05-21",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Сбер (ул. Советская, 34)",
+    "admin": "Михаил",
+    "guests": "130",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "21 май",
+    "staff": [
+      {
+        "id": "1777890891181",
+        "name": "Телов",
+        "phone": "+79969265172",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777890925842",
+    "name": "Сбер",
+    "date": "2026-05-22",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Сбер (ул. Советская, 34)",
+    "admin": "Михаил",
+    "guests": "130",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "22 май",
+    "staff": [
+      {
+        "id": "1777890953090",
+        "name": "Борисова",
+        "phone": "+79108196460",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      },
+      {
+        "id": "1777890947235",
+        "name": "Коршунов",
+        "phone": "+79201431396",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1777897668779",
+    "name": "Сбер",
+    "date": "2026-05-06",
+    "start": "17:30",
+    "end": "18:00",
+    "format": "Самообслуживание",
+    "location": "",
+    "admin": "",
+    "guests": "70",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "6 май",
+    "staff": [],
+    "files": [
+      {
+        "name": "06.05. СБЕР Советская 34 ( самообслуживание ) Согласованный.xlsx",
+        "path": "attachments/1777897668779/1777898004902_06.05. СБЕР Советская 34 ( самообслуживание ) Согласованный.xlsx",
+        "sha": "f724aa8ad2b893875352c64f5e9986e13a38f2ee",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777897668779/1777898004902_06.05. СБЕР Советская 34 ( самообслуживание ) Согласованный.xlsx",
+        "size": 49324,
+        "uploadedAt": "2026-05-04T12:33:26.465Z"
+      }
+    ],
+    "status": {
+      "checked": true
+    }
+  },
+  {
+    "id": "1777904616112",
+    "name": "Школа 21 Сбер",
+    "date": "2026-05-19",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Школа 21 Сбер (ул. Победы, 14)",
+    "admin": "Михаил",
+    "guests": "28",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "19 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  }
+]
