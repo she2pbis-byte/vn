@@ -694,6 +694,7 @@
             const [view, setView] = useState('list');
             const [showArchive, setShowArchive] = useState(false);
             const [archiveFilter, setArchiveFilter] = useState('all'); 
+            const [listFilter, setListFilter] = useState('all'); // 'all' or 'needs_staff'
             const [isFormOpen, setIsFormOpen] = useState(false);
             const [isCalendarOpen, setIsCalendarOpen] = useState(false);
             const [isStaffListOpen, setIsStaffListOpen] = useState(false);
@@ -1021,16 +1022,29 @@
             
             const sortedEvents = useMemo(() => {
                 let filtered = events;
+                
                 if (filterDate) {
                     filtered = events.filter(ev => ev.date === filterDate);
                 } else {
                     filtered = events.filter(ev => showArchive ? ev.date < todayStr : ev.date >= todayStr);
+                    
                     if (showArchive && archiveFilter === 'unpaid') {
                         filtered = filtered.filter(ev => !isEventFullyPaid(ev));
                     }
+
+                    if (!showArchive && listFilter === 'needs_staff') {
+                        filtered = filtered.filter(ev => {
+                            const counts = getStaffCounts(ev);
+                            return ['оф', 'бар', 'мой', 'пов'].some(roleKey => {
+                                const target = parseInt(ev.neededStaff?.[roleKey] || 0);
+                                const actual = counts[keyToLabel[roleKey]];
+                                return target > 0 && actual < target;
+                            });
+                        });
+                    }
                 }
                 return filtered.sort((a, b) => showArchive ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
-            }, [events, showArchive, todayStr, filterDate, archiveFilter]);
+            }, [events, showArchive, todayStr, filterDate, archiveFilter, listFilter]);
 
             const currentEvent = events.find(e => e.id === selectedEventId);
 
@@ -1403,7 +1417,7 @@
                                     )}
                                     
                                     {filterDate && (
-                                        <div className="flex items-center justify-between bg-white/40 px-4 py-2 rounded-xl border border-[#60453920]">
+                                        <div className="flex items-center justify-between bg-white/40 px-4 py-2 rounded-xl border border-[#60453920] mb-4">
                                             <span className="text-[10px] font-black uppercase text-[#604539]">ДАТА: {filterDate.split('-').reverse().join('.')}</span>
                                             <button onClick={handleGoToCalendar} className="text-[10px] font-black text-[#604539] hover:underline uppercase tracking-widest">К КАЛЕНДАРЮ</button>
                                         </div>
@@ -1417,14 +1431,19 @@
                                     )}
 
                                     {!showArchive && !filterDate && (
-                                        <div className="space-y-4">
+                                        <div className="mb-4 animate-in">
+                                            <div className="flex bg-[#60453910] p-1 rounded-xl mb-4">
+                                                <button onClick={() => setListFilter('all')} className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${listFilter === 'all' ? 'bg-[#604539] text-white shadow-md' : 'text-[#604539]'}`}>Все</button>
+                                                <button onClick={() => setListFilter('needs_staff')} className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${listFilter === 'needs_staff' ? 'bg-red-500 text-white shadow-md' : 'text-[#604539]'}`}>Нужен сотрудник</button>
+                                            </div>
+
                                             {!isFormOpen ? (
-                                                <button onClick={() => { setIsFormOpen(true); setIsCalendarOpen(false); setIsStaffListOpen(false); setIsCommonFilesOpen(false); }} className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl">
+                                                <button onClick={() => { setIsFormOpen(true); setIsCalendarOpen(false); setIsStaffListOpen(false); setIsCommonFilesOpen(false); }} className="w-full bg-transparent py-1 px-4 flex items-center justify-center gap-3 text-[#604539] rounded-2xl mb-4">
                                                     <div className="p-2 bg-[#60453910] rounded-lg"><Icons.Plus size={18} /></div>
                                                     <span className="font-bold uppercase tracking-widest text-xs">Новое мероприятие</span>
                                                 </button>
                                             ) : (
-                                                <div ref={eventFormRef} className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl relative animate-in">
+                                                <div ref={eventFormRef} className="bg-white p-5 rounded-3xl border-2 border-[#604539] border-l-8 shadow-xl relative animate-in mb-6">
                                                     <button onClick={() => { setIsFormOpen(false); setEditingEventId(null); }} className="absolute right-4 top-4 p-2 text-gray-300 hover:text-red-500 transition-colors"><Icons.X /></button>
                                                     <h2 className="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-[#604539]">{editingEventId ? <Icons.Edit size={16} /> : <Icons.Plus size={16} />} {editingEventId ? 'Редактировать' : 'Создать мероприятие'}</h2>
                                                     
