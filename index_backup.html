@@ -809,7 +809,6 @@
                         body: JSON.stringify({ message: 'Update events via App', content: content, sha: getData.sha })
                     });
 
-                    // Update Staff Base if provided
                     if (updatedStaffBase) {
                         const getSRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.staffPath}`, {
                             headers: { 'Authorization': `token ${githubToken}` }
@@ -829,7 +828,6 @@
                         });
                     }
 
-                    // Update Common Files list if provided
                     if (updatedCommonFiles) {
                         const getCRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.commonFilesPath}`, {
                             headers: { 'Authorization': `token ${githubToken}` }
@@ -1425,7 +1423,7 @@
                                     <div className="flex items-center justify-between mb-6">
                                         <div className="flex items-center gap-2">
                                             <Icons.Settings size={18} className="text-[#604539]" />
-                                            <h3 className="font-black uppercase tracking-[0.2em] text-[#604539] text-sm leading-none">Сервис</h3>
+                                            <h3 className="font-black uppercase tracking-[0.2em] text-[#604539] text-sm leading-none">Базы данных</h3>
                                         </div>
                                         <button onClick={() => setIsServiceOpen(false)} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={20} /></button>
                                     </div>
