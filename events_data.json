@@ -705,7 +705,16 @@
         "rolePaid": {}
       }
     ],
-    "files": [],
+    "files": [
+      {
+        "name": "07.05 Банкет 18.xlsx",
+        "path": "attachments/1777537309462/1778059379623_07.05 Банкет 18.xlsx",
+        "sha": "f7f2d1aa237660bc3f3977a49df7d48a609a483e",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777537309462/1778059379623_07.05 Банкет 18.xlsx",
+        "size": 46920,
+        "uploadedAt": "2026-05-06T09:23:01.034Z"
+      }
+    ],
     "status": {
       "checked": true
     },
