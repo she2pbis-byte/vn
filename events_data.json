@@ -1327,5 +1327,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1778058642136",
+    "name": "ПЯО",
+    "date": "2026-05-14",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Правительство ЯО",
+    "admin": "Александр",
+    "guests": "40",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "1",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "14 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
