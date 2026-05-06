@@ -1333,7 +1333,19 @@
       "пов": ""
     },
     "displayDate": "19 май",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1778059240037",
+        "name": "Капралов",
+        "phone": "+7 (920) 118-81-28",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
