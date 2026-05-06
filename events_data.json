@@ -1416,5 +1416,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1778070777433",
+    "name": "проба",
+    "date": "2026-05-07",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "location": "",
+    "admin": "",
+    "guests": "5",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "1",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "7 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
