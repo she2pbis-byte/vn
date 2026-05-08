@@ -1367,5 +1367,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1778215141510",
+    "name": "Школа 2!Сбер (Северный)",
+    "date": "2026-05-21",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "ул. Победы, 14",
+    "admin": "Михаил",
+    "guests": "28",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "1",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "21 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
