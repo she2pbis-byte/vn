@@ -294,7 +294,10 @@
     ],
     "status": {
       "checked": false
-    }
+    },
+    "location": "ул. Андропова, 6",
+    "contactName": "",
+    "contactPhone": ""
   },
   {
     "id": "1776111678750",
