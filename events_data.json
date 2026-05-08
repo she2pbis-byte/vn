@@ -71,7 +71,10 @@
       "мой": true,
       "оф": true,
       "checked": false
-    }
+    },
+    "location": "ул. Камышовая, 10",
+    "contactName": "",
+    "contactPhone": ""
   },
   {
     "id": "1776111285429",
