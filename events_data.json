@@ -846,16 +846,7 @@
     },
     "displayDate": "16 май",
     "staff": [],
-    "files": [
-      {
-        "name": "16.05 ХудМуз НОЧЬ В МУЗЕЕ Буфет.xlsx",
-        "path": "attachments/1777877185368/1778590426822_16.05 ХудМуз НОЧЬ В МУЗЕЕ Буфет.xlsx",
-        "sha": "b1277f75fbea15eb0bb70e18a98a73cda378d9a6",
-        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777877185368/1778590426822_16.05 ХудМуз НОЧЬ В МУЗЕЕ Буфет.xlsx",
-        "size": 54877,
-        "uploadedAt": "2026-05-12T12:53:48.497Z"
-      }
-    ],
+    "files": [],
     "status": {
       "checked": true
     }
