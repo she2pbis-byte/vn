@@ -1347,7 +1347,19 @@
       "пов": ""
     },
     "displayDate": "21 май",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1778567329902",
+        "name": "Телов",
+        "phone": "+7 (996) 926-51-72",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
