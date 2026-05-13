@@ -246,10 +246,10 @@
     "date": "2026-05-30",
     "start": "09:30",
     "end": "10:00",
-    "format": "Фуршет",
-    "admin": "",
+    "format": "Кофе-брейк",
+    "admin": "Александр",
     "guests": "150",
-    "extraInfo": "",
+    "extraInfo": "Обязательно 4 кофе-машины и 2 бойлера ",
     "neededStaff": {
       "оф": "3",
       "бар": "",
@@ -298,7 +298,7 @@
     "status": {
       "checked": false
     },
-    "location": "ул. Андропова, 6",
+    "location": "КЗЦ Милениум; фойе малого зала",
     "contactName": "",
     "contactPhone": ""
   },
