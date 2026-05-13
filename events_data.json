@@ -1135,7 +1135,16 @@
         "rolePaid": {}
       }
     ],
-    "files": [],
+    "files": [
+      {
+        "name": "23.05 Ф30 Забег стрелка  v.2.0.xlsx",
+        "path": "attachments/1777889332128/1778679662750_23.05 Ф30 Забег стрелка  v.2.0.xlsx",
+        "sha": "a397ee249c007a88464ae6a7b46b5741f47f9a8a",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777889332128/1778679662750_23.05 Ф30 Забег стрелка  v.2.0.xlsx",
+        "size": 42873,
+        "uploadedAt": "2026-05-13T13:41:04.378Z"
+      }
+    ],
     "status": {
       "checked": false
     }
