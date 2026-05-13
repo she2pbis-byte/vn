@@ -1408,5 +1408,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1778678455822",
+    "name": "Единая Россия",
+    "date": "2026-06-02",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Которосльная набережная, 53",
+    "admin": "Александр",
+    "guests": "300",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "6",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "2 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
