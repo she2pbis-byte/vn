@@ -1429,7 +1429,19 @@
       "пов": ""
     },
     "displayDate": "2 июнь",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1778678609628",
+        "name": "Телов",
+        "phone": "+7 (996) 926-51-72",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
