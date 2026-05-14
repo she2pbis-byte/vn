@@ -17,13 +17,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          # Опция cache удалена, чтобы не требовать package-lock.json
 
       - name: Install Dependencies
+        # Используем простую установку
         run: npm install
 
       - name: Build Web App
-        # Именно этот шаг создает папку ./dist, которую ищет Capacitor
+        # Создаем папку dist перед запуском Capacitor
         run: npm run build
 
       - name: Capacitor Sync
@@ -31,9 +32,9 @@ jobs:
           npx cap add android || true
           npx cap sync android
 
-      # Опционально: архивация папки android для скачивания (если нужно)
-      - name: Upload Android Folder
+      - name: Upload Android Project
+        # Сохраняем готовую папку android как артефакт сборки
         uses: actions/upload-artifact@v4
         with:
-          name: android-project
+          name: android-project-files
           path: android/
