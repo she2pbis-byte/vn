@@ -1,4 +1,4 @@
-name: Build Android
+name: Build Android App
 
 on:
   push:
@@ -10,22 +10,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # Рекомендуемая версия для текущих проектов
+          node-version: 20
+          cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
       - name: Build Web App
-        # ЭТО САМЫЙ ВАЖНЫЙ ШАГ. Он создает папку dist.
+        # Именно этот шаг создает папку ./dist, которую ищет Capacitor
         run: npm run build
 
       - name: Capacitor Sync
         run: |
           npx cap add android || true
           npx cap sync android
+
+      # Опционально: архивация папки android для скачивания (если нужно)
+      - name: Upload Android Folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-project
+          path: android/
