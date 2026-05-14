@@ -1,4 +1,4 @@
-name: Build Android APK (Force Icon)
+name: Build Android APK (Final Force Icon)
 
 on:
   push:
@@ -36,30 +36,32 @@ jobs:
           npx cap sync android
 
       - name: Force Overwrite Icons
-        # Устанавливаем ImageMagick для изменения размера и копируем иконку во все папки Android
         run: |
           sudo apt-get update && sudo apt-get install -y imagemagick
-          SOURCE_ICON="dist/icon.png"
-          RES_PATH="android/app/src/main/res"
           
-          # Проверяем, есть ли файл в папке dist (куда он попал после билда)
-          if [ -f "$SOURCE_ICON" ]; then
-            convert "$SOURCE_ICON" -resize 48x48 "$RES_PATH/mipmap-mdpi/ic_launcher.png"
-            convert "$SOURCE_ICON" -resize 72x72 "$RES_PATH/mipmap-hdpi/ic_launcher.png"
-            convert "$SOURCE_ICON" -resize 96x96 "$RES_PATH/mipmap-xhdpi/ic_launcher.png"
-            convert "$SOURCE_ICON" -resize 144x144 "$RES_PATH/mipmap-xxhdpi/ic_launcher.png"
-            convert "$SOURCE_ICON" -resize 192x192 "$RES_PATH/mipmap-xxxhdpi/ic_launcher.png"
-            # Также обновляем круглые иконки
-            convert "$SOURCE_ICON" -resize 48x48 "$RES_PATH/mipmap-mdpi/ic_launcher_round.png"
-            convert "$SOURCE_ICON" -resize 72x72 "$RES_PATH/mipmap-hdpi/ic_launcher_round.png"
-            convert "$SOURCE_ICON" -resize 96x96 "$RES_PATH/mipmap-xhdpi/ic_launcher_round.png"
-            convert "$SOURCE_ICON" -resize 144x144 "$RES_PATH/mipmap-xxhdpi/ic_launcher_round.png"
-            convert "$SOURCE_ICON" -resize 192x192 "$RES_PATH/mipmap-xxxhdpi/ic_launcher_round.png"
-            echo "Иконки успешно перезаписаны!"
+          # Ищем иконку везде: в корне, в src или в public
+          if [ -f "icon.png" ]; then
+            SOURCE_ICON="icon.png"
+          elif [ -f "public/icon.png" ]; then
+            SOURCE_ICON="public/icon.png"
+          elif [ -f "dist/icon.png" ]; then
+            SOURCE_ICON="dist/icon.png"
           else
-            echo "Файл icon.png не найден в dist!"
+            echo "Ошибка: Файл icon.png не найден ни в корне, ни в public, ни в dist!"
             exit 1
           fi
+          
+          echo "Использую иконку из: $SOURCE_ICON"
+          RES_PATH="android/app/src/main/res"
+          
+          # Генерируем все размеры иконки напрямую в папки Android
+          for size in 48x48:mipmap-mdpi 72x72:mipmap-hdpi 96x96:mipmap-xhdpi 144x144:mipmap-xxhdpi 192x192:mipmap-xxxhdpi; do
+            IFS=":" read -r res folder <<< "$size"
+            convert "$SOURCE_ICON" -resize "$res" "$RES_PATH/$folder/ic_launcher.png"
+            convert "$SOURCE_ICON" -resize "$res" "$RES_PATH/$folder/ic_launcher_round.png"
+          done
+          
+          echo "Иконки успешно внедрены в проект!"
 
       - name: Build Android APK
         run: |
