@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK with Icon
 
 on:
   push:
@@ -19,7 +19,6 @@ jobs:
           node-version: 20
 
       - name: Set up JDK 17
-        # Java необходима для работы Gradle (сборщика Android)
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -27,6 +26,12 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
+
+      - name: Generate Assets (Icons)
+        # Этот шаг берет icon.png из корня и генерирует все форматы для Android
+        run: |
+          npm install @capacitor/assets --save-dev
+          npx capacitor-assets generate --android
 
       - name: Build Web App
         run: npm run build
@@ -37,15 +42,13 @@ jobs:
           npx cap sync android
 
       - name: Build Android APK
-        # Запускаем сборку через Gradle прямо в облаке
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Upload APK
-        # Сохраняем готовый APK файл в артефакты
         uses: actions/upload-artifact@v4
         with:
-          name: staffcloud-debug-apk
+          name: staffcloud-with-icon
           path: android/app/build/outputs/apk/debug/app-debug.apk
