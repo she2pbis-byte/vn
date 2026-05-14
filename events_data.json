@@ -1548,5 +1548,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1778758318139",
+    "name": "Диво (Ганненко П.В.)",
+    "date": "2026-05-19",
+    "start": "",
+    "end": "",
+    "format": "Банкет",
+    "location": "",
+    "admin": "",
+    "guests": "45",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "5",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "19 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
