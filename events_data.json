@@ -1623,5 +1623,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1778765220819",
+    "name": "Эндоскописты",
+    "date": "2026-06-20",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Советская пл., 3",
+    "admin": "",
+    "guests": "250",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "6",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "20 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
