@@ -1017,7 +1017,7 @@
     ],
     "files": [],
     "status": {
-      "checked": true
+      "checked": false
     }
   },
   {
@@ -1174,7 +1174,7 @@
         "id": "1777890751880",
         "name": "Коршунов",
         "phone": "+79201431396",
-        "time": "",
+        "time": "07:00",
         "end": "",
         "roles": [
           "Официант"
@@ -1415,7 +1415,7 @@
     ],
     "files": [],
     "status": {
-      "checked": true
+      "checked": false
     }
   },
   {
