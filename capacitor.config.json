@@ -1,0 +1,9 @@
+{
+  "appId": "ru.vanilnoenebo.staffcloud",
+  "appName": "StaffCloud",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
