@@ -1,4 +1,4 @@
-name: Build Android App
+name: Build Android APK
 
 on:
   push:
@@ -17,14 +17,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # Опция cache удалена, чтобы не требовать package-lock.json
+
+      - name: Set up JDK 17
+        # Java необходима для работы Gradle (сборщика Android)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
 
       - name: Install Dependencies
-        # Используем простую установку
         run: npm install
 
       - name: Build Web App
-        # Создаем папку dist перед запуском Capacitor
         run: npm run build
 
       - name: Capacitor Sync
@@ -32,9 +36,16 @@ jobs:
           npx cap add android || true
           npx cap sync android
 
-      - name: Upload Android Project
-        # Сохраняем готовую папку android как артефакт сборки
+      - name: Build Android APK
+        # Запускаем сборку через Gradle прямо в облаке
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        # Сохраняем готовый APK файл в артефакты
         uses: actions/upload-artifact@v4
         with:
-          name: android-project-files
-          path: android/
+          name: staffcloud-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
