@@ -1,10 +1,10 @@
-name: Build Android App
+name: Build Android
 
 on:
   push:
     branches:
-      - main  # Запускать при каждом пуше в ветку main
-  workflow_dispatch: # Позволяет запускать сборку вручную кнопкой в интерфейсе GitHub
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,16 +13,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20 # Рекомендуемая версия для текущих проектов
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build Web Project
-        run: npm run build # Создаем ту самую папку dist
+      - name: Build Web App
+        # ЭТО САМЫЙ ВАЖНЫЙ ШАГ. Он создает папку dist.
+        run: npm run build
 
       - name: Capacitor Sync
         run: |
