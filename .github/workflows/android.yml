@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, master ] # Сборка запускается при пуше в эти ветки
+    branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
 
@@ -11,52 +11,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Берем исходный код из репозитория
+      # 1. Загружаем код из репозитория
       - name: Checkout Source
         uses: actions/checkout@v4
 
-      # 2. Устанавливаем Java (необходима для сборки Android)
+      # 2. Устанавливаем Java (нужна для сборки Android)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. Устанавливаем Node.js
+      # 3. Устанавливаем Node.js (БЕЗ КЭША, чтобы не было ошибок)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
-      # 4. Устанавливаем зависимости проекта
+      # 4. Создаем необходимые файлы проекта, если их нет
+      - name: Prepare Project Files
+        run: |
+          if [ ! -f package.json ]; then
+            echo '{"name": "vn-app", "version": "1.0.0", "dependencies": {"@capacitor/android": "^6.0.0", "@capacitor/cli": "^6.0.0", "@capacitor/core": "^6.0.0"}}' > package.json
+          fi
+          if [ ! -f capacitor.config.json ]; then
+            echo '{"appId": "com.vanilnoenebo.app", "appName": "VN Catering", "webDir": "."}' > capacitor.config.json
+          fi
+
+      # 5. Устанавливаем зависимости
       - name: Install Dependencies
         run: npm install
 
-      # 5. Собираем веб-часть (ваш HTML/JS/CSS)
-      # Если у вас нет скрипта build, просто создайте папку 'www' или 'dist' и скопируйте туда index.html
-      - name: Build Web Project
-        run: npm run build --if-present
-
-      # 6. Устанавливаем Android SDK и инструменты сборки
+      # 6. Устанавливаем Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # 7. Сборка самого APK через Capacitor
-      # Мы используем npx, чтобы не устанавливать всё глобально
+      # 7. Инициализируем и собираем Android проект
       - name: Build Android APK
         run: |
-          npx cap add android || true
+          # Создаем папку android, если её нет в репозитории
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+          
+          # Копируем ваш index.html и скрипты в проект Android
           npx cap copy android
+          
+          # Запускаем сборку APK
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # 8. Загрузка готового файла (Исправленная версия v4)
+      # 8. Сохраняем готовый APK (Версия v4)
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: catering-app-debug
-          # Путь к сгенерированному файлу после работы Gradle
+          name: VN-Catering-Debug-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 7
+          retention-days: 5
