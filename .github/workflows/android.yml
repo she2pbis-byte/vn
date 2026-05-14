@@ -1,4 +1,4 @@
-name: Build Android APK (Final Force Icon)
+name: Build Android APK (Ultra Search Icon)
 
 on:
   push:
@@ -39,29 +39,32 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y imagemagick
           
-          # Ищем иконку везде: в корне, в src или в public
-          if [ -f "icon.png" ]; then
-            SOURCE_ICON="icon.png"
-          elif [ -f "public/icon.png" ]; then
-            SOURCE_ICON="public/icon.png"
-          elif [ -f "dist/icon.png" ]; then
-            SOURCE_ICON="dist/icon.png"
-          else
-            echo "Ошибка: Файл icon.png не найден ни в корне, ни в public, ни в dist!"
+          # Находим путь к иконке, игнорируя регистр (icon.png, ICON.PNG, icon.Png)
+          # Ищем во всем репозитории, исключая папку android и node_modules
+          SOURCE_ICON=$(find . -maxdepth 3 -not -path "*/.*" -not -path "./android/*" -not -path "./node_modules/*" -iname "icon.png" | head -n 1)
+          
+          if [ -z "$SOURCE_ICON" ]; then
+            echo "КРИТИЧЕСКАЯ ОШИБКА: Файл icon.png не найден ни в одной папке проекта!"
+            ls -R # Выводим список всех файлов для отладки, если не нашли
             exit 1
           fi
           
-          echo "Использую иконку из: $SOURCE_ICON"
+          echo "Иконка найдена по адресу: $SOURCE_ICON"
           RES_PATH="android/app/src/main/res"
           
-          # Генерируем все размеры иконки напрямую в папки Android
-          for size in 48x48:mipmap-mdpi 72x72:mipmap-hdpi 96x96:mipmap-xhdpi 144x144:mipmap-xxhdpi 192x192:mipmap-xxxhdpi; do
-            IFS=":" read -r res folder <<< "$size"
-            convert "$SOURCE_ICON" -resize "$res" "$RES_PATH/$folder/ic_launcher.png"
-            convert "$SOURCE_ICON" -resize "$res" "$RES_PATH/$folder/ic_launcher_round.png"
+          # Массив размеров и папок
+          declare -A SIZES=( ["48x48"]="mdpi" ["72x72"]="hdpi" ["96x96"]="xhdpi" ["144x144"]="xxhdpi" ["192x192"]="xxxhdpi" )
+          
+          for size in "${!SIZES[@]}"; do
+            folder=${SIZES[$size]}
+            # Создаем папку если её нет
+            mkdir -p "$RES_PATH/mipmap-$folder"
+            # Генерируем обычную и круглую иконки
+            convert "$SOURCE_ICON" -resize "$size" "$RES_PATH/mipmap-$folder/ic_launcher.png"
+            convert "$SOURCE_ICON" -resize "$size" "$RES_PATH/mipmap-$folder/ic_launcher_round.png"
           done
           
-          echo "Иконки успешно внедрены в проект!"
+          echo "Иконки успешно обновлены во всех папках Android!"
 
       - name: Build Android APK
         run: |
