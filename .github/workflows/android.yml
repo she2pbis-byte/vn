@@ -27,18 +27,24 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Generate Assets (Icons)
-        # Этот шаг берет icon.png из корня и генерирует все форматы для Android
+      - name: Prepare and Generate Assets
+        # Создаем нужную структуру папок и генерируем иконки
         run: |
+          mkdir -p assets
+          if [ -f "icon.png" ]; then
+            cp icon.png assets/icon.png
+          fi
           npm install @capacitor/assets --save-dev
           npx capacitor-assets generate --android
 
       - name: Build Web App
         run: npm run build
 
-      - name: Capacitor Sync
+      - name: Capacitor Sync and Update
+        # update необходим, чтобы новые иконки привязались к проекту
         run: |
           npx cap add android || true
+          npx cap update android
           npx cap sync android
 
       - name: Build Android APK
