@@ -1569,7 +1569,19 @@
       "пов": ""
     },
     "displayDate": "19 июнь",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1778758518243",
+        "name": "Прохоров",
+        "phone": "+7 (980) 704-60-58",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
