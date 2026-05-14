@@ -1488,5 +1488,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1778743503713",
+    "name": "Белояр",
+    "date": "2026-05-23",
+    "start": "10:30",
+    "end": "12:30",
+    "format": "Фуршет",
+    "location": "",
+    "admin": "Михаил",
+    "guests": "60",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "23 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
