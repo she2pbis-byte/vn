@@ -1,4 +1,4 @@
-name: Build Android APK with Icon
+name: Build Android APK (Force Icon)
 
 on:
   push:
@@ -27,25 +27,39 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Prepare and Generate Assets
-        # Создаем нужную структуру папок и генерируем иконки
-        run: |
-          mkdir -p assets
-          if [ -f "icon.png" ]; then
-            cp icon.png assets/icon.png
-          fi
-          npm install @capacitor/assets --save-dev
-          npx capacitor-assets generate --android
-
       - name: Build Web App
         run: npm run build
 
-      - name: Capacitor Sync and Update
-        # update необходим, чтобы новые иконки привязались к проекту
+      - name: Capacitor Sync
         run: |
           npx cap add android || true
-          npx cap update android
           npx cap sync android
+
+      - name: Force Overwrite Icons
+        # Устанавливаем ImageMagick для изменения размера и копируем иконку во все папки Android
+        run: |
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          SOURCE_ICON="dist/icon.png"
+          RES_PATH="android/app/src/main/res"
+          
+          # Проверяем, есть ли файл в папке dist (куда он попал после билда)
+          if [ -f "$SOURCE_ICON" ]; then
+            convert "$SOURCE_ICON" -resize 48x48 "$RES_PATH/mipmap-mdpi/ic_launcher.png"
+            convert "$SOURCE_ICON" -resize 72x72 "$RES_PATH/mipmap-hdpi/ic_launcher.png"
+            convert "$SOURCE_ICON" -resize 96x96 "$RES_PATH/mipmap-xhdpi/ic_launcher.png"
+            convert "$SOURCE_ICON" -resize 144x144 "$RES_PATH/mipmap-xxhdpi/ic_launcher.png"
+            convert "$SOURCE_ICON" -resize 192x192 "$RES_PATH/mipmap-xxxhdpi/ic_launcher.png"
+            # Также обновляем круглые иконки
+            convert "$SOURCE_ICON" -resize 48x48 "$RES_PATH/mipmap-mdpi/ic_launcher_round.png"
+            convert "$SOURCE_ICON" -resize 72x72 "$RES_PATH/mipmap-hdpi/ic_launcher_round.png"
+            convert "$SOURCE_ICON" -resize 96x96 "$RES_PATH/mipmap-xhdpi/ic_launcher_round.png"
+            convert "$SOURCE_ICON" -resize 144x144 "$RES_PATH/mipmap-xxhdpi/ic_launcher_round.png"
+            convert "$SOURCE_ICON" -resize 192x192 "$RES_PATH/mipmap-xxxhdpi/ic_launcher_round.png"
+            echo "Иконки успешно перезаписаны!"
+          else
+            echo "Файл icon.png не найден в dist!"
+            exit 1
+          fi
 
       - name: Build Android APK
         run: |
@@ -56,5 +70,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: staffcloud-with-icon
+          name: staffcloud-fixed-icon
           path: android/app/build/outputs/apk/debug/app-debug.apk
