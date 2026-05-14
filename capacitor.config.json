@@ -1,6 +1,6 @@
 {
   "appId": "ru.vanilnoenebo.staffcloud",
-  "appName": "StaffCloud",
+  "appName": "АМероприятия",
   "webDir": "dist",
   "server": {
     "androidScheme": "https",
