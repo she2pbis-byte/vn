@@ -1663,5 +1663,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1778828336804",
+    "name": "Белояр",
+    "date": "2026-08-08",
+    "start": "",
+    "end": "",
+    "format": "",
+    "location": "",
+    "admin": "Михаил",
+    "guests": "40",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "8 август",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
