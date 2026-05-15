@@ -858,7 +858,7 @@
     "end": "21:00",
     "format": "Буфет",
     "location": "Волжская набережная, 23",
-    "admin": "Александр",
+    "admin": "Илья",
     "guests": "100",
     "extraInfo": "",
     "contactName": "",
@@ -1291,9 +1291,7 @@
         "roles": [
           "Официант"
         ],
-        "rolePaid": {
-          "Официант": true
-        }
+        "rolePaid": {}
       }
     ],
     "files": [],
