@@ -1425,7 +1425,16 @@
         "rolePaid": {}
       }
     ],
-    "files": [],
+    "files": [
+      {
+        "name": "20.05.26 - 21.05.26 Школа 21 Сбер Актуал.xlsx",
+        "path": "attachments/1778215141510/1778844738199_20.05.26 - 21.05.26 Школа 21 Сбер Актуал.xlsx",
+        "sha": "ed3de9ef244c8cb77bd90ca8f2b425866d39ab09",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1778215141510/1778844738199_20.05.26 - 21.05.26 Школа 21 Сбер Актуал.xlsx",
+        "size": 44246,
+        "uploadedAt": "2026-05-15T11:32:19.416Z"
+      }
+    ],
     "status": {
       "checked": true
     }
