@@ -1715,7 +1715,7 @@
   },
   {
     "id": "1778834467121",
-    "name": "ЗАГС",
+    "name": "ЗАГС (Антон)",
     "date": "2026-08-07",
     "start": "14:30",
     "end": "17:30",
@@ -1724,8 +1724,8 @@
     "admin": "Илья",
     "guests": "30",
     "extraInfo": "",
-    "contactName": "",
-    "contactPhone": "",
+    "contactName": "Антон",
+    "contactPhone": "+7 (920) 110-24-93",
     "neededStaff": {
       "оф": "",
       "бар": "",
