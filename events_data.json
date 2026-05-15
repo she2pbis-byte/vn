@@ -1712,5 +1712,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1778834467121",
+    "name": "ЗАГС",
+    "date": "2026-08-07",
+    "start": "14:30",
+    "end": "17:30",
+    "format": "Фуршет",
+    "location": "ул. Васильковая, 1",
+    "admin": "Илья",
+    "guests": "30",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "7 август",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
