@@ -1330,7 +1330,16 @@
         "rolePaid": {}
       }
     ],
-    "files": [],
+    "files": [
+      {
+        "name": "19.05.26 КБ 130 чел_ СБЕР NEW _финал.xlsx",
+        "path": "attachments/1777890876158/1778854143814_19.05.26 КБ 130 чел_ СБЕР NEW _финал.xlsx",
+        "sha": "82cea9c7ab510fdde40556203545ddb3afb6191c",
+        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777890876158/1778854143814_19.05.26 КБ 130 чел_ СБЕР NEW _финал.xlsx",
+        "size": 95605,
+        "uploadedAt": "2026-05-15T14:09:05.729Z"
+      }
+    ],
     "status": {
       "checked": true
     }
