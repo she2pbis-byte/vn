@@ -1738,5 +1738,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1778838857635",
+    "name": "Лариса (самовывоз)",
+    "date": "2026-05-29",
+    "start": "",
+    "end": "",
+    "format": "Самовывоз",
+    "location": "",
+    "admin": "Илья",
+    "guests": "1",
+    "extraInfo": "",
+    "contactName": "Лариса",
+    "contactPhone": "+7 (910) 963-19-54",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "29 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
