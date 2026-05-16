@@ -1819,5 +1819,31 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1778960077221",
+    "name": "Диво",
+    "date": "2026-06-19",
+    "start": "",
+    "end": "",
+    "format": "Банкет",
+    "location": "",
+    "admin": "Михаил",
+    "guests": "45",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "19 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
