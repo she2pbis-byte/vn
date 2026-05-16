@@ -1819,5 +1819,31 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1778960195695",
+    "name": "Эндоскоп (Худ.муз)",
+    "date": "2026-06-19",
+    "start": "",
+    "end": "",
+    "format": "Банкет",
+    "location": "",
+    "admin": "",
+    "guests": "0",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "19 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
