@@ -1589,7 +1589,7 @@
   {
     "id": "1779364638869",
     "name": "В Кругу Семьи",
-    "date": "2026-05-21",
+    "date": "2026-06-04",
     "start": "",
     "end": "",
     "format": "",
@@ -1600,12 +1600,12 @@
     "contactName": "",
     "contactPhone": "",
     "neededStaff": {
-      "оф": "",
+      "оф": "8",
       "бар": "",
       "мой": "",
       "пов": ""
     },
-    "displayDate": "21 май",
+    "displayDate": "4 июнь",
     "staff": [],
     "files": [],
     "status": {
