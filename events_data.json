@@ -1585,5 +1585,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1779364638869",
+    "name": "В Кругу Семьи",
+    "date": "2026-05-21",
+    "start": "",
+    "end": "",
+    "format": "",
+    "location": "",
+    "admin": "",
+    "guests": "400",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "21 май",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
