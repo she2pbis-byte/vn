@@ -740,7 +740,9 @@
         "roles": [
           "Официант"
         ],
-        "rolePaid": {}
+        "rolePaid": {
+          "Официант": true
+        }
       }
     ],
     "files": [
@@ -982,7 +984,9 @@
         "roles": [
           "Официант"
         ],
-        "rolePaid": {}
+        "rolePaid": {
+          "Официант": true
+        }
       }
     ],
     "files": [
