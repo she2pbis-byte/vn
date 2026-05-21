@@ -1585,5 +1585,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1779348701700",
+    "name": "ВКругуСемьи",
+    "date": "2026-06-04",
+    "start": "",
+    "end": "",
+    "format": "",
+    "location": "",
+    "admin": "",
+    "guests": "400",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "4 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
