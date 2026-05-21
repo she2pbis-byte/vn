@@ -1611,5 +1611,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1779369787842",
+    "name": "В кругц семьи",
+    "date": "2026-06-07",
+    "start": "",
+    "end": "",
+    "format": "",
+    "location": "",
+    "admin": "",
+    "guests": "200",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "5",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "7 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
