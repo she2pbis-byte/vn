@@ -827,7 +827,7 @@
     ],
     "files": [],
     "status": {
-      "checked": false
+      "checked": true
     }
   },
   {
@@ -1013,7 +1013,7 @@
     "location": "ул. Советская, 34",
     "admin": "Илья",
     "guests": "130",
-    "extraInfo": "08:30-09:30: велком\n10:30-11:00: первый кофе-брейк",
+    "extraInfo": "08:30-09:30: велком\n10:30-11:00: первый кофе-брейк\n12:30-13:30: Обед (столовая СБЕР)\n15:00-15:30: второй кофе-брейк",
     "contactName": "",
     "contactPhone": "",
     "neededStaff": {
@@ -1170,7 +1170,7 @@
         "id": "1778567329902",
         "name": "Телов",
         "phone": "+7 (996) 926-51-72",
-        "time": "10:00",
+        "time": "08:00",
         "end": "14:00",
         "roles": [
           "Официант"
@@ -1580,58 +1580,6 @@
       "пов": ""
     },
     "displayDate": "19 июнь",
-    "staff": [],
-    "files": [],
-    "status": {
-      "checked": false
-    }
-  },
-  {
-    "id": "1779348701700",
-    "name": "ВКругуСемьи",
-    "date": "2026-06-04",
-    "start": "",
-    "end": "",
-    "format": "",
-    "location": "",
-    "admin": "",
-    "guests": "400",
-    "extraInfo": "",
-    "contactName": "",
-    "contactPhone": "",
-    "neededStaff": {
-      "оф": "",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "4 июнь",
-    "staff": [],
-    "files": [],
-    "status": {
-      "checked": false
-    }
-  },
-  {
-    "id": "1779348749616",
-    "name": "ВКругуСемьи",
-    "date": "2026-06-07",
-    "start": "",
-    "end": "",
-    "format": "",
-    "location": "",
-    "admin": "",
-    "guests": "200",
-    "extraInfo": "",
-    "contactName": "",
-    "contactPhone": "",
-    "neededStaff": {
-      "оф": "",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "7 июнь",
     "staff": [],
     "files": [],
     "status": {
