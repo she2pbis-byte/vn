@@ -315,7 +315,7 @@
       "оф": "8",
       "бар": "",
       "мой": "",
-      "пов": "1"
+      "пов": "0"
     },
     "displayDate": "16 июнь",
     "staff": [
@@ -358,7 +358,10 @@
     ],
     "status": {
       "checked": false
-    }
+    },
+    "location": "",
+    "contactName": "",
+    "contactPhone": ""
   },
   {
     "id": "1777537309462",
