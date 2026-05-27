@@ -77,96 +77,6 @@
     "contactPhone": ""
   },
   {
-    "id": "1776111416416",
-    "name": "ПЯО",
-    "date": "2026-05-09",
-    "start": "08:00",
-    "end": "16:00",
-    "format": "Кофе-брейк",
-    "admin": "Илья",
-    "guests": "80",
-    "extraInfo": "",
-    "neededStaff": {
-      "оф": "4",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "9 май",
-    "staff": [
-      {
-        "id": "1777637075566",
-        "name": "Борисова",
-        "phone": "+79108196460",
-        "time": "06:00",
-        "end": "12:00",
-        "roles": [
-          "Официант"
-        ],
-        "rolePaid": {
-          "Официант": true
-        }
-      },
-      {
-        "id": "1776111447155",
-        "name": "Козлова",
-        "time": "06:00",
-        "end": "12:00",
-        "roles": [
-          "Официант"
-        ],
-        "rolesDisplay": "Официант",
-        "rolePaid": {
-          "Официант": true
-        },
-        "phone": "+79244025699"
-      },
-      {
-        "id": "1777884619985",
-        "name": "Пастухова",
-        "phone": "+79159662151",
-        "time": "06:00",
-        "end": "12:00",
-        "roles": [
-          "Официант"
-        ],
-        "rolePaid": {
-          "Официант": true
-        }
-      },
-      {
-        "id": "1776111438526",
-        "name": "Телов",
-        "time": "06:00",
-        "end": "12:00",
-        "roles": [
-          "Официант"
-        ],
-        "rolesDisplay": "Официант",
-        "rolePaid": {
-          "Официант": true
-        },
-        "phone": "+79969265172"
-      }
-    ],
-    "status": {
-      "checked": true
-    },
-    "location": "Советская пл., 3",
-    "files": [
-      {
-        "name": "09.05 КБ-80.xlsx",
-        "path": "attachments/1776111416416/1777900962653_09.05 КБ-80.xlsx",
-        "sha": "d8119744eab82765320f16c4e8136f04dbc013f2",
-        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1776111416416/1777900962653_09.05 КБ-80.xlsx",
-        "size": 35022,
-        "uploadedAt": "2026-05-04T13:22:44.061Z"
-      }
-    ],
-    "contactName": "Ирина Адольфовна",
-    "contactPhone": "+79807410220"
-  },
-  {
     "id": "1776111545652",
     "name": "Мэрия",
     "date": "2026-05-30",
@@ -477,41 +387,6 @@
     },
     "contactName": "Роман",
     "contactPhone": "+79806511563"
-  },
-  {
-    "id": "1777877185368",
-    "name": "Ночь в Музее",
-    "date": "2026-05-16",
-    "start": "18:30",
-    "end": "21:00",
-    "format": "Буфет",
-    "location": "Волжская набережная, 23",
-    "admin": "Илья",
-    "guests": "100",
-    "extraInfo": "",
-    "contactName": "",
-    "contactPhone": "",
-    "neededStaff": {
-      "оф": "",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "16 май",
-    "staff": [],
-    "files": [
-      {
-        "name": "16.05 ХудМуз НОЧЬ В МУЗЕЕ Буфет.xlsx",
-        "path": "attachments/1777877185368/1778854094169_16.05 ХудМуз НОЧЬ В МУЗЕЕ Буфет.xlsx",
-        "sha": "61f942451579342c01d450e9a6ef214902c2de49",
-        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777877185368/1778854094169_16.05 ХудМуз НОЧЬ В МУЗЕЕ Буфет.xlsx",
-        "size": 54790,
-        "uploadedAt": "2026-05-15T14:08:16.527Z"
-      }
-    ],
-    "status": {
-      "checked": true
-    }
   },
   {
     "id": "1777884055273",
