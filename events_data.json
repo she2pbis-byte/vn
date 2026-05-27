@@ -419,89 +419,6 @@
     "contactPhone": ""
   },
   {
-    "id": "1777537309462",
-    "name": "Прокуратура",
-    "date": "2026-05-07",
-    "start": "10:30",
-    "end": "20:00",
-    "format": "Несколько накрытий",
-    "location": "Прокуратура (ул. Некрасова, 5)",
-    "admin": "Михаил",
-    "guests": "18",
-    "extraInfo": "10:30 Банкет - 18\n17:00 Фуршет - 30",
-    "neededStaff": {
-      "оф": "3",
-      "бар": "",
-      "мой": "",
-      "пов": "0"
-    },
-    "displayDate": "7 май",
-    "staff": [
-      {
-        "id": "1777881280206",
-        "name": "Козлова",
-        "phone": "+79244025699",
-        "time": "08:00",
-        "end": "15:00",
-        "roles": [
-          "Официант"
-        ],
-        "rolePaid": {
-          "Официант": true
-        }
-      },
-      {
-        "id": "1777561547134",
-        "name": "Коршунов",
-        "phone": "+79201431396",
-        "time": "14:00",
-        "end": "21:00",
-        "roles": [
-          "Официант"
-        ],
-        "rolePaid": {
-          "Официант": true
-        }
-      },
-      {
-        "id": "1777877314161",
-        "name": "Прохоров",
-        "phone": "+79807046058",
-        "time": "08:00",
-        "end": "20:00",
-        "roles": [
-          "Официант"
-        ],
-        "rolePaid": {
-          "Официант": true
-        }
-      }
-    ],
-    "files": [
-      {
-        "name": "07.05 Банкет 18.xlsx",
-        "path": "attachments/1777537309462/1778059379623_07.05 Банкет 18.xlsx",
-        "sha": "f7f2d1aa237660bc3f3977a49df7d48a609a483e",
-        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777537309462/1778059379623_07.05 Банкет 18.xlsx",
-        "size": 46920,
-        "uploadedAt": "2026-05-06T09:23:01.034Z"
-      },
-      {
-        "name": "07.05 Фуршет 30.xlsx",
-        "path": "attachments/1777537309462/1778059408748_07.05 Фуршет 30.xlsx",
-        "sha": "275633c3834171f77435947493c12cab17c50f90",
-        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777537309462/1778059408748_07.05 Фуршет 30.xlsx",
-        "size": 34490,
-        "uploadedAt": "2026-05-06T09:23:30.268Z"
-      }
-    ],
-    "status": {
-      "checked": true
-    },
-    "contactName": "В.В.",
-    "contactPhone": ""
-  },
-  {
     "id": "1777537523148",
     "name": "Диво (Роман)",
     "date": "2026-08-09",
@@ -560,32 +477,6 @@
     },
     "contactName": "Роман",
     "contactPhone": "+79806511563"
-  },
-  {
-    "id": "1777637646860",
-    "name": "ПЯО ЧС",
-    "date": "2026-05-02",
-    "start": "16:00",
-    "end": "16:30",
-    "format": "Чайный стол",
-    "location": "Музей-заповедник",
-    "admin": "Илья",
-    "guests": "5",
-    "extraInfo": "",
-    "neededStaff": {
-      "оф": "",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "2 май",
-    "staff": [],
-    "files": [],
-    "status": {
-      "checked": true
-    },
-    "contactName": "Ирина Адольфовна",
-    "contactPhone": "+79807410220"
   },
   {
     "id": "1777877185368",
@@ -1147,41 +1038,6 @@
       }
     ],
     "files": [],
-    "status": {
-      "checked": true
-    }
-  },
-  {
-    "id": "1777897668779",
-    "name": "Сбер",
-    "date": "2026-05-06",
-    "start": "17:30",
-    "end": "18:00",
-    "format": "Кофе-брейк",
-    "location": "Сбер (ул. Советская, 34)",
-    "admin": "Михаил",
-    "guests": "70",
-    "extraInfo": "",
-    "contactName": "",
-    "contactPhone": "",
-    "neededStaff": {
-      "оф": "",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "6 май",
-    "staff": [],
-    "files": [
-      {
-        "name": "06.05. СБЕР КБ-80.xlsx",
-        "path": "attachments/1777897668779/1778040883049_06.05. СБЕР КБ-80.xlsx",
-        "sha": "f724aa8ad2b893875352c64f5e9986e13a38f2ee",
-        "download_url": "https://raw.githubusercontent.com/she2pbis-byte/vn/main/attachments/1777897668779/1778040883049_06.05. СБЕР КБ-80.xlsx",
-        "size": 49324,
-        "uploadedAt": "2026-05-06T04:14:47.395Z"
-      }
-    ],
     "status": {
       "checked": true
     }
