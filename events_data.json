@@ -1463,7 +1463,19 @@
       "пов": ""
     },
     "displayDate": "13 июнь",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1779965950991",
+        "name": "Побуджан",
+        "phone": "+7 (901) 273-16-19",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
