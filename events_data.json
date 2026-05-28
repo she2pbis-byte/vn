@@ -1034,7 +1034,7 @@
     ],
     "files": [],
     "status": {
-      "checked": true
+      "checked": false
     }
   },
   {
@@ -1438,6 +1438,32 @@
         "rolePaid": {}
       }
     ],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  },
+  {
+    "id": "1779965877669",
+    "name": "Тутаев",
+    "date": "2026-06-13",
+    "start": "",
+    "end": "",
+    "format": "Банкет",
+    "location": "",
+    "admin": "Михаил",
+    "guests": "11",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "13 июнь",
+    "staff": [],
     "files": [],
     "status": {
       "checked": false
