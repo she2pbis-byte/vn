@@ -1495,5 +1495,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1780342334421",
+    "name": "ПЯО ЧС",
+    "date": "2026-06-02",
+    "start": "11:30",
+    "end": "",
+    "format": "",
+    "location": "",
+    "admin": "Михаил",
+    "guests": "6",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "2 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
