@@ -1521,5 +1521,31 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1780342359864",
+    "name": "ПЯО ЧС",
+    "date": "2026-06-03",
+    "start": "14:00",
+    "end": "",
+    "format": "Чайный стол",
+    "location": "",
+    "admin": "",
+    "guests": "7",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "3 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
