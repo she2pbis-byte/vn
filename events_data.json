@@ -1558,5 +1558,31 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1780483637814",
+    "name": "ЯрОблСуд",
+    "date": "2026-06-09",
+    "start": "11:00",
+    "end": "",
+    "format": "Фуршет",
+    "location": "",
+    "admin": "",
+    "guests": "25",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "9 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
