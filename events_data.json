@@ -1510,7 +1510,9 @@
         "roles": [
           "Официант"
         ],
-        "rolePaid": {}
+        "rolePaid": {
+          "Официант": true
+        }
       }
     ],
     "files": [],
