@@ -190,7 +190,9 @@
           "Бармен"
         ],
         "rolesDisplay": "Бармен",
-        "rolePaid": {},
+        "rolePaid": {
+          "Бармен": true
+        },
         "phone": "+79201431396"
       },
       {
