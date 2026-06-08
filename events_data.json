@@ -1597,5 +1597,31 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1780898141067",
+    "name": "Суд",
+    "date": "2026-06-09",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "location": "",
+    "admin": "",
+    "guests": "25",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "9 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
