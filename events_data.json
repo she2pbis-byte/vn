@@ -1698,5 +1698,31 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1781079968092",
+    "name": "ГАИ",
+    "date": "2026-07-03",
+    "start": "11:00",
+    "end": "16:00",
+    "format": "Фуршет",
+    "location": "ТЮЗ",
+    "admin": "Илья",
+    "guests": "45",
+    "extraInfo": "11:00-12:00 Велком\n14:00-16:00 Фуршет",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "3 июль",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
