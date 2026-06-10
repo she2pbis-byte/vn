@@ -1724,5 +1724,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1781080023291",
+    "name": "Белояр",
+    "date": "2026-07-03",
+    "start": "",
+    "end": "",
+    "format": "Фуршет",
+    "location": "",
+    "admin": "",
+    "guests": "0",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "4",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "3 июль",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
