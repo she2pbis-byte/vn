@@ -1773,5 +1773,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1781186021305",
+    "name": "МОСКВА 208",
+    "date": "2026-06-18",
+    "start": "18:00",
+    "end": "23:00",
+    "format": "Банкет",
+    "location": "",
+    "admin": "",
+    "guests": "37",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "2",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "18 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
