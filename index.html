@@ -1396,7 +1396,6 @@
                 setShowSuggestions(false);
             };
 
-            // Прямая ссылка зафиксирована на основную ветку "main"
             const icsRawUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/events.ics`;
 
             const handleCopyIcsLink = () => {
@@ -1515,7 +1514,7 @@
                                 >
                                     <Icons.Sync size={24} />
                                 </button>
-                                <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Яндекс</span>
+                                <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Синхро</span>
                             </div>
 
                             {view === 'list' && (
@@ -1545,14 +1544,14 @@
                                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-[#60453910]">
                                         <div className="flex items-center gap-2">
                                             <Icons.Sync size={18} className="text-[#604539]" />
-                                            <h3 className="font-black uppercase tracking-[0.2em] text-[#604539] text-sm leading-none">Синхронизация</h3>
+                                            <h3 className="font-black uppercase tracking-[0.2em] text-[#604539] text-sm leading-none">Синхронизация календаря</h3>
                                         </div>
                                         <button onClick={() => setIsSyncOpen(false)} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={20} /></button>
                                     </div>
 
                                     <div className="space-y-5 text-xs">
                                         <div className="bg-[#60453905] p-4 rounded-2xl border-2 border-[#60453910]">
-                                            <p className="font-black text-[10px] uppercase text-[#604539] mb-1 tracking-wider">Прямая ссылка для Яндекс.Календаря:</p>
+                                            <p className="font-black text-[10px] uppercase text-[#604539] mb-1 tracking-wider">Прямая ссылка для календарей (Яндекс, Google, Samsung):</p>
                                             <div className="flex gap-2">
                                                 <input 
                                                     type="text" 
