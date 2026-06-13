@@ -295,14 +295,12 @@
                         const endClean = ev.end.replace(/:/g, '') + '00';
                         dtEnd = `DTEND:${dateClean}T${endClean}`;
                     } else {
-                        // По умолчанию +2 часа, если не указан конец
                         const startHour = parseInt(ev.start.split(':')[0]);
                         const startMin = ev.start.split(':')[1];
                         const endHour = String((startHour + 2) % 24).padStart(2, '0');
                         dtEnd = `DTEND:${dateClean}T${endHour}${startMin}00`;
                     }
                 } else {
-                    // Мероприятие на весь день
                     dtStart = `DTSTART;VALUE=DATE:${dateClean}`;
                     const nextDay = new Date(ev.date);
                     nextDay.setDate(nextDay.getDate() + 1);
@@ -312,7 +310,6 @@
 
                 const summary = `${ev.name} [${ev.format || 'Кейтеринг'}]`;
                 
-                // Детализированное описание события
                 let descParts = [];
                 if (ev.admin) descParts.push(`Администратор: ${ev.admin}`);
                 if (ev.guests) descParts.push(`Гости: ${ev.guests} чел.`);
@@ -771,13 +768,13 @@
             const [view, setView] = useState('list');
             const [showArchive, setShowArchive] = useState(false);
             const [archiveFilter, setArchiveFilter] = useState('all'); 
-            const [listFilter, setListFilter] = useState('all'); // 'all' or 'needs_staff'
+            const [listFilter, setListFilter] = useState('all'); 
             const [isFormOpen, setIsFormOpen] = useState(false);
             const [isCalendarOpen, setIsCalendarOpen] = useState(false);
             const [isStaffListOpen, setIsStaffListOpen] = useState(false);
             const [isStaffFormOpen, setIsStaffFormOpen] = useState(false);
             const [isCommonFilesOpen, setIsCommonFilesOpen] = useState(false);
-            const [isSyncOpen, setIsSyncOpen] = useState(false); // New state for Sync Panel
+            const [isSyncOpen, setIsSyncOpen] = useState(false); 
             const [events, setEvents] = useState([]);
             const [staffDatabase, setStaffDatabase] = useState([]); 
             const [commonFiles, setCommonFiles] = useState([]);
@@ -791,7 +788,7 @@
             const [showFormatSuggestions, setShowFormatSuggestions] = useState(false);
             const [showAdminSuggestions, setShowAdminSuggestions] = useState(false);
             const [activeStaffSchedule, setActiveStaffSchedule] = useState(null); 
-            const [branchName, setBranchName] = useState('main'); // default branch
+            const [branchName, setBranchName] = useState('main'); 
             const [copySuccess, setCopySuccess] = useState(false);
 
             const calendarRef = useRef(null);
@@ -888,7 +885,7 @@
                         body: JSON.stringify({ message: 'Update events via App', content: content, sha: getData.sha })
                     });
 
-                    // 2. Автоматическая генерация и заливка events.ics на GitHub для синхронизации с Яндекс.Календарем
+                    // 2. Автоматическая генерация и надежная заливка events.ics на GitHub
                     const icsContent = generateIcsFileContent(updatedEvents);
                     const icsContentBase64 = btoa(unescape(encodeURIComponent(icsContent)));
                     
@@ -902,10 +899,21 @@
                         icsSha = getIcsData.sha;
                     }
 
+                    const icsRequestBody = {
+                        message: 'Update events.ics calendar via App',
+                        content: icsContentBase64
+                    };
+                    if (icsSha) {
+                        icsRequestBody.sha = icsSha;
+                    }
+
                     await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/events.ics`, {
                         method: 'PUT',
-                        headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: 'Update events.ics calendar via App', content: icsContentBase64, sha: icsSha })
+                        headers: { 
+                            'Authorization': `token ${githubToken}`, 
+                            'Content-Type': 'application/json' 
+                        },
+                        body: JSON.stringify(icsRequestBody)
                     });
 
                     // 3. Обновление базы сотрудников (если передано)
@@ -1067,6 +1075,7 @@
                 }
             };
 
+            // Надежный метод загрузки файлов в песочницах: использование прямой ссылки на скачивание (Raw) или Base64 Data URL
             const handleFileDownload = async (fileData) => {
                 if (!githubToken) return;
                 setSyncStatus('loading');
@@ -1079,23 +1088,33 @@
                     if (!response.ok) throw new Error('Download failed');
                     const data = await response.json();
                     
+                    // Безопасное скачивание файлов в iframe через Base64 Data URL
                     const byteCharacters = atob(data.content.replace(/\s/g, ''));
                     const byteNumbers = new Array(byteCharacters.length);
                     for (let i = 0; i < byteCharacters.length; i++) {
                         byteNumbers[i] = byteCharacters.charCodeAt(i);
                     }
                     const byteArray = new Uint8Array(byteNumbers);
-                    const blob = new Blob([byteArray], { type: 'application/octet-stream' });
                     
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = fileData.name; 
-                    document.body.appendChild(link);
-                    link.click();
+                    // Определяем тип контента для корректной отдачи
+                    let mimeType = 'application/octet-stream';
+                    const ext = fileData.name.split('.').pop().toLowerCase();
+                    if (ext === 'pdf') mimeType = 'application/pdf';
+                    else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
                     
-                    document.body.removeChild(link);
-                    window.URL.revokeObjectURL(url);
+                    const blob = new Blob([byteArray], { type: mimeType });
+                    
+                    // Резервный способ скачивания (работает стабильнее в iframe)
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const link = document.createElement('a');
+                        link.href = reader.result;
+                        link.download = fileData.name;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    };
+                    reader.readAsDataURL(blob);
                     
                     setSyncStatus('success');
                     setTimeout(() => setSyncStatus('idle'), 2000);
@@ -1382,7 +1401,6 @@
                 setShowSuggestions(false);
             };
 
-            // URL до ICS-файла на серверах raw.githubusercontent.com
             const icsRawUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${branchName}/events.ics`;
 
             const handleCopyIcsLink = () => {
@@ -1400,17 +1418,21 @@
                 document.body.removeChild(textarea);
             };
 
+            // Переписанная отказоустойчивая функция скачивания .ics в песочницах iFrame
             const handleDownloadIcsManually = () => {
                 const icsContent = generateIcsFileContent(events);
                 const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'events.ics';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
+                
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const link = document.createElement('a');
+                    link.href = reader.result;
+                    link.download = 'events.ics';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+                reader.readAsDataURL(blob);
             };
 
             return (
@@ -1534,7 +1556,7 @@
                                     </div>
 
                                     <div className="space-y-5 text-xs text-[#1F1713]/80 leading-relaxed">
-                                        <p>Вы можете подключить автоматическое обновление всех ваших мероприятий в <strong>Яндекс.Календарь</strong>. Приложение автоматически генерирует универсальный файл календаря <code className="bg-[#FFECD240] px-1.5 py-0.5 rounded border text-[#604539] font-mono">events.ics</code> на вашем GitHub.</p>
+                                        <p>Вы можете подключить автоматическое обновление всех ваших мероприятий в <strong>Яндекс.Календарь</strong>. Приложение при сохранении изменений создаёт универсальный файл календаря <code className="bg-[#FFECD240] px-1.5 py-0.5 rounded border text-[#604539] font-mono">events.ics</code> на вашем GitHub.</p>
 
                                         <div className="bg-[#60453905] p-4 rounded-2xl border-2 border-[#60453910]">
                                             <p className="font-black text-[10px] uppercase text-[#604539] mb-2 tracking-wider">Основная ветка вашего репозитория:</p>
@@ -1564,11 +1586,11 @@
                                             <ol className="list-decimal pl-4 space-y-1.5">
                                                 <li>Скопируйте сгенерированную выше ссылку.</li>
                                                 <li>Откройте свой <a href="https://calendar.yandex.ru" target="_blank" rel="noopener noreferrer" className="text-[#C7886B] font-bold hover:underline inline-flex items-center gap-1">Яндекс.Календарь <Icons.ExternalLink size={10}/></a>.</li>
-                                                <li>В левом меню нажмите на иконку шестерёнки <span className="font-bold">«Настройки»</span> рядом с разделом <span className="font-bold">«Мои календари»</span> (или «Импорт и экспорт» в общих настройках).</li>
-                                                <li>Выберите пункт <span className="font-bold">«Подписаться на календарь»</span> (или «Новое событие по ссылке»).</li>
+                                                <li>В левом меню нажмите на иконку настройки <span className="font-bold">«Новый календарь»</span> или импорт.</li>
+                                                <li>Выберите пункт <span className="font-bold">«Импорт» / «Подписаться на календарь»</span> (или «Новое событие по ссылке»).</li>
                                                 <li>Вставьте скопированную ссылку в поле <span className="font-bold">«Ссылка»</span>.</li>
                                                 <li>Задайте имя календаря (например, <span className="italic">«Кейтеринг ВН»</span>) и выберите цвет.</li>
-                                                <li>Нажмите <span className="font-bold font-mono">«Подписаться»</span>.</li>
+                                                <li>Нажмите <span className="font-bold">«Подписаться»</span>.</li>
                                             </ol>
                                         </div>
 
