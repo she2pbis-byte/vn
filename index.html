@@ -295,12 +295,14 @@
                         const endClean = ev.end.replace(/:/g, '') + '00';
                         dtEnd = `DTEND:${dateClean}T${endClean}`;
                     } else {
+                        // По умолчанию +2 часа, если не указан конец
                         const startHour = parseInt(ev.start.split(':')[0]);
                         const startMin = ev.start.split(':')[1];
                         const endHour = String((startHour + 2) % 24).padStart(2, '0');
                         dtEnd = `DTEND:${dateClean}T${endHour}${startMin}00`;
                     }
                 } else {
+                    // Мероприятие на весь день
                     dtStart = `DTSTART;VALUE=DATE:${dateClean}`;
                     const nextDay = new Date(ev.date);
                     nextDay.setDate(nextDay.getDate() + 1);
@@ -310,6 +312,7 @@
 
                 const summary = `${ev.name} [${ev.format || 'Кейтеринг'}]`;
                 
+                // Детализированное описание события
                 let descParts = [];
                 if (ev.admin) descParts.push(`Администратор: ${ev.admin}`);
                 if (ev.guests) descParts.push(`Гости: ${ev.guests} чел.`);
@@ -768,13 +771,13 @@
             const [view, setView] = useState('list');
             const [showArchive, setShowArchive] = useState(false);
             const [archiveFilter, setArchiveFilter] = useState('all'); 
-            const [listFilter, setListFilter] = useState('all'); 
+            const [listFilter, setListFilter] = useState('all'); // 'all' or 'needs_staff'
             const [isFormOpen, setIsFormOpen] = useState(false);
             const [isCalendarOpen, setIsCalendarOpen] = useState(false);
             const [isStaffListOpen, setIsStaffListOpen] = useState(false);
             const [isStaffFormOpen, setIsStaffFormOpen] = useState(false);
             const [isCommonFilesOpen, setIsCommonFilesOpen] = useState(false);
-            const [isSyncOpen, setIsSyncOpen] = useState(false); 
+            const [isSyncOpen, setIsSyncOpen] = useState(false); // New state for Sync Panel
             const [events, setEvents] = useState([]);
             const [staffDatabase, setStaffDatabase] = useState([]); 
             const [commonFiles, setCommonFiles] = useState([]);
@@ -788,10 +791,8 @@
             const [showFormatSuggestions, setShowFormatSuggestions] = useState(false);
             const [showAdminSuggestions, setShowAdminSuggestions] = useState(false);
             const [activeStaffSchedule, setActiveStaffSchedule] = useState(null); 
+            const [branchName, setBranchName] = useState('main'); // default branch
             const [copySuccess, setCopySuccess] = useState(false);
-
-            // Стейт мобильного встроенного просмотрщика файлов
-            const [activeFileViewer, setActiveFileViewer] = useState(null);
 
             const calendarRef = useRef(null);
             const calendarButtonRef = useRef(null);
@@ -887,7 +888,7 @@
                         body: JSON.stringify({ message: 'Update events via App', content: content, sha: getData.sha })
                     });
 
-                    // 2. Автоматическая генерация и надежная заливка events.ics на GitHub
+                    // 2. Автоматическая генерация и заливка events.ics на GitHub для синхронизации с Яндекс.Календарем
                     const icsContent = generateIcsFileContent(updatedEvents);
                     const icsContentBase64 = btoa(unescape(encodeURIComponent(icsContent)));
                     
@@ -901,21 +902,10 @@
                         icsSha = getIcsData.sha;
                     }
 
-                    const icsRequestBody = {
-                        message: 'Update events.ics calendar via App',
-                        content: icsContentBase64
-                    };
-                    if (icsSha) {
-                        icsRequestBody.sha = icsSha;
-                    }
-
                     await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/events.ics`, {
                         method: 'PUT',
-                        headers: { 
-                            'Authorization': `token ${githubToken}`, 
-                            'Content-Type': 'application/json' 
-                        },
-                        body: JSON.stringify(icsRequestBody)
+                        headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: 'Update events.ics calendar via App', content: icsContentBase64, sha: icsSha })
                     });
 
                     // 3. Обновление базы сотрудников (если передано)
@@ -1077,7 +1067,6 @@
                 }
             };
 
-            // Переписанная адаптивная функция "Загрузки/Просмотра" файлов для поддержки WebView (APK)
             const handleFileDownload = async (fileData) => {
                 if (!githubToken) return;
                 setSyncStatus('loading');
@@ -1090,47 +1079,6 @@
                     if (!response.ok) throw new Error('Download failed');
                     const data = await response.json();
                     
-                    const ext = fileData.name.split('.').pop().toLowerCase();
-                    const isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-
-                    // Если это картинка — не качаем на диск, а открываем во встроенном мобильном просмотрщике
-                    if (isImg) {
-                        setActiveFileViewer({
-                            name: fileData.name,
-                            type: 'image',
-                            content: `data:image/${ext === 'jpg' ? 'jpeg' : ext};base64,${data.content.replace(/\s/g, '')}`
-                        });
-                        setSyncStatus('success');
-                        setTimeout(() => setSyncStatus('idle'), 1500);
-                        return;
-                    }
-
-                    // Если это PDF — показываем окно с выбором способов отображения/открытия на Android
-                    if (ext === 'pdf') {
-                        setActiveFileViewer({
-                            name: fileData.name,
-                            type: 'pdf',
-                            content: `data:application/pdf;base64,${data.content.replace(/\s/g, '')}`,
-                            rawDownloadUrl: data.download_url // Временный URL от GitHub для внешнего системного браузера
-                        });
-                        setSyncStatus('success');
-                        setTimeout(() => setSyncStatus('idle'), 1500);
-                        return;
-                    }
-
-                    // Для других документов (docx, xlsx) даем прямую ссылку с токеном в системный браузер
-                    if (['doc', 'docx', 'xls', 'xlsx'].includes(ext)) {
-                        setActiveFileViewer({
-                            name: fileData.name,
-                            type: 'doc',
-                            rawDownloadUrl: data.download_url
-                        });
-                        setSyncStatus('success');
-                        setTimeout(() => setSyncStatus('idle'), 1500);
-                        return;
-                    }
-                    
-                    // Универсальный фолбек-метод скачивания (для обычных браузеров)
                     const byteCharacters = atob(data.content.replace(/\s/g, ''));
                     const byteNumbers = new Array(byteCharacters.length);
                     for (let i = 0; i < byteCharacters.length; i++) {
@@ -1139,16 +1087,15 @@
                     const byteArray = new Uint8Array(byteNumbers);
                     const blob = new Blob([byteArray], { type: 'application/octet-stream' });
                     
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        const link = document.createElement('a');
-                        link.href = reader.result;
-                        link.download = fileData.name;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    };
-                    reader.readAsDataURL(blob);
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = fileData.name; 
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
                     
                     setSyncStatus('success');
                     setTimeout(() => setSyncStatus('idle'), 2000);
@@ -1435,7 +1382,8 @@
                 setShowSuggestions(false);
             };
 
-            const icsRawUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/events.ics`;
+            // URL до ICS-файла на серверах raw.githubusercontent.com
+            const icsRawUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${branchName}/events.ics`;
 
             const handleCopyIcsLink = () => {
                 const textarea = document.createElement('textarea');
@@ -1455,14 +1403,14 @@
             const handleDownloadIcsManually = () => {
                 const icsContent = generateIcsFileContent(events);
                 const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-                
-                // Для мобильного APK показываем окно ручного копирования контента календаря
-                setActiveFileViewer({
-                    name: 'events.ics',
-                    type: 'ics',
-                    text: icsContent,
-                    blob: blob
-                });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'events.ics';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
             };
 
             return (
@@ -1483,149 +1431,6 @@
                                 setIsSyncOpen(false);
                             }}
                         />
-                    )}
-
-                    {/* МОБИЛЬНЫЙ ПРОСМОТРЩИК ФАЙЛОВ И ДОКУМЕНТОВ (Решает проблему скачивания в WebView / APK) */}
-                    {activeFileViewer && (
-                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#1F1713]/90 backdrop-blur-md animate-in">
-                            <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border-2 border-[#604539] overflow-hidden">
-                                <div className="p-4 border-b border-[#60453910] flex items-center justify-between bg-gray-50">
-                                    <div className="min-w-0 pr-4">
-                                        <p className="text-[10px] uppercase font-black text-[#C7886B] tracking-wider leading-none">Просмотр документа</p>
-                                        <h4 className="text-xs font-bold text-[#1F1713] truncate mt-1">{activeFileViewer.name}</h4>
-                                    </div>
-                                    <button 
-                                        onClick={() => setActiveFileViewer(null)} 
-                                        className="p-1.5 bg-gray-200 text-[#1F1713] hover:text-red-500 rounded-lg transition-colors shrink-0"
-                                    >
-                                        <Icons.X size={18} />
-                                    </button>
-                                </div>
-
-                                <div className="p-6 max-h-[60vh] overflow-y-auto flex flex-col items-center justify-center">
-                                    {activeFileViewer.type === 'image' && (
-                                        <img 
-                                            src={activeFileViewer.content} 
-                                            alt={activeFileViewer.name} 
-                                            className="max-w-full max-h-[50vh] object-contain rounded-xl border border-gray-100 shadow-md"
-                                        />
-                                    )}
-
-                                    {activeFileViewer.type === 'pdf' && (
-                                        <div className="text-center py-4 space-y-4 w-full">
-                                            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
-                                                <Icons.FileText size={32} />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="font-extrabold text-sm uppercase text-[#1F1713]">PDF Документ</p>
-                                                <p className="text-[11px] text-gray-400">В мобильном приложении скачивание PDF может блокироваться.</p>
-                                            </div>
-                                            <div className="pt-2 space-y-2">
-                                                {activeFileViewer.rawDownloadUrl && (
-                                                    <a 
-                                                        href={activeFileViewer.rawDownloadUrl} 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer"
-                                                        className="block w-full py-2.5 bg-[#C7886B] text-white rounded-xl text-[10px] font-black uppercase tracking-wider text-center"
-                                                    >
-                                                        Открыть в браузере смартфона
-                                                    </a>
-                                                )}
-                                                <button 
-                                                    onClick={() => {
-                                                        const link = document.createElement('a');
-                                                        link.href = activeFileViewer.content;
-                                                        link.download = activeFileViewer.name;
-                                                        document.body.appendChild(link);
-                                                        link.click();
-                                                        document.body.removeChild(link);
-                                                    }}
-                                                    className="block w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-[#604539] rounded-xl text-[10px] font-black uppercase tracking-wider"
-                                                >
-                                                    Принудительно загрузить на телефон
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {activeFileViewer.type === 'doc' && (
-                                        <div className="text-center py-4 space-y-4 w-full">
-                                            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto">
-                                                <Icons.FileText size={32} />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="font-extrabold text-sm uppercase text-[#1F1713]">Документ Office</p>
-                                                <p className="text-[11px] text-gray-400">Встроенный плеер APK не поддерживает просмотр DOC/XLS.</p>
-                                            </div>
-                                            <div className="pt-2">
-                                                {activeFileViewer.rawDownloadUrl && (
-                                                    <a 
-                                                        href={activeFileViewer.rawDownloadUrl} 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer"
-                                                        className="block w-full py-3 bg-[#604539] text-white rounded-xl text-[10px] font-black uppercase tracking-wider text-center"
-                                                    >
-                                                        Открыть и скачать в браузере
-                                                    </a>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {activeFileViewer.type === 'ics' && (
-                                        <div className="w-full space-y-3">
-                                            <p className="text-[11px] text-gray-400 text-center leading-relaxed">В мобильных APK скачивание блокируется. Вы можете <b>скопировать текст ниже</b>, создать новый файл на телефоне и вставить его, либо попробовать скачать:</p>
-                                            <textarea 
-                                                readOnly 
-                                                value={activeFileViewer.text} 
-                                                className="w-full h-32 p-3 bg-gray-50 border rounded-xl text-[9px] font-mono outline-none resize-none"
-                                            />
-                                            <button 
-                                                onClick={() => {
-                                                    const txt = activeFileViewer.text;
-                                                    const textarea = document.createElement('textarea');
-                                                    textarea.value = txt;
-                                                    document.body.appendChild(textarea);
-                                                    textarea.select();
-                                                    document.execCommand('copy');
-                                                    document.body.removeChild(textarea);
-                                                    alert('Текст календаря скопирован в буфер обмена!');
-                                                }}
-                                                className="w-full py-2.5 bg-[#C7886B] text-white rounded-xl text-[10px] font-black uppercase tracking-wider"
-                                            >
-                                                Скопировать текст в буфер
-                                            </button>
-                                            <button 
-                                                onClick={() => {
-                                                    const reader = new FileReader();
-                                                    reader.onloadend = () => {
-                                                        const link = document.createElement('a');
-                                                        link.href = reader.result;
-                                                        link.download = activeFileViewer.name;
-                                                        document.body.appendChild(link);
-                                                        link.click();
-                                                        document.body.removeChild(link);
-                                                    };
-                                                    reader.readAsDataURL(activeFileViewer.blob);
-                                                }}
-                                                className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-[#604539] rounded-xl text-[10px] font-black uppercase tracking-wider"
-                                            >
-                                                Попробовать скачать файл
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="p-3 bg-gray-50 border-t border-[#60453910] text-center">
-                                    <button 
-                                        onClick={() => setActiveFileViewer(null)} 
-                                        className="py-2 px-8 bg-[#604539] text-white rounded-xl text-[9px] font-black uppercase tracking-widest"
-                                    >
-                                        Закрыть
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     )}
 
                     <div className="flex items-center justify-between gap-4 mb-6 bg-white/60 p-2 rounded-2xl border border-[#60453915] backdrop-blur-sm shadow-sm">
@@ -1693,7 +1498,7 @@
                                 >
                                     <Icons.Sync size={24} />
                                 </button>
-                                <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Синхро</span>
+                                <span className="text-[8px] font-bold uppercase text-[#604539] opacity-40">Яндекс</span>
                             </div>
 
                             {view === 'list' && (
@@ -1728,9 +1533,16 @@
                                         <button onClick={() => setIsSyncOpen(false)} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={20} /></button>
                                     </div>
 
-                                    <div className="space-y-5 text-xs">
+                                    <div className="space-y-5 text-xs text-[#1F1713]/80 leading-relaxed">
+                                        <p>Вы можете подключить автоматическое обновление всех ваших мероприятий в <strong>Яндекс.Календарь</strong>. Приложение автоматически генерирует универсальный файл календаря <code className="bg-[#FFECD240] px-1.5 py-0.5 rounded border text-[#604539] font-mono">events.ics</code> на вашем GitHub.</p>
+
                                         <div className="bg-[#60453905] p-4 rounded-2xl border-2 border-[#60453910]">
-                                            <p className="font-black text-[10px] uppercase text-[#604539] mb-1 tracking-wider">Прямая ссылка для календарей (Яндекс, Google, Samsung):</p>
+                                            <p className="font-black text-[10px] uppercase text-[#604539] mb-2 tracking-wider">Основная ветка вашего репозитория:</p>
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <button onClick={() => setBranchName('main')} className={`px-3 py-1 rounded-lg font-bold ${branchName === 'main' ? 'bg-[#604539] text-white' : 'bg-gray-100 text-gray-500'}`}>main</button>
+                                                <button onClick={() => setBranchName('master')} className={`px-3 py-1 rounded-lg font-bold ${branchName === 'master' ? 'bg-[#604539] text-white' : 'bg-gray-100 text-gray-500'}`}>master</button>
+                                            </div>
+                                            <p className="font-black text-[10px] uppercase text-[#604539] mb-1 tracking-wider">Прямая ссылка для Яндекс.Календаря:</p>
                                             <div className="flex gap-2">
                                                 <input 
                                                     type="text" 
@@ -1747,12 +1559,27 @@
                                             </div>
                                         </div>
 
-                                        <button 
-                                            onClick={handleDownloadIcsManually}
-                                            className="w-full py-3 bg-[#604539] hover:bg-[#C7886B] text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg"
-                                        >
-                                            <Icons.FileText size={14} /> Получить файл .ics (Календарь)
-                                        </button>
+                                        <div className="space-y-2.5">
+                                            <h4 className="font-extrabold uppercase text-[11px] tracking-wide text-[#604539]">Инструкция по настройке в Яндексе:</h4>
+                                            <ol className="list-decimal pl-4 space-y-1.5">
+                                                <li>Скопируйте сгенерированную выше ссылку.</li>
+                                                <li>Откройте свой <a href="https://calendar.yandex.ru" target="_blank" rel="noopener noreferrer" className="text-[#C7886B] font-bold hover:underline inline-flex items-center gap-1">Яндекс.Календарь <Icons.ExternalLink size={10}/></a>.</li>
+                                                <li>В левом меню нажмите на иконку шестерёнки <span className="font-bold">«Настройки»</span> рядом с разделом <span className="font-bold">«Мои календари»</span> (или «Импорт и экспорт» в общих настройках).</li>
+                                                <li>Выберите пункт <span className="font-bold">«Подписаться на календарь»</span> (или «Новое событие по ссылке»).</li>
+                                                <li>Вставьте скопированную ссылку в поле <span className="font-bold">«Ссылка»</span>.</li>
+                                                <li>Задайте имя календаря (например, <span className="italic">«Кейтеринг ВН»</span>) и выберите цвет.</li>
+                                                <li>Нажмите <span className="font-bold font-mono">«Подписаться»</span>.</li>
+                                            </ol>
+                                        </div>
+
+                                        <div className="pt-4 border-t border-dashed border-[#60453915] flex gap-3">
+                                            <button 
+                                                onClick={handleDownloadIcsManually}
+                                                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-[#604539] rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                                            >
+                                                <Icons.FileText size={14} /> Скачать файл .ics вручную
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ) : isCommonFilesOpen ? (
@@ -2133,4 +1960,4 @@
         root.render(<App />);
     </script>
 </body>
-</html>
+    </html>
