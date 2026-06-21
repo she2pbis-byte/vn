@@ -15,7 +15,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #FFECD2; scroll-behavior: smooth; }
         .animate-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -233,7 +233,7 @@
             return `+7 (${phoneNumber.slice(1, 4)}) ${phoneNumber.slice(4, 7)}-${phoneNumber.slice(7, 9)}-${phoneNumber.slice(9, 11)}`;
         };
 
-        const formatOnlyNumbers = (value) => value.replace(/[^\d]/g, '');
+        const formatOnlyNumbers = (value) => value ? value.toString().replace(/[^\d]/g, '') : '';
 
         const keyToLabel = { 'оф': 'Официант', 'бар': 'Бармен', 'мой': 'Мойщица', 'пов': 'Повар' };
         
@@ -241,7 +241,11 @@
             const counts = { 'Официант': 0, 'Бармен': 0, 'Мойщица': 0, 'Повар': 0 };
             if (!ev || !ev.staff) return counts;
             ev.staff.forEach(s => {
-                s.roles.forEach(role => { if (counts.hasOwnProperty(role)) counts[role]++; });
+                if (s && s.roles) {
+                    s.roles.forEach(role => { 
+                        if (counts.hasOwnProperty(role)) counts[role]++; 
+                    });
+                }
             });
             return counts;
         };
@@ -249,12 +253,12 @@
         const checkEventCompleteness = (ev) => {
             if (!ev || !ev.start) return false;
             if (ev.staff && ev.staff.length > 0) {
-                if (ev.staff.some(s => !s.time)) return false;
+                if (ev.staff.some(s => s && !s.time)) return false;
             }
             const counts = getStaffCounts(ev);
             const rolesComplete = ['оф', 'бар', 'мой', 'пов'].every(roleKey => {
                 const target = parseInt(ev.neededStaff?.[roleKey] || 0);
-                const actual = counts[keyToLabel[roleKey]];
+                const actual = counts[keyToLabel[roleKey]] || 0;
                 return target === 0 || actual >= target;
             });
             if (!rolesComplete) return false;
@@ -265,7 +269,7 @@
         const isEventFullyPaid = (ev) => {
             if (!ev || !ev.staff || ev.staff.length === 0) return true;
             return ev.staff.every(s => {
-                if (!s.roles || s.roles.length === 0) return true;
+                if (!s || !s.roles || s.roles.length === 0) return true;
                 return s.roles.every(role => s.rolePaid && s.rolePaid[role] === true);
             });
         };
@@ -341,7 +345,7 @@
             );
         };
 
-        const Calendar = ({ events, onSelectDate, selectedDate, calendarRef }) => {
+        const Calendar = ({ events = [], onSelectDate, selectedDate, calendarRef }) => {
             const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate || new Date()));
             const dateInputRef = useRef(null);
             const today = new Date();
@@ -362,7 +366,8 @@
 
             const hasDebtInHistory = useMemo(() => {
                 const firstDayOfCurrentView = new Date(year, month, 1);
-                return events.some(ev => {
+                return (events || []).some(ev => {
+                    if (!ev || !ev.date) return false;
                     const evDate = new Date(ev.date);
                     return evDate < firstDayOfCurrentView && ev.date < todayStr && !isEventFullyPaid(ev);
                 });
@@ -419,7 +424,7 @@
             const getDayEvents = (day) => {
                 if (!day) return [];
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                return events.filter(e => e.date === dateStr);
+                return (events || []).filter(e => e && e.date === dateStr);
             };
 
             const hasEvent = (day) => getDayEvents(day).length > 0;
@@ -428,7 +433,7 @@
                 if (!day || !isPast(day)) return false;
                 const daysEvents = getDayEvents(day);
                 if (daysEvents.length === 0) return false;
-                return daysEvents.some(ev => !isEventFullyPaid(ev));
+                return daysEvents.some(ev => ev && !isEventFullyPaid(ev));
             };
 
             const getDayStatusClasses = (day) => {
@@ -436,8 +441,8 @@
                 const daysEvents = getDayEvents(day);
                 if (daysEvents.length === 0) return "";
                 
-                const hasIncomplete = daysEvents.some(ev => !checkEventCompleteness(ev));
-                const hasComplete = daysEvents.some(ev => checkEventCompleteness(ev));
+                const hasIncomplete = daysEvents.some(ev => ev && !checkEventCompleteness(ev));
+                const hasComplete = daysEvents.some(ev => ev && checkEventCompleteness(ev));
 
                 if (hasIncomplete && hasComplete) return "status-both";
                 if (hasIncomplete) return "status-error";
@@ -522,30 +527,35 @@
             );
         };
 
-        const StaffList = ({ staffDatabase, events, onClose }) => {
+        const StaffList = ({ staffDatabase = [], events = [], onClose }) => {
             const getStaffPaymentStatus = (name) => {
+                if (!name) return [];
                 const todayStr = new Date().toISOString().split('T')[0];
+                const cleanTargetName = name.trim().toLowerCase();
                 
-                return events
+                return (events || [])
                     .filter(ev => 
-                        ev.staff && 
-                        ev.staff.some(s => s.name.toLowerCase() === name.toLowerCase())
+                        ev && ev.staff && 
+                        ev.staff.some(s => s && s.name && s.name.trim().toLowerCase() === cleanTargetName)
                     )
                     .map(ev => {
-                        const staffEntry = ev.staff.find(s => s.name.toLowerCase() === name.toLowerCase());
-                        const isPast = ev.date < todayStr;
+                        const staffEntry = ev.staff.find(s => s && s.name && s.name.trim().toLowerCase() === cleanTargetName);
+                        if (!staffEntry) return null;
                         
-                        const hasUnpaidRole = staffEntry.roles.some(role => 
+                        const isPast = ev.date < todayStr;
+                        const rolesList = staffEntry.roles || [];
+                        const hasUnpaidRole = rolesList.some(role => 
                             !staffEntry.rolePaid || staffEntry.rolePaid[role] !== true
                         );
 
                         return {
-                            date: ev.date,
-                            display: ev.date.split('-').slice(1).reverse().join('.'), 
+                            date: ev.date || '',
+                            display: ev.date ? ev.date.split('-').slice(1).reverse().join('.') : '—', 
                             isUnpaid: hasUnpaidRole,
                             isPast: isPast
                         };
                     })
+                    .filter(Boolean)
                     .filter(status => !status.isPast || status.isUnpaid)
                     .sort((a, b) => a.date.localeCompare(b.date));
             };
@@ -560,7 +570,8 @@
                         <button onClick={onClose} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={20} /></button>
                     </div>
                     <div className="space-y-4 h-auto pr-2">
-                        {staffDatabase.sort((a,b) => a.name.localeCompare(b.name)).map((s, idx) => {
+                        {(staffDatabase || []).sort((a,b) => (a.name || '').localeCompare(b.name || '')).map((s, idx) => {
+                            if (!s || !s.name) return null;
                             const eventStatuses = getStaffPaymentStatus(s.name);
                             const hasAnyDebt = eventStatuses.some(status => status.isPast && status.isUnpaid);
 
@@ -626,11 +637,16 @@
             );
         };
 
-        const StaffScheduleModal = ({ staffName, events, onClose, onSelectEvent, todayStr }) => {
+        const StaffScheduleModal = ({ staffName, events = [], onClose, onSelectEvent, todayStr }) => {
             const staffFutureEvents = useMemo(() => {
-                return events
-                    .filter(ev => ev.date >= todayStr && ev.staff && ev.staff.some(s => s.name.toLowerCase() === staffName.toLowerCase()))
-                    .sort((a, b) => a.date.localeCompare(b.date));
+                if (!staffName) return [];
+                const cleanTargetName = staffName.trim().toLowerCase();
+                return (events || [])
+                    .filter(ev => 
+                        ev && ev.date && ev.date >= todayStr && 
+                        ev.staff && ev.staff.some(s => s && s.name && s.name.trim().toLowerCase() === cleanTargetName)
+                    )
+                    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
             }, [staffName, events, todayStr]);
 
             return (
@@ -649,7 +665,9 @@
                             {staffFutureEvents.length > 0 ? (
                                 <div className="space-y-3">
                                     {staffFutureEvents.map(ev => {
-                                        const staffEntry = ev.staff.find(s => s.name.toLowerCase() === staffName.toLowerCase());
+                                        const cleanTargetName = staffName.trim().toLowerCase();
+                                        const staffEntry = ev.staff.find(s => s && s.name && s.name.trim().toLowerCase() === cleanTargetName);
+                                        if (!staffEntry) return null;
                                         return (
                                             <div 
                                                 key={ev.id} 
@@ -657,11 +675,15 @@
                                                 className="flex gap-3 p-3 bg-gray-50 rounded-xl border-2 border-transparent hover:border-[#FFECD2] transition-all cursor-pointer group active:scale-[0.98]"
                                             >
                                                 <div className="w-10 shrink-0 flex flex-col items-center justify-center border-r-2 border-[#60453910] pr-3 group-hover:border-[#FFECD2]">
-                                                    <span className="text-[8px] font-black uppercase text-gray-400">{new Date(ev.date).toLocaleString('ru', { month: 'short' })}</span>
-                                                    <span className="text-lg font-black text-[#604539] leading-none">{new Date(ev.date).getDate()}</span>
+                                                    <span className="text-[8px] font-black uppercase text-gray-400">
+                                                        {ev.date ? new Date(ev.date).toLocaleString('ru', { month: 'short' }) : '—'}
+                                                    </span>
+                                                    <span className="text-lg font-black text-[#604539] leading-none">
+                                                        {ev.date ? new Date(ev.date).getDate() : '—'}
+                                                    </span>
                                                 </div>
                                                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                    <p className="text-[15px] font-bold uppercase truncate text-[#1F1713] group-hover:text-[#C7886B]">{ev.name}</p>
+                                                    <p className="text-[15px] font-bold uppercase truncate text-[#1F1713] group-hover:text-[#C7886B]">{ev.name || 'Без названия'}</p>
                                                     <div className="flex items-center gap-2 mt-1.5">
                                                         <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-[#C7886B]">
                                                             <Icons.Clock size={14} />
@@ -694,7 +716,7 @@
             const [view, setView] = useState('list');
             const [showArchive, setShowArchive] = useState(false);
             const [archiveFilter, setArchiveFilter] = useState('all'); 
-            const [listFilter, setListFilter] = useState('all'); // 'all' or 'needs_staff'
+            const [listFilter, setListFilter] = useState('all'); 
             const [isFormOpen, setIsFormOpen] = useState(false);
             const [isCalendarOpen, setIsCalendarOpen] = useState(false);
             const [isStaffListOpen, setIsStaffListOpen] = useState(false);
@@ -768,18 +790,18 @@
                     if (response.ok) {
                         const data = await response.json();
                         const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                        setEvents(content);
+                        setEvents(Array.isArray(content) ? content : []);
                         
                         if (staffRes && staffRes.ok) {
                             const sData = await staffRes.json();
                             const sContent = JSON.parse(decodeURIComponent(escape(atob(sData.content))));
-                            setStaffDatabase(sContent || []);
+                            setStaffDatabase(Array.isArray(sContent) ? sContent : []);
                         }
 
                         if (commonFilesRes && commonFilesRes.ok) {
                             const cData = await commonFilesRes.json();
                             const cContent = JSON.parse(decodeURIComponent(escape(atob(cData.content))));
-                            setCommonFiles(cContent || []);
+                            setCommonFiles(Array.isArray(cContent) ? cContent : []);
                         }
 
                         setSyncStatus('success');
@@ -796,7 +818,6 @@
                 if (!githubToken) return;
                 setSyncStatus('loading');
                 try {
-                    // Update events
                     const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
                         headers: { 'Authorization': `token ${githubToken}` }
                     });
@@ -808,7 +829,6 @@
                         body: JSON.stringify({ message: 'Update events via App', content: content, sha: getData.sha })
                     });
 
-                    // Update Staff Base if provided
                     if (updatedStaffBase) {
                         const getSRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.staffPath}`, {
                             headers: { 'Authorization': `token ${githubToken}` }
@@ -828,7 +848,6 @@
                         });
                     }
 
-                    // Update Common Files list if provided
                     if (updatedCommonFiles) {
                         const getCRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.commonFilesPath}`, {
                             headers: { 'Authorization': `token ${githubToken}` }
@@ -854,10 +873,10 @@
             }, [githubToken]);
 
             const generateSmsLink = (staffMember, event) => {
-                if (!staffMember.phone || !staffMember.time) return null;
+                if (!staffMember || !staffMember.phone || !staffMember.time) return null;
 
-                const dateParts = event.date.split('-');
-                const formattedDate = `${dateParts[2]}.${dateParts[1]}`;
+                const dateParts = event.date ? event.date.split('-') : [];
+                const formattedDate = dateParts.length === 3 ? `${dateParts[2]}.${dateParts[1]}` : '';
                 const cleanPhone = staffMember.phone.replace(/\D/g, '');
                 const locationPart = event.location ? `, ${event.location}` : '';
                 const message = `Привет. ${formattedDate} к ${staffMember.time}${locationPart}.`;
@@ -914,7 +933,7 @@
                                 setEvents(updatedEvents);
                                 await saveToGithub(updatedEvents);
                             } else {
-                                const updatedCommonFiles = [...commonFiles, newFileData];
+                                const updatedCommonFiles = [...(commonFiles || []), newFileData];
                                 setCommonFiles(updatedCommonFiles);
                                 await saveToGithub(events, null, updatedCommonFiles);
                             }
@@ -949,14 +968,15 @@
                         if (type === 'event') {
                             const updatedEvents = events.map(ev => {
                                 if (ev.id === selectedEventId) {
-                                    return { ...ev, files: ev.files.filter(f => f.sha !== fileData.sha) };
+                                    const currentFiles = ev.files || [];
+                                    return { ...ev, files: currentFiles.filter(f => f.sha !== fileData.sha) };
                                 }
                                 return ev;
                             });
                             setEvents(updatedEvents);
                             await saveToGithub(updatedEvents);
                         } else {
-                            const updatedCommonFiles = commonFiles.filter(f => f.sha !== fileData.sha);
+                            const updatedCommonFiles = (commonFiles || []).filter(f => f.sha !== fileData.sha);
                             setCommonFiles(updatedCommonFiles);
                             await saveToGithub(events, null, updatedCommonFiles);
                         }
@@ -1021,32 +1041,37 @@
             const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
             
             const sortedEvents = useMemo(() => {
-                let filtered = events;
+                let filtered = events || [];
                 
                 if (filterDate) {
-                    filtered = events.filter(ev => ev.date === filterDate);
+                    filtered = filtered.filter(ev => ev && ev.date === filterDate);
                 } else {
-                    filtered = events.filter(ev => showArchive ? ev.date < todayStr : ev.date >= todayStr);
+                    filtered = filtered.filter(ev => ev && (showArchive ? ev.date < todayStr : ev.date >= todayStr));
                     
                     if (showArchive && archiveFilter === 'unpaid') {
-                        filtered = filtered.filter(ev => !isEventFullyPaid(ev));
+                        filtered = filtered.filter(ev => ev && !isEventFullyPaid(ev));
                     }
 
                     if (!showArchive && listFilter === 'needs_staff') {
                         filtered = filtered.filter(ev => {
+                            if (!ev) return false;
                             const counts = getStaffCounts(ev);
                             return ['оф', 'бар', 'мой', 'пов'].some(roleKey => {
                                 const target = parseInt(ev.neededStaff?.[roleKey] || 0);
-                                const actual = counts[keyToLabel[roleKey]];
+                                const actual = counts[keyToLabel[roleKey]] || 0;
                                 return target > 0 && actual < target;
                             });
                         });
                     }
                 }
-                return filtered.sort((a, b) => showArchive ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
+                return filtered.sort((a, b) => {
+                    const dateA = a.date || '';
+                    const dateB = b.date || '';
+                    return showArchive ? dateB.localeCompare(dateA) : dateA.localeCompare(dateB);
+                });
             }, [events, showArchive, todayStr, filterDate, archiveFilter, listFilter]);
 
-            const currentEvent = events.find(e => e.id === selectedEventId);
+            const currentEvent = (events || []).find(e => e && e.id === selectedEventId);
 
             const handleAddEvent = () => {
                 if (!newEvent.name || !newEvent.guests) return;
@@ -1069,7 +1094,7 @@
 
             const toggleEventChecked = (e, eventId) => {
                 e.stopPropagation();
-                const updated = events.map(ev => ev.id === eventId ? { ...ev, status: { ...ev.status, checked: !ev.status?.checked } } : ev);
+                const updated = events.map(ev => ev.id === eventId ? { ...ev, status: { ...(ev.status || {}), checked: !ev.status?.checked } } : ev);
                 setEvents(updated);
                 saveToGithub(updated);
             };
@@ -1105,11 +1130,11 @@
             };
 
             const handleAddStaff = () => {
-                if (!newStaff.name || newStaff.roles.length === 0) return;
+                if (!newStaff.name || !newStaff.roles || newStaff.roles.length === 0) return;
                 
-                let updatedStaffBase = [...staffDatabase];
+                let updatedStaffBase = [...(staffDatabase || [])];
                 if (newStaff.phone) {
-                    const index = updatedStaffBase.findIndex(s => s.name.toLowerCase() === newStaff.name.toLowerCase());
+                    const index = updatedStaffBase.findIndex(s => s && s.name && s.name.trim().toLowerCase() === newStaff.name.trim().toLowerCase());
                     if (index !== -1) {
                         updatedStaffBase[index] = { name: newStaff.name, phone: newStaff.phone };
                     } else {
@@ -1120,10 +1145,10 @@
 
                 let updated;
                 if (editingStaffId) {
-                    updated = events.map(ev => ev.id === selectedEventId ? { ...ev, staff: ev.staff.map(s => s.id === editingStaffId ? { ...s, ...newStaff } : s) } : ev);
+                    updated = events.map(ev => ev.id === selectedEventId ? { ...ev, staff: (ev.staff || []).map(s => s.id === editingStaffId ? { ...s, ...newStaff } : s) } : ev);
                     setEditingStaffId(null);
                 } else {
-                    updated = events.map(ev => ev.id === selectedEventId ? { ...ev, staff: [...ev.staff, { id: Date.now().toString(), ...newStaff, rolePaid: {} }] } : ev);
+                    updated = events.map(ev => ev.id === selectedEventId ? { ...ev, staff: [...(ev.staff || []), { id: Date.now().toString(), ...newStaff, rolePaid: {} }] } : ev);
                 }
                 setEvents(updated);
                 saveToGithub(updated, updatedStaffBase);
@@ -1134,7 +1159,7 @@
             const toggleStaffRolePaid = (staffId, role) => {
                 const updated = events.map(ev => {
                     if (ev.id !== selectedEventId) return ev;
-                    return { ...ev, staff: ev.staff.map(s => s.id === staffId ? { ...s, rolePaid: { ...(s.rolePaid || {}), [role]: !s.rolePaid?.[role] } } : s) };
+                    return { ...ev, staff: (ev.staff || []).map(s => s.id === staffId ? { ...s, rolePaid: { ...(s.rolePaid || {}), [role]: !s.rolePaid?.[role] } } : s) };
                 });
                 setEvents(updated);
                 saveToGithub(updated);
@@ -1217,6 +1242,7 @@
             };
 
             const getFileIconData = (fileName) => {
+                if (!fileName) return { label: 'file', color: '#4b5563' };
                 const ext = fileName.split('.').pop().toLowerCase();
                 if (['pdf'].includes(ext)) return { label: 'pdf', color: '#ef4444' };
                 if (['doc', 'docx'].includes(ext)) return { label: 'doc', color: '#2563eb' };
@@ -1233,7 +1259,7 @@
 
             const filteredStaffSuggestions = useMemo(() => {
                 if (!newStaff.name || newStaff.name.length < 2) return [];
-                return staffDatabase.filter(s => s.name.toLowerCase().includes(newStaff.name.toLowerCase()));
+                return (staffDatabase || []).filter(s => s && s.name && s.name.toLowerCase().includes(newStaff.name.toLowerCase()));
             }, [newStaff.name, staffDatabase]);
 
             const filteredFormatSuggestions = useMemo(() => {
@@ -1248,7 +1274,7 @@
 
             const handleStaffNameChange = (val) => {
                 setNewStaff(p => ({ ...p, name: val }));
-                const found = staffDatabase.find(s => s.name.toLowerCase() === val.toLowerCase());
+                const found = (staffDatabase || []).find(s => s && s.name && s.name.trim().toLowerCase() === val.trim().toLowerCase());
                 if (found) {
                     setNewStaff(p => ({ ...p, phone: formatPhoneNumber(found.phone) }));
                     setShowSuggestions(false);
@@ -1258,6 +1284,7 @@
             };
 
             const selectSuggestion = (s) => {
+                if (!s) return;
                 setNewStaff(p => ({ ...p, name: s.name, phone: formatPhoneNumber(s.phone) }));
                 setShowSuggestions(false);
             };
@@ -1376,8 +1403,9 @@
                                         </div>
                                     </div>
                                     <div className="space-y-3">
-                                        {commonFiles.length > 0 ? (
+                                        {commonFiles && commonFiles.length > 0 ? (
                                             commonFiles.map((file, idx) => {
+                                                if (!file) return null;
                                                 const iconData = getFileIconData(file.name);
                                                 return (
                                                     <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border-2 border-gray-100 hover:border-[#60453920] transition-all">
@@ -1494,7 +1522,7 @@
                                                                     {Object.entries({'оф': <Icons.Cloche size={14}/>, 'бар': <Icons.Martini size={14}/>, 'мой': <Icons.Droplet size={14}/>, 'пов': <Icons.Pot size={14}/>}).map(([role, icon]) => (
                                                                         <div key={role} className="flex-1 relative">
                                                                             <div className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-30">{icon}</div>
-                                                                            <input type="text" value={newEvent.neededStaff[role]} onChange={e => setNewEvent({...newEvent, neededStaff: { ...newEvent.neededStaff, [role]: formatOnlyNumbers(e.target.value) }})} placeholder="0" className="w-full p-2.5 pl-6 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold" />
+                                                                            <input type="text" value={newEvent.neededStaff ? (newEvent.neededStaff[role] || '') : ''} onChange={e => setNewEvent({...newEvent, neededStaff: { ...(newEvent.neededStaff || {}), [role]: formatOnlyNumbers(e.target.value) }})} placeholder="0" className="w-full p-2.5 pl-6 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] text-center text-xs font-bold" />
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -1507,16 +1535,16 @@
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                             <div className="relative">
                                                                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-30"><Icons.User size={14} /></div>
-                                                                <input type="text" placeholder="Имя" value={newEvent.contactName} onChange={e=>setNewEvent({...newEvent, contactName: e.target.value})} className="w-full p-2.5 pl-9 rounded-xl border-2 border-[#60453910] bg-white outline-none text-sm" />
+                                                                <input type="text" placeholder="Имя" value={newEvent.contactName || ''} onChange={e=>setNewEvent({...newEvent, contactName: e.target.value})} className="w-full p-2.5 pl-9 rounded-xl border-2 border-[#60453910] bg-white outline-none text-sm" />
                                                             </div>
                                                             <div className="relative">
                                                                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#604539] opacity-30"><Icons.Phone size={14} /></div>
-                                                                <input type="tel" placeholder="Телефон" value={newEvent.contactPhone} onChange={e=>setNewEvent({...newEvent, contactPhone: formatPhoneNumber(e.target.value)})} className="w-full p-2.5 pl-9 rounded-xl border-2 border-[#60453910] bg-white outline-none text-sm" />
+                                                                <input type="tel" placeholder="Телефон" value={newEvent.contactPhone || ''} onChange={e=>setNewEvent({...newEvent, contactPhone: formatPhoneNumber(e.target.value)})} className="w-full p-2.5 pl-9 rounded-xl border-2 border-[#60453910] bg-white outline-none text-sm" />
                                                             </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className="mb-4"><AutoHeightTextarea placeholder="Дополнительная информация..." value={newEvent.extraInfo} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" /></div>
+                                                    <div className="mb-4"><AutoHeightTextarea placeholder="Дополнительная информация..." value={newEvent.extraInfo || ''} onChange={e=>setNewEvent({...newEvent, extraInfo: e.target.value})} className="w-full p-2.5 rounded-xl border-2 border-[#60453910] bg-[#FFECD240] outline-none text-sm" /></div>
                                                     
                                                     <div className="flex gap-2">
                                                         <button onClick={handleAddEvent} className="flex-[3] bg-[#604539] text-white py-2.5 rounded-xl uppercase font-bold text-[10px] tracking-widest shadow-lg active:scale-[0.98] transition-transform">{editingEventId ? 'Сохранить' : 'Добавить'}</button>
@@ -1529,20 +1557,21 @@
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {sortedEvents.map(ev => {
+                                            if (!ev) return null;
                                             const isComplete = checkEventCompleteness(ev);
                                             const isChecked = ev.status?.checked;
-                                            const isPast = ev.date < todayStr;
+                                            const isPast = ev.date && ev.date < todayStr;
                                             const allPaid = isEventFullyPaid(ev);
                                             return (
                                                 <div key={ev.id} onClick={() => { setSelectedEventId(ev.id); setView('details'); setIsStaffFormOpen(false); setIsCalendarOpen(false); setIsCommonFilesOpen(false); }} className={`rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all relative border border-transparent hover:border-[#C7886B] overflow-hidden ${ev.date === todayStr ? 'bg-green-50' : 'bg-white'}`}>
                                                     <div className={`py-1.5 px-4 text-center ${isPast ? 'bg-[#604539]' : (isComplete ? 'bg-green-600' : 'bg-red-500')}`}>
-                                                        <span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{ev.displayDate}</span>
+                                                        <span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{ev.displayDate || '—'}</span>
                                                     </div>
                                                     <div className="flex gap-4 p-5">
                                                         {!isPast ? (
                                                             <div className="flex flex-col gap-2 flex-shrink-0">
-                                                                <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${ev.start && (ev.staff?.every(s=>s.time) || true) ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}>
-                                                                    <Icons.Clock size={20} color={(ev.start && (ev.staff?.every(s=>s.time) || true)) ? '#10b981' : '#ef4444'} />
+                                                                <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${ev.start && ((ev.staff || []).every(s=> s && s.time) || true) ? 'bg-green-100' : 'bg-red-100 animate-pulse'}`}>
+                                                                    <Icons.Clock size={20} color={(ev.start && ((ev.staff || []).every(s=> s && s.time) || true)) ? '#10b981' : '#ef4444'} />
                                                                 </div>
                                                                 <div className={`w-11 h-11 flex items-center justify-center rounded-xl ${Object.entries(ev.neededStaff || {}).every(([k, v]) => parseInt(v||0) === 0 || getStaffCounts(ev)[keyToLabel[k]] >= parseInt(v)) ? 'bg-green-100' : 'bg-red-50'}`}>
                                                                     <Icons.Users size={22} color={Object.entries(ev.neededStaff || {}).every(([k, v]) => parseInt(v||0) === 0 || getStaffCounts(ev)[keyToLabel[k]] >= parseInt(v)) ? '#10b981' : '#ef4444'} />
@@ -1557,13 +1586,13 @@
                                                             </div>
                                                         )}
                                                         <div className="flex-1 min-w-0">
-                                                            <h3 className={`font-bold text-lg leading-tight truncate mb-2 ${isPast ? 'text-gray-500' : ''}`}>{ev.name}</h3>
+                                                            <h3 className={`font-bold text-lg leading-tight truncate mb-2 ${isPast ? 'text-gray-500' : ''}`}>{ev.name || 'Без названия'}</h3>
                                                             <div className="space-y-1">
                                                                 <p className="text-[11px] text-[#C7886B] font-bold uppercase tracking-tight">{ev.format || '—'}</p>
                                                                 {ev.location && <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium"><Icons.MapPin size={10} /><span className="truncate">{ev.location}</span></div>}
                                                                 <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Админ: {ev.admin || '—'}</p>
                                                                 <p className="text-[11px] text-[#604539] font-bold uppercase tracking-tight">Гости: {ev.guests || 0} чел</p>
-                                                                {ev.files?.length > 0 && <div className="flex items-center gap-1 text-[10px] text-blue-500 font-bold uppercase tracking-tighter mt-1"><Icons.Paperclip size={10} /><span>есть файлы</span></div>}
+                                                                {ev.files && ev.files.length > 0 && <div className="flex items-center gap-1 text-[10px] text-blue-500 font-bold uppercase tracking-tighter mt-1"><Icons.Paperclip size={10} /><span>есть файлы</span></div>}
                                                             </div>
                                                         </div>
                                                         <div className="flex flex-col gap-2">
@@ -1583,16 +1612,16 @@
                             <div className="flex items-center justify-between mb-6">
                                 <button onClick={handleBackToPrevState} className="flex items-center gap-1 text-xs font-bold uppercase text-[#604539]"><Icons.ChevronLeft /> Назад</button>
                                 <div className="flex items-center gap-3">
-                                    {currentEvent?.date >= todayStr && <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>}
+                                    {currentEvent && currentEvent.date >= todayStr && <button onClick={() => startEditEvent(null, currentEvent)} className="text-[#604539] p-2"><Icons.Edit size={20} /></button>}
                                     <button onClick={(e) => fastDeleteEvent(e, selectedEventId)} className="text-red-300 p-2"><Icons.Trash size={20} /></button>
                                 </div>
                             </div>
                             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-[#604539] mb-8">
-                                <div className={`py-2 text-center ${(currentEvent?.date < todayStr) ? 'bg-[#604539]' : 'bg-[#C7886B]'}`}><span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{currentEvent?.displayDate}</span></div>
+                                <div className={`py-2 text-center ${(currentEvent && currentEvent.date < todayStr) ? 'bg-[#604539]' : 'bg-[#C7886B]'}`}><span className="text-sm font-extrabold uppercase text-white tracking-[0.05em]">{currentEvent?.displayDate || '—'}</span></div>
                                 <div className="p-8 bg-[#1F1713] text-white">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex-1 min-w-0">
-                                            <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name}</h2>
+                                            <h2 className="text-3xl font-bold leading-tight">{currentEvent?.name || 'Без названия'}</h2>
                                             {(currentEvent?.contactName || currentEvent?.contactPhone) && (
                                                 <div className="flex items-center gap-3 mt-4">
                                                     {currentEvent.contactPhone && <a href={`tel:${currentEvent.contactPhone}`} className="flex items-center justify-center w-8 h-8 rounded-full bg-[#C7886B] text-white"><Icons.Phone size={14} /></a>}
@@ -1600,9 +1629,9 @@
                                                 </div>
                                             )}
                                         </div>
-                                        {currentEvent?.date >= todayStr && (
+                                        {currentEvent && currentEvent.date >= todayStr && (
                                             <div className="flex gap-2 shrink-0 ml-4">
-                                                <div className={`w-10 h-10 flex items-center justify-center rounded-full ${ (currentEvent?.start && currentEvent?.staff?.every(s => s.time)) ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`}><Icons.Clock size={24} color="white" /></div>
+                                                <div className={`w-10 h-10 flex items-center justify-center rounded-full ${ (currentEvent?.start && (currentEvent?.staff || []).every(s => s && s.time)) ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`}><Icons.Clock size={24} color="white" /></div>
                                                 <div onClick={(e) => toggleEventChecked(e, currentEvent.id)} className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer ${currentEvent?.status?.checked ? 'bg-blue-500' : 'bg-red-500'}`}><Icons.DoubleCheck size={44} color="white" /></div>
                                             </div>
                                         )}
@@ -1619,7 +1648,7 @@
                                         {Object.entries(headerRoleMap).map(([key, data]) => {
                                             const counts = getStaffCounts(currentEvent);
                                             const target = parseInt(currentEvent?.neededStaff?.[key] || 0);
-                                            const actual = counts[data.key];
+                                            const actual = counts[data.key] || 0;
                                             const ok = target === 0 || actual >= target;
                                             return (
                                                 <div key={key} className="flex flex-col items-center gap-2">
@@ -1634,28 +1663,40 @@
                                     <table className="staff-table">
                                         <thead><tr className="text-[10px] uppercase opacity-30 border-b"><th className="col-staff pb-2 text-left pl-2">Персонал</th><th className="col-timing pb-2 text-center">Тайминг</th><th className="col-actions pb-2 text-right pr-2">Действия</th></tr></thead>
                                         <tbody>
-                                            {currentEvent?.staff?.sort((a,b) => a.name.localeCompare(b.name)).map(s => (
-                                                <tr key={s.id} className="border-b border-gray-50 text-sm">
-                                                    <td className="col-staff py-4 pl-2 overflow-hidden">
-                                                        <div className="flex flex-col gap-1.5">
-                                                            <span onClick={() => setActiveStaffSchedule(s.name)} className="font-bold truncate cursor-pointer hover:text-[#C7886B] w-fit">{s.name}</span>
-                                                            {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">НЕТ ТАЙМИНГА</span>}
-                                                            <div className="flex flex-wrap gap-1.5 mt-1">
-                                                                {s.roles.map((role, idx) => (
-                                                                    <div key={idx} onClick={() => toggleStaffRolePaid(s.id, role)} className={`role-badge border ${s.rolePaid?.[role] ? 'bg-green-100 border-green-200 text-green-700' : 'bg-gray-50 border-gray-100 text-gray-500'}`}>{roleIconMap[role]?.icon}{role}{s.rolePaid?.[role] && <span className="font-black text-xs">₽</span>}</div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="col-timing py-4 text-center">
-                                                        <div className="text-[11px] font-medium leading-tight">
-                                                            {s.time ? <a href={generateSmsLink(s, currentEvent)} className="text-[#C7886B] font-black">{s.time}</a> : '—'}
-                                                            {s.end && <div className="opacity-40">- {s.end}</div>}
-                                                        </div>
-                                                    </td>
-                                                    <td className="col-actions py-4 text-right pr-2"><div className="flex justify-end gap-2"><button onClick={()=> { setEditingStaffId(s.id); setNewStaff({ name: s.name, phone: s.phone || '', time: s.time || '', end: s.end || '', roles: s.roles }); setIsStaffFormOpen(true); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16}/></button><button onClick={()=> { const upd = events.map(e=>e.id===selectedEventId?{...e,staff:e.staff.filter(x=>x.id!==s.id)}:e); setEvents(upd); saveToGithub(upd); }} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button></div></td>
-                                                </tr>
-                                            ))}
+                                            {currentEvent && currentEvent.staff && currentEvent.staff.length > 0 ? (
+                                                [...currentEvent.staff].sort((a,b) => (a.name || '').localeCompare(b.name || '')).map(s => {
+                                                    if (!s) return null;
+                                                    return (
+                                                        <tr key={s.id} className="border-b border-gray-50 text-sm">
+                                                            <td className="col-staff py-4 pl-2 overflow-hidden">
+                                                                <div className="flex flex-col gap-1.5">
+                                                                    <span onClick={() => setActiveStaffSchedule(s.name)} className="font-bold truncate cursor-pointer hover:text-[#C7886B] w-fit">{s.name || 'Без имени'}</span>
+                                                                    {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">НЕТ ТАЙМИНГА</span>}
+                                                                    <div className="flex flex-wrap gap-1.5 mt-1">
+                                                                        {s.roles && s.roles.map((role, idx) => (
+                                                                            <div key={idx} onClick={() => toggleStaffRolePaid(s.id, role)} className={`role-badge border ${s.rolePaid?.[role] ? 'bg-green-100 border-green-200 text-green-700' : 'bg-gray-50 border-gray-100 text-gray-500'}`}>{roleIconMap[role]?.icon}{role}{s.rolePaid?.[role] && <span className="font-black text-xs">₽</span>}</div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="col-timing py-4 text-center">
+                                                                <div className="text-[11px] font-medium leading-tight">
+                                                                    {s.time ? <a href={generateSmsLink(s, currentEvent)} className="text-[#C7886B] font-black">{s.time}</a> : '—'}
+                                                                    {s.end && <div className="opacity-40">- {s.end}</div>}
+                                                                </div>
+                                                            </td>
+                                                            <td className="col-actions py-4 text-right pr-2">
+                                                                <div className="flex justify-end gap-2">
+                                                                    <button onClick={()=> { setEditingStaffId(s.id); setNewStaff({ name: s.name, phone: s.phone || '', time: s.time || '', end: s.end || '', roles: s.roles || [] }); setIsStaffFormOpen(true); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16}/></button>
+                                                                    <button onClick={()=> { const upd = events.map(e=>e.id===selectedEventId?{...e,staff:(e.staff || []).filter(x=>x.id!==s.id)}:e); setEvents(upd); saveToGithub(upd); }} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
+                                            ) : (
+                                                <tr><td colSpan="3" className="py-4 text-center text-xs text-gray-300 uppercase tracking-wider">Сотрудники не добавлены</td></tr>
+                                            )}
                                         </tbody>
                                     </table>
 
@@ -1673,9 +1714,12 @@
                                                         <input type="text" placeholder="Имя сотрудника" value={newStaff.name} onChange={e => handleStaffNameChange(e.target.value)} onFocus={() => setShowSuggestions(true)} className="w-full p-2.5 rounded-lg border-2 border-[#60453910] bg-white outline-none text-sm" />
                                                         {showSuggestions && filteredStaffSuggestions.length > 0 && (
                                                             <div className="autocomplete-list">
-                                                                {filteredStaffSuggestions.map((s, idx) => (
-                                                                    <div key={idx} className="autocomplete-item flex justify-between" onClick={() => selectSuggestion(s)}><span className="font-bold">{s.name}</span><span className="text-gray-400">{s.phone}</span></div>
-                                                                ))}
+                                                                {filteredStaffSuggestions.map((s, idx) => {
+                                                                    if (!s) return null;
+                                                                    return (
+                                                                        <div key={idx} className="autocomplete-item flex justify-between" onClick={() => selectSuggestion(s)}><span className="font-bold">{s.name}</span><span className="text-gray-400">{s.phone}</span></div>
+                                                                    );
+                                                                })}
                                                             </div>
                                                         )}
                                                         <input type="tel" placeholder="Телефон" value={newStaff.phone} onChange={e=>setNewStaff({...newStaff, phone: formatPhoneNumber(e.target.value)})} className={`w-full p-2.5 rounded-lg border-2 bg-white outline-none text-sm ${isPhoneValid(newStaff.phone) ? 'border-[#60453910]' : 'border-red-300'}`} />
@@ -1687,7 +1731,7 @@
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-1.5 mb-4">
                                                     {['Официант', 'Бармен', 'Мойщица', 'Повар'].map(r => (
-                                                        <button key={r} onClick={()=>setNewStaff(p=>({...p, roles: p.roles.includes(r)?p.roles.filter(x=>x!==r):[...p.roles, r]}))} className={`py-2 rounded-lg text-[9px] font-bold uppercase border-2 ${newStaff.roles.includes(r)?'bg-[#604539] text-white border-[#604539]':'bg-white text-[#604539] border-[#60453910]'}`}>{r}</button>
+                                                        <button key={r} onClick={()=>setNewStaff(p=>({...p, roles: (p.roles || []).includes(r)?(p.roles || []).filter(x=>x!==r):[...(p.roles || []), r]}))} className={`py-2 rounded-lg text-[9px] font-bold uppercase border-2 ${ (newStaff.roles || []).includes(r)?'bg-[#604539] text-white border-[#604539]':'bg-white text-[#604539] border-[#60453910]'}`}>{r}</button>
                                                     ))}
                                                 </div>
                                                 <button onClick={handleAddStaff} className="w-full bg-[#604539] text-white py-2.5 rounded-lg uppercase font-bold text-[10px] tracking-widest">{editingStaffId ? 'Сохранить' : 'Подтвердить'}</button>
@@ -1708,8 +1752,9 @@
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    {currentEvent?.files?.length > 0 ? (
+                                    {currentEvent && currentEvent.files && currentEvent.files.length > 0 ? (
                                         currentEvent.files.map((file, idx) => {
+                                            if (!file) return null;
                                             const iconData = getFileIconData(file.name);
                                             return (
                                                 <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border-2 border-gray-100 hover:border-[#60453920] transition-all">
