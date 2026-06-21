@@ -570,9 +570,9 @@
                         <button onClick={onClose} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Icons.X size={20} /></button>
                     </div>
                     <div className="space-y-4 h-auto pr-2">
-                        {(staffDatabase || []).sort((a,b) => (a.name || '').localeCompare(b.name || '')).map((s, idx) => {
-                            if (!s || !s.name) return null;
-                            const eventStatuses = getStaffPaymentStatus(s.name);
+                        {(staffDatabase || []).filter(s => s && s.name).sort((a,b) => (a.name || '').localeCompare(b.name || '')).map((s, idx) => {
+                            const trimmedName = s.name.trim();
+                            const eventStatuses = getStaffPaymentStatus(trimmedName);
                             const hasAnyDebt = eventStatuses.some(status => status.isPast && status.isUnpaid);
 
                             return (
@@ -584,8 +584,8 @@
                                                     <Icons.Phone size={14} />
                                                 </a>
                                             )}
-                                            <p className={`font-bold text-sm uppercase truncate ${hasAnyDebt ? 'text-red-700' : 'text-[#604539]'}`} onClick={() => window.setActiveStaffScheduleFromList && window.setActiveStaffScheduleFromList(s.name)} style={{cursor:'pointer'}}>
-                                                {s.name}
+                                            <p className={`font-bold text-sm uppercase truncate ${hasAnyDebt ? 'text-red-700' : 'text-[#604539]'}`} onClick={() => window.setActiveStaffScheduleFromList && window.setActiveStaffScheduleFromList(trimmedName)} style={{cursor:'pointer'}}>
+                                                {trimmedName}
                                             </p>
                                         </div>
                                         {hasAnyDebt && <span className="text-[10px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full animate-pulse shrink-0 ml-2">ЖДЁТ ОПЛАТУ</span>}
@@ -789,18 +789,38 @@
 
                     if (response.ok) {
                         const data = await response.json();
-                        const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Вырезаем все символы переноса строк и пробелов перед декодированием base64!
+                        const rawContent = data.content.replace(/\s/g, '');
+                        
+                        let content = [];
+                        try {
+                            content = JSON.parse(decodeURIComponent(escape(atob(rawContent))));
+                        } catch(e) {
+                            console.error("Failed to parse events JSON", e);
+                        }
                         setEvents(Array.isArray(content) ? content : []);
                         
                         if (staffRes && staffRes.ok) {
                             const sData = await staffRes.json();
-                            const sContent = JSON.parse(decodeURIComponent(escape(atob(sData.content))));
+                            const rawSContent = sData.content.replace(/\s/g, '');
+                            let sContent = [];
+                            try {
+                                sContent = JSON.parse(decodeURIComponent(escape(atob(rawSContent))));
+                            } catch(e) {
+                                console.error("Failed to parse staff database JSON", e);
+                            }
                             setStaffDatabase(Array.isArray(sContent) ? sContent : []);
                         }
 
                         if (commonFilesRes && commonFilesRes.ok) {
                             const cData = await commonFilesRes.json();
-                            const cContent = JSON.parse(decodeURIComponent(escape(atob(cData.content))));
+                            const rawCContent = cData.content.replace(/\s/g, '');
+                            let cContent = [];
+                            try {
+                                cContent = JSON.parse(decodeURIComponent(escape(atob(rawCContent))));
+                            } catch(e) {
+                                console.error("Failed to parse common files JSON", e);
+                            }
                             setCommonFiles(Array.isArray(cContent) ? cContent : []);
                         }
 
@@ -809,6 +829,7 @@
                         setTimeout(() => setSyncStatus('idle'), 3000);
                     } else throw new Error();
                 } catch (err) { 
+                    console.error("Sync error:", err);
                     setSyncStatus('error');
                     setIsTokenVerified(false);
                 }
@@ -1132,23 +1153,27 @@
             const handleAddStaff = () => {
                 if (!newStaff.name || !newStaff.roles || newStaff.roles.length === 0) return;
                 
+                // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Автоматически обрезаем пробелы у имен сотрудников при создании/редактировании!
+                const trimmedStaffName = newStaff.name.trim();
+                const sanitizedStaff = { ...newStaff, name: trimmedStaffName };
+
                 let updatedStaffBase = [...(staffDatabase || [])];
-                if (newStaff.phone) {
-                    const index = updatedStaffBase.findIndex(s => s && s.name && s.name.trim().toLowerCase() === newStaff.name.trim().toLowerCase());
+                if (sanitizedStaff.phone) {
+                    const index = updatedStaffBase.findIndex(s => s && s.name && s.name.trim().toLowerCase() === trimmedStaffName.toLowerCase());
                     if (index !== -1) {
-                        updatedStaffBase[index] = { name: newStaff.name, phone: newStaff.phone };
+                        updatedStaffBase[index] = { name: trimmedStaffName, phone: sanitizedStaff.phone };
                     } else {
-                        updatedStaffBase.push({ name: newStaff.name, phone: newStaff.phone });
+                        updatedStaffBase.push({ name: trimmedStaffName, phone: sanitizedStaff.phone });
                     }
                     setStaffDatabase(updatedStaffBase);
                 }
 
                 let updated;
                 if (editingStaffId) {
-                    updated = events.map(ev => ev.id === selectedEventId ? { ...ev, staff: (ev.staff || []).map(s => s.id === editingStaffId ? { ...s, ...newStaff } : s) } : ev);
+                    updated = events.map(ev => ev.id === selectedEventId ? { ...ev, staff: (ev.staff || []).map(s => s.id === editingStaffId ? { ...s, ...sanitizedStaff } : s) } : ev);
                     setEditingStaffId(null);
                 } else {
-                    updated = events.map(ev => ev.id === selectedEventId ? { ...ev, staff: [...(ev.staff || []), { id: Date.now().toString(), ...newStaff, rolePaid: {} }] } : ev);
+                    updated = events.map(ev => ev.id === selectedEventId ? { ...ev, staff: [...(ev.staff || []), { id: Date.now().toString(), ...sanitizedStaff, rolePaid: {} }] } : ev);
                 }
                 setEvents(updated);
                 saveToGithub(updated, updatedStaffBase);
@@ -1259,7 +1284,8 @@
 
             const filteredStaffSuggestions = useMemo(() => {
                 if (!newStaff.name || newStaff.name.length < 2) return [];
-                return (staffDatabase || []).filter(s => s && s.name && s.name.toLowerCase().includes(newStaff.name.toLowerCase()));
+                const cleanQuery = newStaff.name.toLowerCase().trim();
+                return (staffDatabase || []).filter(s => s && s.name && s.name.toLowerCase().includes(cleanQuery));
             }, [newStaff.name, staffDatabase]);
 
             const filteredFormatSuggestions = useMemo(() => {
@@ -1285,7 +1311,7 @@
 
             const selectSuggestion = (s) => {
                 if (!s) return;
-                setNewStaff(p => ({ ...p, name: s.name, phone: formatPhoneNumber(s.phone) }));
+                setNewStaff(p => ({ ...p, name: s.name.trim(), phone: formatPhoneNumber(s.phone) }));
                 setShowSuggestions(false);
             };
 
@@ -1666,11 +1692,12 @@
                                             {currentEvent && currentEvent.staff && currentEvent.staff.length > 0 ? (
                                                 [...currentEvent.staff].sort((a,b) => (a.name || '').localeCompare(b.name || '')).map(s => {
                                                     if (!s) return null;
+                                                    const sNameClean = s.name.trim();
                                                     return (
                                                         <tr key={s.id} className="border-b border-gray-50 text-sm">
                                                             <td className="col-staff py-4 pl-2 overflow-hidden">
                                                                 <div className="flex flex-col gap-1.5">
-                                                                    <span onClick={() => setActiveStaffSchedule(s.name)} className="font-bold truncate cursor-pointer hover:text-[#C7886B] w-fit">{s.name || 'Без имени'}</span>
+                                                                    <span onClick={() => setActiveStaffSchedule(sNameClean)} className="font-bold truncate cursor-pointer hover:text-[#C7886B] w-fit">{sNameClean || 'Без имени'}</span>
                                                                     {!s.time && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">НЕТ ТАЙМИНГА</span>}
                                                                     <div className="flex flex-wrap gap-1.5 mt-1">
                                                                         {s.roles && s.roles.map((role, idx) => (
@@ -1687,7 +1714,7 @@
                                                             </td>
                                                             <td className="col-actions py-4 text-right pr-2">
                                                                 <div className="flex justify-end gap-2">
-                                                                    <button onClick={()=> { setEditingStaffId(s.id); setNewStaff({ name: s.name, phone: s.phone || '', time: s.time || '', end: s.end || '', roles: s.roles || [] }); setIsStaffFormOpen(true); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16}/></button>
+                                                                    <button onClick={()=> { setEditingStaffId(s.id); setNewStaff({ name: sNameClean, phone: s.phone || '', time: s.time || '', end: s.end || '', roles: s.roles || [] }); setIsStaffFormOpen(true); }} className="text-gray-400 hover:text-[#604539]"><Icons.Edit size={16}/></button>
                                                                     <button onClick={()=> { const upd = events.map(e=>e.id===selectedEventId?{...e,staff:(e.staff || []).filter(x=>x.id!==s.id)}:e); setEvents(upd); saveToGithub(upd); }} className="text-gray-300 hover:text-red-500"><Icons.Trash size={18}/></button>
                                                                 </div>
                                                             </td>
