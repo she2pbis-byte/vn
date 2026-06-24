@@ -1030,5 +1030,31 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1782281791293",
+    "name": "СТРЕЛКА",
+    "date": "2026-06-27",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Стрелка",
+    "admin": "",
+    "guests": "1",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "3",
+      "бар": "",
+      "мой": "",
+      "пов": "1"
+    },
+    "displayDate": "27 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
