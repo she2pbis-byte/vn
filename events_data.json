@@ -992,5 +992,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1782281374017",
+    "name": "ПЧО ОБЕДЫ",
+    "date": "2026-06-26",
+    "start": "",
+    "end": "",
+    "format": "Туристы",
+    "location": "ПЯО",
+    "admin": "",
+    "guests": "60",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "1",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "26 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
