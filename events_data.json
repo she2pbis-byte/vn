@@ -1090,5 +1090,31 @@
     "status": {
       "checked": false
     }
+  },
+  {
+    "id": "1782283804100",
+    "name": "ТЮЗ",
+    "date": "2026-06-26",
+    "start": "15:30",
+    "end": "15:00",
+    "format": "",
+    "location": "",
+    "admin": "",
+    "guests": "130",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "3",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "26 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
