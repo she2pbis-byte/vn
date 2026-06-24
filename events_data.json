@@ -1051,7 +1051,19 @@
       "пов": "1"
     },
     "displayDate": "27 июнь",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1782281811554",
+        "name": "Никулина",
+        "phone": "+7 (920) 141-82-30",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
