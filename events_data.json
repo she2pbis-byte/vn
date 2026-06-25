@@ -935,7 +935,19 @@
       "пов": ""
     },
     "displayDate": "3 июль",
-    "staff": [],
+    "staff": [
+      {
+        "id": "1782371929569",
+        "name": "Брызгалова Марина",
+        "phone": "",
+        "time": "",
+        "end": "",
+        "roles": [
+          "Официант"
+        ],
+        "rolePaid": {}
+      }
+    ],
     "files": [],
     "status": {
       "checked": false
