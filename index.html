@@ -183,12 +183,10 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Явное извлечение глобальных переменных React из CDN
         const React = window.React;
         const ReactDOM = window.ReactDOM;
         const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-        // Безопасное обращение к localStorage для сред iframe/sandbox
         const safeStorage = {
             getItem: (key) => {
                 try {
@@ -212,10 +210,10 @@
             repo: 'vn',
             path: 'events_data.json',
             staffPath: 'staff_database.json',
-            commonFilesPath: 'common_files_db.json'
+            commonFilesPath: 'common_files_db.json',
+            icsPath: 'events.ics' // Путь для сохранения календаря
         };
 
-        // Вспомогательные функции для корректной работы с Base64 UTF-8 без падений
         const safeAtob = (str) => {
             try {
                 const cleanStr = str.replace(/\s/g, '');
@@ -854,11 +852,97 @@
                 }
             }, []);
 
+            // Вспомогательная функция для генерации содержимого .ics файла на основе будущих мероприятий
+            const generateIcsContent = (allEvents) => {
+                const todayStr = new Date().toISOString().split('T')[0];
+                // Фильтруем мероприятия: оставляем только те, что пройдут сегодня или в будущем
+                const futureEvents = allEvents.filter(ev => ev.date >= todayStr);
+
+                let icsRows = [
+                    'BEGIN:VCALENDAR',
+                    'VERSION:2.0',
+                    'PRODID:-//Vanilla Sky Catering//Event Calendar//RU',
+                    'CALSCALE:GREGORIAN',
+                    'METHOD:PUBLISH'
+                ];
+
+                futureEvents.forEach(ev => {
+                    const cleanId = ev.id || Date.now().toString() + Math.random().toString(36).substr(2, 5);
+                    const cleanDate = ev.date.replace(/-/g, ''); // "YYYYMMDD"
+                    
+                    // Парсим тайминг
+                    let dtStart = `${cleanDate}T090000`; // Дефолтное время 09:00, если не заполнено
+                    let dtEnd = `${cleanDate}T180000`;   // Дефолтное время окончания 18:00
+                    
+                    if (ev.start) {
+                        const [sH, sM] = ev.start.split(':');
+                        dtStart = `${cleanDate}T${sH.padStart(2, '0')}${sM.padStart(2, '0')}00`;
+                    }
+                    if (ev.end) {
+                        const [eH, eM] = ev.end.split(':');
+                        dtEnd = `${cleanDate}T${eH.padStart(2, '0')}${eM.padStart(2, '0')}00`;
+                    } else if (ev.start) {
+                        // Если есть начало, но нет конца, сделаем длительность 4 часа
+                        const [sH, sM] = ev.start.split(':');
+                        const endHour = (parseInt(sH) + 4) % 24;
+                        dtEnd = `${cleanDate}T${String(endHour).padStart(2, '0')}${sM.padStart(2, '0')}00`;
+                    }
+
+                    // Формируем текстовое описание с деталями
+                    let descriptionParts = [];
+                    if (ev.format) descriptionParts.push(`Формат: ${ev.format}`);
+                    if (ev.guests) descriptionParts.push(`Гости: ${ev.guests} чел.`);
+                    if (ev.admin) descriptionParts.push(`Администратор: ${ev.admin}`);
+                    
+                    // Контактное лицо
+                    if (ev.contactName || ev.contactPhone) {
+                        const contactStr = [ev.contactName, ev.contactPhone].filter(Boolean).join(' ');
+                        descriptionParts.push(`Заказчик: ${contactStr}`);
+                    }
+
+                    // Доп информация
+                    if (ev.extraInfo) descriptionParts.push(`Заметка: ${ev.extraInfo.replace(/\n/g, ' \\n ')}`);
+
+                    // Список сотрудников на смене
+                    if (ev.staff && ev.staff.length > 0) {
+                        descriptionParts.push(`--- Персонал на смене ---`);
+                        ev.staff.forEach(s => {
+                            if (!s) return;
+                            const rolesStr = (s.roles || []).join(', ');
+                            const timeStr = s.time ? `(к ${s.time}${s.end ? ` - до ${s.end}` : ''})` : '(Тайминг не назначен)';
+                            descriptionParts.push(`${s.name} - ${rolesStr} ${timeStr}`);
+                        });
+                    }
+
+                    const summary = `Кейтеринг: ${ev.name}`;
+                    const location = ev.location || '';
+                    const description = descriptionParts.join(' \\n ');
+
+                    icsRows.push('BEGIN:VEVENT');
+                    icsRows.push(`UID:${cleanId}@vanilla-sky-catering`);
+                    icsRows.push(`DTSTAMP:${cleanDate}T000000Z`);
+                    icsRows.push(`DTSTART;TZID=Europe/Moscow:${dtStart}`);
+                    icsRows.push(`DTEND;TZID=Europe/Moscow:${dtEnd}`);
+                    icsRows.push(`SUMMARY:${summary}`);
+                    if (location) {
+                        icsRows.push(`LOCATION:${location}`);
+                    }
+                    icsRows.push(`DESCRIPTION:${description}`);
+                    icsRows.push('STATUS:CONFIRMED');
+                    icsRows.push('END:VEVENT');
+                });
+
+                icsRows.push('END:VCALENDAR');
+
+                // Преобразуем массив строк в корректный текстовый формат iCalendar с переносом CRLF (\r\n)
+                return icsRows.join('\r\n');
+            };
+
             const saveToGithub = useCallback(async (updatedEvents, updatedStaffBase = null, updatedCommonFiles = null) => {
                 if (!githubToken) return;
                 setSyncStatus('loading');
                 try {
-                    // Update events
+                    // 1. Обновляем JSON файл со всеми мероприятиями
                     const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
                         headers: { 'Authorization': `token ${githubToken}` }
                     });
@@ -870,7 +954,31 @@
                         body: JSON.stringify({ message: 'Update events via App', content: content, sha: getData.sha })
                     });
 
-                    // Update Staff Base if provided
+                    // 2. Генерируем и перезаписываем events.ics в корне репозитория (только будущие события)
+                    const getIcsRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.icsPath}`, {
+                        headers: { 'Authorization': `token ${githubToken}` }
+                    }).catch(() => null);
+
+                    let icsSha = null;
+                    if (getIcsRes && getIcsRes.ok) {
+                        const getIcsData = await getIcsRes.json();
+                        icsSha = getIcsData.sha;
+                    }
+
+                    const generatedIcsText = generateIcsContent(updatedEvents);
+                    const icsBase64 = safeBtoa(generatedIcsText);
+
+                    await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.icsPath}`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            message: 'Update calendar events.ics', 
+                            content: icsBase64, 
+                            sha: icsSha 
+                        })
+                    });
+
+                    // 3. Обновляем базу сотрудников, если она была изменена
                     if (updatedStaffBase) {
                         const getSRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.staffPath}`, {
                             headers: { 'Authorization': `token ${githubToken}` }
@@ -890,7 +998,7 @@
                         });
                     }
 
-                    // Update Common Files list if provided
+                    // 4. Обновляем базу общих файлов, если она была изменена
                     if (updatedCommonFiles) {
                         const getCRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.commonFilesPath}`, {
                             headers: { 'Authorization': `token ${githubToken}` }
@@ -1800,7 +1908,6 @@
             );
         };
 
-        // Корневой Error Boundary для отлова критических ошибок в рантайме
         class ErrorBoundary extends React.Component {
             constructor(props) {
                 super(props);
