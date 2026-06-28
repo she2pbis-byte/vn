@@ -534,5 +534,31 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1782647660384",
+    "name": "Стрелка",
+    "date": "2026-06-28",
+    "start": "",
+    "end": "",
+    "format": "Кофе-брейк",
+    "location": "Стрелка",
+    "admin": "",
+    "guests": "1",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "28 июнь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
