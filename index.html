@@ -211,7 +211,7 @@
             path: 'events_data.json',
             staffPath: 'staff_database.json',
             commonFilesPath: 'common_files_db.json',
-            icsPath: 'events.ics' // Путь для сохранения календаря
+            icsPath: 'events.ics' // Путь к файлу календаря в корне репозитория
         };
 
         const safeAtob = (str) => {
@@ -855,7 +855,7 @@
             // Вспомогательная функция для генерации содержимого .ics файла на основе будущих мероприятий
             const generateIcsContent = (allEvents) => {
                 const todayStr = new Date().toISOString().split('T')[0];
-                // Фильтруем мероприятия: оставляем только те, что пройдут сегодня или в будущем
+                // Оставляем в календаре только сегодняшние и будущие мероприятия
                 const futureEvents = allEvents.filter(ev => ev.date >= todayStr);
 
                 let icsRows = [
@@ -868,9 +868,8 @@
 
                 futureEvents.forEach(ev => {
                     const cleanId = ev.id || Date.now().toString() + Math.random().toString(36).substr(2, 5);
-                    const cleanDate = ev.date.replace(/-/g, ''); // "YYYYMMDD"
+                    const cleanDate = ev.date.replace(/-/g, ''); // Формат "YYYYMMDD"
                     
-                    // Парсим тайминг
                     let dtStart = `${cleanDate}T090000`; // Дефолтное время 09:00, если не заполнено
                     let dtEnd = `${cleanDate}T180000`;   // Дефолтное время окончания 18:00
                     
@@ -888,29 +887,30 @@
                         dtEnd = `${cleanDate}T${String(endHour).padStart(2, '0')}${sM.padStart(2, '0')}00`;
                     }
 
-                    // Формируем текстовое описание с деталями
+                    // Формируем детальное текстовое описание
                     let descriptionParts = [];
                     if (ev.format) descriptionParts.push(`Формат: ${ev.format}`);
                     if (ev.guests) descriptionParts.push(`Гости: ${ev.guests} чел.`);
                     if (ev.admin) descriptionParts.push(`Администратор: ${ev.admin}`);
                     
-                    // Контактное лицо
                     if (ev.contactName || ev.contactPhone) {
                         const contactStr = [ev.contactName, ev.contactPhone].filter(Boolean).join(' ');
                         descriptionParts.push(`Заказчик: ${contactStr}`);
                     }
 
-                    // Доп информация
-                    if (ev.extraInfo) descriptionParts.push(`Заметка: ${ev.extraInfo.replace(/\n/g, ' \\n ')}`);
+                    if (ev.extraInfo) {
+                        // Экранирование переносов строк по RFC 5545
+                        const escapedInfo = ev.extraInfo.replace(/\r?\n/g, ' \\n ');
+                        descriptionParts.push(`Заметка: ${escapedInfo}`);
+                    }
 
-                    // Список сотрудников на смене
                     if (ev.staff && ev.staff.length > 0) {
-                        descriptionParts.push(`--- Персонал на смене ---`);
+                        descriptionParts.push(`--- Персонал ---`);
                         ev.staff.forEach(s => {
                             if (!s) return;
                             const rolesStr = (s.roles || []).join(', ');
                             const timeStr = s.time ? `(к ${s.time}${s.end ? ` - до ${s.end}` : ''})` : '(Тайминг не назначен)';
-                            descriptionParts.push(`${s.name} - ${rolesStr} ${timeStr}`);
+                            descriptionParts.push(`${s.name} [${rolesStr}] ${timeStr}`);
                         });
                     }
 
@@ -933,8 +933,6 @@
                 });
 
                 icsRows.push('END:VCALENDAR');
-
-                // Преобразуем массив строк в корректный текстовый формат iCalendar с переносом CRLF (\r\n)
                 return icsRows.join('\r\n');
             };
 
@@ -942,86 +940,124 @@
                 if (!githubToken) return;
                 setSyncStatus('loading');
                 try {
-                    // 1. Обновляем JSON файл со всеми мероприятиями
-                    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
-                        headers: { 'Authorization': `token ${githubToken}` }
-                    });
-                    const getData = await getRes.json();
-                    const content = safeBtoa(JSON.stringify(updatedEvents, null, 2));
-                    await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
-                        method: 'PUT',
-                        headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: 'Update events via App', content: content, sha: getData.sha })
-                    });
-
-                    // 2. Генерируем и перезаписываем events.ics в корне репозитория (только будущие события)
-                    const getIcsRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.icsPath}`, {
-                        headers: { 'Authorization': `token ${githubToken}` }
-                    }).catch(() => null);
-
-                    let icsSha = null;
-                    if (getIcsRes && getIcsRes.ok) {
-                        const getIcsData = await getIcsRes.json();
-                        icsSha = getIcsData.sha;
+                    // 1. Сначала пытаемся обновить JSON-файл мероприятий
+                    let getRes, getData;
+                    try {
+                        getRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                            headers: { 'Authorization': `token ${githubToken}` }
+                        });
+                        if (!getRes.ok) throw new Error("Не удалось прочитать sha у events_data.json");
+                        getData = await getRes.json();
+                    } catch (e) {
+                        console.error("Ошибка получения SHA для events_data.json:", e);
                     }
 
-                    const generatedIcsText = generateIcsContent(updatedEvents);
-                    const icsBase64 = safeBtoa(generatedIcsText);
+                    if (getData && getData.sha) {
+                        const content = safeBtoa(JSON.stringify(updatedEvents, null, 2));
+                        await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                            method: 'PUT',
+                            headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ message: 'Update events via App', content: content, sha: getData.sha })
+                        });
+                    }
 
-                    await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.icsPath}`, {
-                        method: 'PUT',
-                        headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            message: 'Update calendar events.ics', 
-                            content: icsBase64, 
-                            sha: icsSha 
-                        })
-                    });
+                    // 2. БЕЗОПАСНОЕ сохранение/обновление events.ics
+                    // Оборачиваем запрос SHA в try/catch. Если файла нет (404), мы запишем его как новый.
+                    let icsSha = null;
+                    try {
+                        const getIcsRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.icsPath}`, {
+                            headers: { 'Authorization': `token ${githubToken}` }
+                        });
+                        if (getIcsRes.ok) {
+                            const getIcsData = await getIcsRes.json();
+                            icsSha = getIcsData.sha;
+                        }
+                    } catch (e) {
+                        console.warn("Файл events.ics еще не создан в репозитории (или возвращает 404), будет создан новый файл.");
+                    }
+
+                    try {
+                        const generatedIcsText = generateIcsContent(updatedEvents);
+                        const icsBase64 = safeBtoa(generatedIcsText);
+
+                        const icsBody = {
+                            message: 'Update calendar events.ics',
+                            content: icsBase64
+                        };
+                        // Если файл уже существовал, обязательно передаем его SHA для перезаписи
+                        if (icsSha) {
+                            icsBody.sha = icsSha;
+                        }
+
+                        const putIcsRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.icsPath}`, {
+                            method: 'PUT',
+                            headers: { 
+                                'Authorization': `token ${githubToken}`, 
+                                'Content-Type': 'application/json' 
+                            },
+                            body: JSON.stringify(icsBody)
+                        });
+
+                        if (!putIcsRes.ok) {
+                            const errorText = await putIcsRes.text();
+                            console.error("Ошибка при сохранении ICS на GitHub:", errorText);
+                        }
+                    } catch (icsError) {
+                        console.error("Ошибка при генерации или отправке ICS:", icsError);
+                    }
 
                     // 3. Обновляем базу сотрудников, если она была изменена
                     if (updatedStaffBase) {
-                        const getSRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.staffPath}`, {
-                            headers: { 'Authorization': `token ${githubToken}` }
-                        }).catch(() => null);
-                        
-                        let sha = null;
-                        if (getSRes && getSRes.ok) {
-                            const getSData = await getSRes.json();
-                            sha = getSData.sha;
-                        }
+                        let staffSha = null;
+                        try {
+                            const getSRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.staffPath}`, {
+                                headers: { 'Authorization': `token ${githubToken}` }
+                            });
+                            if (getSRes.ok) {
+                                const getSData = await getSRes.json();
+                                staffSha = getSData.sha;
+                            }
+                        } catch (e) {}
 
                         const sContent = safeBtoa(JSON.stringify(updatedStaffBase, null, 2));
+                        const staffBody = { message: 'Update staff database via App', content: sContent };
+                        if (staffSha) staffBody.sha = staffSha;
+
                         await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.staffPath}`, {
                             method: 'PUT',
                             headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ message: 'Update staff database via App', content: sContent, sha: sha })
+                            body: JSON.stringify(staffBody)
                         });
                     }
 
                     // 4. Обновляем базу общих файлов, если она была изменена
                     if (updatedCommonFiles) {
-                        const getCRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.commonFilesPath}`, {
-                            headers: { 'Authorization': `token ${githubToken}` }
-                        }).catch(() => null);
-                        
-                        let sha = null;
-                        if (getCRes && getCRes.ok) {
-                            const getCData = await getCRes.json();
-                            sha = getCData.sha;
-                        }
+                        let commonSha = null;
+                        try {
+                            const getCRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.commonFilesPath}`, {
+                                headers: { 'Authorization': `token ${githubToken}` }
+                            });
+                            if (getCRes.ok) {
+                                const getCData = await getCRes.json();
+                                commonSha = getCData.sha;
+                            }
+                        } catch (e) {}
 
                         const cContent = safeBtoa(JSON.stringify(updatedCommonFiles, null, 2));
+                        const commonBody = { message: 'Update common files db via App', content: cContent };
+                        if (commonSha) commonBody.sha = commonSha;
+
                         await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.commonFilesPath}`, {
                             method: 'PUT',
                             headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ message: 'Update common files db via App', content: cContent, sha: sha })
+                            body: JSON.stringify(commonBody)
                         });
                     }
 
                     setSyncStatus('success');
                     setTimeout(() => setSyncStatus('idle'), 3000);
                 } catch (err) { 
-                    console.error("Save error:", err);
+                    console.error("Критическая ошибка сохранения:", err);
                     setSyncStatus('error'); 
                 }
             }, [githubToken]);
