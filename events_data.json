@@ -560,5 +560,31 @@
     "status": {
       "checked": true
     }
+  },
+  {
+    "id": "1782828492768",
+    "name": "Школа 21 Сбер",
+    "date": "2026-07-08",
+    "start": "09:30",
+    "end": "16:00",
+    "format": "Кофе-брейк",
+    "location": "Ул Победы 14А",
+    "admin": "Михаил",
+    "guests": "50",
+    "extraInfo": "Заезд 07.07.26 Договориться со школой",
+    "contactName": "Ольга Макрова",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "1",
+      "бар": "",
+      "мой": "1",
+      "пов": "1"
+    },
+    "displayDate": "8 июль",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
   }
 ]
