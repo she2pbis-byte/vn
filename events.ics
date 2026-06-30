@@ -71,23 +71,13 @@ DESCRIPTION:Формат: Фуршет \n Гости: 0 чел. \n --- Перс�
 STATUS:CONFIRMED
 END:VEVENT
 BEGIN:VEVENT
-UID:1782646184532@vanilla-sky-catering
-DTSTAMP:20260628T000000Z
-DTSTART;TZID=Europe/Moscow:20260628T140000
-DTEND;TZID=Europe/Moscow:20260628T200000
-SUMMARY:Кейтеринг: Башмет
-LOCATION:ПЯО
-DESCRIPTION:Формат: Кофе-брейк \n Гости: 2 чел.
-STATUS:CONFIRMED
-END:VEVENT
-BEGIN:VEVENT
-UID:1782647660384@vanilla-sky-catering
-DTSTAMP:20260628T000000Z
-DTSTART;TZID=Europe/Moscow:20260628T090000
-DTEND;TZID=Europe/Moscow:20260628T180000
-SUMMARY:Кейтеринг: Стрелка
-LOCATION:Стрелка
-DESCRIPTION:Формат: Кофе-брейк \n Гости: 1 чел.
+UID:1782828492768@vanilla-sky-catering
+DTSTAMP:20260708T000000Z
+DTSTART;TZID=Europe/Moscow:20260708T093000
+DTEND;TZID=Europe/Moscow:20260708T160000
+SUMMARY:Кейтеринг: Школа 21 Сбер
+LOCATION:Ул Победы 14А
+DESCRIPTION:Формат: Кофе-брейк \n Гости: 50 чел. \n Администратор: Михаил \n Заказчик: Ольга Макрова \n Заметка: Заезд 07.07.26 Договориться со школой
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR
