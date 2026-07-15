@@ -42,42 +42,4 @@ LOCATION:ул. Васильковая, 1
 DESCRIPTION:Формат: Фуршет \n Гости: 30 чел. \n Администратор: Илья \n Заказчик: Антон +7 (920) 110-24-93
 STATUS:CONFIRMED
 END:VEVENT
-BEGIN:VEVENT
-UID:1779369742700@vanilla-sky-catering
-DTSTAMP:20260704T000000Z
-DTSTART;TZID=Europe/Moscow:20260704T090000
-DTEND;TZID=Europe/Moscow:20260704T180000
-SUMMARY:Кейтеринг: В кругу семьи
-DESCRIPTION:Формат: Несколько накрытий \n Гости: 400 чел.
-STATUS:CONFIRMED
-END:VEVENT
-BEGIN:VEVENT
-UID:1781079968092@vanilla-sky-catering
-DTSTAMP:20260703T000000Z
-DTSTART;TZID=Europe/Moscow:20260703T110000
-DTEND;TZID=Europe/Moscow:20260703T160000
-SUMMARY:Кейтеринг: ГАИ
-LOCATION:ТЮЗ
-DESCRIPTION:Формат: Фуршет \n Гости: 45 чел. \n Администратор: Илья \n Заметка: 11:00-12:00 Велком \n 14:00-16:00 Фуршет \n --- Персонал --- \n Коршунов [] (Тайминг не назначен)
-STATUS:CONFIRMED
-END:VEVENT
-BEGIN:VEVENT
-UID:1781080023291@vanilla-sky-catering
-DTSTAMP:20260703T000000Z
-DTSTART;TZID=Europe/Moscow:20260703T090000
-DTEND;TZID=Europe/Moscow:20260703T180000
-SUMMARY:Кейтеринг: Белояр
-DESCRIPTION:Формат: Фуршет \n Гости: 0 чел. \n --- Персонал --- \n Барышникова Света [Официант] (Тайминг не назначен) \n Брызгалова Марина [Официант] (Тайминг не назначен) \n Брюквина Кристина [Официант] (Тайминг не назначен) \n Соня [Официант] (Тайминг не назначен)
-STATUS:CONFIRMED
-END:VEVENT
-BEGIN:VEVENT
-UID:1782828492768@vanilla-sky-catering
-DTSTAMP:20260708T000000Z
-DTSTART;TZID=Europe/Moscow:20260708T093000
-DTEND;TZID=Europe/Moscow:20260708T160000
-SUMMARY:Кейтеринг: Школа 21 Сбер
-LOCATION:Ул Победы 14А
-DESCRIPTION:Формат: Кофе-брейк \n Гости: 50 чел. \n Администратор: Михаил \n Заказчик: Ольга Макрова \n Заметка: Заезд 07.07.26 Договориться со школой \n --- Персонал --- \n Коршунов [Официант] (Тайминг не назначен)
-STATUS:CONFIRMED
-END:VEVENT
 END:VCALENDAR
