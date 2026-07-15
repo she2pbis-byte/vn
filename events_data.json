@@ -212,32 +212,6 @@
     }
   },
   {
-    "id": "1779369742700",
-    "name": "В кругу семьи",
-    "date": "2026-07-04",
-    "start": "",
-    "end": "",
-    "format": "Несколько накрытий",
-    "location": "",
-    "admin": "",
-    "guests": "400",
-    "extraInfo": "",
-    "contactName": "",
-    "contactPhone": "",
-    "neededStaff": {
-      "оф": "8",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "4 июль",
-    "staff": [],
-    "files": [],
-    "status": {
-      "checked": false
-    }
-  },
-  {
     "id": "1781079968092",
     "name": "ГАИ",
     "date": "2026-07-03",
