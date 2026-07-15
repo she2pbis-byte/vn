@@ -379,57 +379,5 @@
     "status": {
       "checked": true
     }
-  },
-  {
-    "id": "1782646184532",
-    "name": "Башмет",
-    "date": "2026-06-28",
-    "start": "14:00",
-    "end": "20:00",
-    "format": "Кофе-брейк",
-    "location": "ПЯО",
-    "admin": "",
-    "guests": "2",
-    "extraInfo": "",
-    "contactName": "",
-    "contactPhone": "",
-    "neededStaff": {
-      "оф": "",
-      "бар": "",
-      "мой": "",
-      "пов": "0"
-    },
-    "displayDate": "28 июнь",
-    "staff": [],
-    "files": [],
-    "status": {
-      "checked": true
-    }
-  },
-  {
-    "id": "1782647660384",
-    "name": "Стрелка",
-    "date": "2026-06-28",
-    "start": "",
-    "end": "",
-    "format": "Кофе-брейк",
-    "location": "Стрелка",
-    "admin": "",
-    "guests": "1",
-    "extraInfo": "",
-    "contactName": "",
-    "contactPhone": "",
-    "neededStaff": {
-      "оф": "",
-      "бар": "",
-      "мой": "",
-      "пов": ""
-    },
-    "displayDate": "28 июнь",
-    "staff": [],
-    "files": [],
-    "status": {
-      "checked": true
-    }
   }
 ]
