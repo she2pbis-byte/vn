@@ -14,16 +14,6 @@ DESCRIPTION:Формат: Банкет \n Гости: 50 чел. \n Админи
 STATUS:CONFIRMED
 END:VEVENT
 BEGIN:VEVENT
-UID:1777537523148@vanilla-sky-catering
-DTSTAMP:20260809T000000Z
-DTSTART;TZID=Europe/Moscow:20260809T140000
-DTEND;TZID=Europe/Moscow:20260809T230000
-SUMMARY:Кейтеринг: Диво (Роман)
-LOCATION:ул. Камышовая, 10
-DESCRIPTION:Формат: Фуршет \n Гости: 55 чел. \n Администратор: Илья \n Заказчик: Роман +79806511563 \n --- Персонал --- \n Козлова [Официант] (Тайминг не назначен) \n Коршунов [Бармен] (Тайминг не назначен) \n Телов [Официант] (Тайминг не назначен)
-STATUS:CONFIRMED
-END:VEVENT
-BEGIN:VEVENT
 UID:1778828336804@vanilla-sky-catering
 DTSTAMP:20260808T000000Z
 DTSTART;TZID=Europe/Moscow:20260808T090000
