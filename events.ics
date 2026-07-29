@@ -4,16 +4,6 @@ PRODID:-//Vanilla Sky Catering//Event Calendar//RU
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-UID:1776088130144@vanilla-sky-catering
-DTSTAMP:20260724T000000Z
-DTSTART;TZID=Europe/Moscow:20260724T090000
-DTEND;TZID=Europe/Moscow:20260724T180000
-SUMMARY:Кейтеринг: Диво
-LOCATION:ул. Камышовая, 10
-DESCRIPTION:Формат: Банкет \n Гости: 50 чел. \n Администратор: Михаил \n --- Персонал --- \n Коршунов [Официант] (Тайминг не назначен) \n Орехина [Официант] (Тайминг не назначен) \n Прохоров [Официант] (Тайминг не назначен) \n Салина [Официант] (Тайминг не назначен)
-STATUS:CONFIRMED
-END:VEVENT
-BEGIN:VEVENT
 UID:1778828336804@vanilla-sky-catering
 DTSTAMP:20260808T000000Z
 DTSTART;TZID=Europe/Moscow:20260808T090000
