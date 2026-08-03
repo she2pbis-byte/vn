@@ -6,10 +6,10 @@ METHOD:PUBLISH
 BEGIN:VEVENT
 UID:1778828336804@vanilla-sky-catering
 DTSTAMP:20260808T000000Z
-DTSTART;TZID=Europe/Moscow:20260808T090000
-DTEND;TZID=Europe/Moscow:20260808T180000
+DTSTART;TZID=Europe/Moscow:20260808T120000
+DTEND;TZID=Europe/Moscow:20260808T210000
 SUMMARY:Кейтеринг: Белояр
-DESCRIPTION:Формат: Несколько накрытий \n Гости: 40 чел. \n Администратор: Михаил \n --- Персонал --- \n Козлова [Официант] (Тайминг не назначен) \n Телов [Официант] (Тайминг не назначен)
+DESCRIPTION:Формат: Банкет \n Гости: 35 чел. \n Администратор: Михаил \n --- Персонал --- \n Козлова [Официант] (Тайминг не назначен) \n Телов [Официант] (Тайминг не назначен)
 STATUS:CONFIRMED
 END:VEVENT
 BEGIN:VEVENT
