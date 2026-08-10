@@ -3,23 +3,4 @@ VERSION:2.0
 PRODID:-//Vanilla Sky Catering//Event Calendar//RU
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
-BEGIN:VEVENT
-UID:1778828336804@vanilla-sky-catering
-DTSTAMP:20260808T000000Z
-DTSTART;TZID=Europe/Moscow:20260808T120000
-DTEND;TZID=Europe/Moscow:20260808T210000
-SUMMARY:Кейтеринг: Белояр
-DESCRIPTION:Формат: Банкет \n Гости: 35 чел. \n Администратор: Михаил \n --- Персонал --- \n Козлова [Официант] (Тайминг не назначен) \n Телов [Официант] (Тайминг не назначен)
-STATUS:CONFIRMED
-END:VEVENT
-BEGIN:VEVENT
-UID:1778834467121@vanilla-sky-catering
-DTSTAMP:20260807T000000Z
-DTSTART;TZID=Europe/Moscow:20260807T143000
-DTEND;TZID=Europe/Moscow:20260807T173000
-SUMMARY:Кейтеринг: ЗАГС (Антон)
-LOCATION:ул. Васильковая, 1
-DESCRIPTION:Формат: Фуршет \n Гости: 30 чел. \n Администратор: Илья \n Заказчик: Антон +7 (920) 110-24-93
-STATUS:CONFIRMED
-END:VEVENT
 END:VCALENDAR
