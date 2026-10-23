@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "id": "1792767160818",
+    "name": "Пяо в музее",
+    "date": "2026-10-31",
+    "start": "12:00",
+    "end": "14:00",
+    "format": "Кофе-брейк",
+    "location": "п",
+    "admin": "Илья",
+    "guests": "50",
+    "extraInfo": "",
+    "contactName": "",
+    "contactPhone": "",
+    "neededStaff": {
+      "оф": "5",
+      "бар": "",
+      "мой": "",
+      "пов": ""
+    },
+    "displayDate": "31 октябрь",
+    "staff": [],
+    "files": [],
+    "status": {
+      "checked": false
+    }
+  }
+]
